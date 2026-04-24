@@ -1,0 +1,43 @@
+<section class="locations-section">
+  <div class="locations-header">
+    <span class="locations-badge">📍 Nuestras Sedes</span>
+    <h2>Donde nos puedes encontrar</h2>
+    <p>Explora nuestras ubicaciones en el mapa 3D. Haz click en cada sede para verla de cerca.</p>
+  </div>
+
+  <div class="map-wrapper">
+    <div class="sede-list">
+      <button
+        class="sede-item reset-btn"
+        [class.active]="activeSedeId() === ''"
+        (click)="resetView()">
+        <span class="sede-icon reset-icon">🌎</span>
+        <div class="sede-info">
+          <strong>Vista general</strong>
+          <span>Ver todas las sedes</span>
+        </div>
+      </button>
+
+      @for (sede of sedes; track sede.id) {
+        <button
+          class="sede-item"
+          [class.active]="activeSedeId() === sede.id"
+          (click)="flyToSede(sede)">
+          <span class="sede-icon" [style.background]="sede.color">🥛</span>
+          <div class="sede-info">
+            <strong>{{ sede.name }}</strong>
+            <span>{{ sede.address }}</span>
+          </div>
+          <span class="sede-arrow">→</span>
+        </button>
+      }
+    </div>
+
+    <div class="map-container" #mapContainer></div>
+  </div>
+
+  <div class="coverage-badge">
+    <span class="coverage-icon">🚚</span>
+    <span class="coverage-text">Cobertura en <strong>Cesar</strong>, <strong>Magdalena</strong> y <strong>La Guajira</strong></span>
+  </div>
+</section>

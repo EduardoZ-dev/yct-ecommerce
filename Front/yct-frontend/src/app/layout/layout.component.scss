@@ -1,0 +1,128 @@
+@use '../../scss/variables' as *;
+@use '../../scss/mixins' as *;
+
+.app-layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+.sidebar {
+  width: $sidebar-width;
+  background: $bg-surface;
+  display: flex;
+  flex-direction: column;
+  padding: $spacing-xl 0;
+  box-shadow: $shadow-sidebar;
+}
+
+.sidebar-header {
+  text-align: center;
+  padding: 0 $spacing-lg $spacing-xl;
+  border-bottom: 1px solid $border-color;
+}
+
+.sidebar-logo {
+  width: 100%;
+  max-width: 150px;
+  height: auto;
+  object-fit: contain;
+}
+
+.sidebar-nav {
+  flex: 1;
+  padding: $spacing-sm 0;
+
+  .nav-section {
+    padding: $spacing-sm 0;
+
+    &:not(:last-child) {
+      border-bottom: 1px solid $border-color;
+      margin-bottom: $spacing-xs;
+    }
+  }
+
+  .nav-label {
+    display: block;
+    padding: $spacing-sm $spacing-xl;
+    font-size: $font-size-xs;
+    color: $text-placeholder;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 600;
+  }
+
+  a {
+    display: flex;
+    align-items: center;
+    gap: $spacing-md;
+    padding: $spacing-md $spacing-xl;
+    color: $text-muted;
+    text-decoration: none;
+    font-size: $font-size-md;
+    transition: all $transition-fast;
+
+    &:hover {
+      background: rgba($primary, 0.1);
+      color: $text-primary;
+    }
+
+    &.active {
+      background: $primary-light;
+      color: $primary;
+      border-right: 3px solid $primary;
+    }
+
+    .nav-icon {
+      font-size: $font-size-lg;
+    }
+
+    .nav-badge {
+      margin-left: auto;
+      background: $primary;
+      color: $text-primary;
+      font-size: $font-size-xs;
+      font-weight: 700;
+      min-width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+  }
+}
+
+.sidebar-footer {
+  padding: $spacing-lg $spacing-xl;
+  border-top: 1px solid $border-color;
+}
+
+.user-info {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: $spacing-md;
+
+  .user-name {
+    color: $text-primary;
+    font-weight: 500;
+    font-size: $font-size-base;
+  }
+
+  .user-role {
+    color: $text-muted;
+    font-size: $font-size-xs;
+  }
+}
+
+.btn-logout {
+  @include btn-outline($primary);
+  width: 100%;
+  font-size: $font-size-sm;
+}
+
+.main-content {
+  flex: 1;
+  background: $bg-body;
+  padding: $spacing-2xl;
+  overflow-y: auto;
+}

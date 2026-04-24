@@ -1,0 +1,304 @@
+<!-- Toast notification -->
+@if (toastMessage()) {
+  <div class="toast">
+    <span class="toast-icon">✓</span>
+    {{ toastMessage() }}
+  </div>
+}
+
+<!-- Hero -->
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-bg-accent"></div>
+  <div class="hero-dots"></div>
+  <div class="hero-content">
+    <span class="hero-badge">
+      <span class="hero-badge-dot"></span>
+      Distribuciones YCT
+    </span>
+    <h1>Derivados Lácteos<br><span class="hero-accent">frescos y naturales</span></h1>
+    <p>Del campo a tu mesa. Productos de la más alta calidad para toda tu familia.</p>
+    <div class="hero-actions">
+      <a routerLink="/catalog" class="hero-cta">
+        Explorar productos
+        <span class="hero-cta-arrow">&#8594;</span>
+      </a>
+    </div>
+    <div class="hero-stats">
+      <div class="stat">
+        <strong>{{ products().length }}+</strong>
+        <span>&#127870; Productos</span>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat">
+        <strong>{{ categories().length }}</strong>
+        <span>&#128230; Categorias</span>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat">
+        <strong>24h</strong>
+        <span>&#9889; Entrega</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Marcas de Distribuciones YCT -->
+@if (selectedCategory() === null) {
+  <section class="brands-section">
+    <div class="brands-header">
+      <div class="brands-badge">
+        <span class="brands-badge-icon">🧀</span>
+        <span class="brands-title-prefix">NUESTRAS LÍNEAS</span>
+      </div>
+      <h2>Distribuciones <span>YCT</span></h2>
+      <p>Bajo el respaldo de Distribuciones YCT, te ofrecemos dos líneas especializadas en quesillo: <strong>Mamá Sara</strong> para tu mesa lista en tajadas y <strong>Lácteos Ideal</strong> para los amantes del quesillo entero artesanal.</p>
+      <div class="brands-divider"></div>
+    </div>
+
+    <div class="brands-grid">
+      @for (brand of brands; track brand.slug; let i = $index) {
+        <a class="brand-card"
+           [routerLink]="['/catalog']"
+           [queryParams]="{ brand: brand.slug }"
+           [style.--brand-bg]="brand.bg"
+           [style.animation-delay]="(i * 0.15) + 's'">
+          <div class="brand-card-inner">
+            <div class="brand-circle">
+              <img [src]="brand.image" [alt]="brand.name" loading="lazy">
+            </div>
+            <div class="brand-info">
+              <h3>{{ brand.name }}</h3>
+              <p>{{ brand.tagline }}</p>
+              <span class="brand-cta">
+                Ver productos
+                <span class="brand-cta-arrow">→</span>
+              </span>
+            </div>
+          </div>
+        </a>
+      }
+    </div>
+  </section>
+}
+
+<!-- Más Vendidos (solo cuando no hay filtro activo) -->
+@if (selectedCategory() === null && !loading() && hotProducts().length > 0) {
+  <section class="hot-section">
+    <div class="hot-header">
+      <div class="hot-title">
+        <span class="hot-flame">🔥</span>
+        <div>
+          <h2>Más Vendidos</h2>
+          <p>Los favoritos de nuestros clientes</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="hot-scroller-wrapper"
+         (mouseenter)="onHotMouseEnter()"
+         (mouseleave)="onHotMouseLeave()">
+      <div class="hot-scroller" #hotTrack>
+        @for (product of loopedHotProducts(); track $index) {
+          <article class="hot-card" [routerLink]="['/product', product.id]">
+            <div class="hot-image">
+              @if (product.imageUrl) {
+                <img [src]="product.imageUrl" [alt]="product.name" loading="lazy">
+              } @else {
+                <div class="no-image">🧀</div>
+              }
+            </div>
+            <div class="hot-body">
+              <span class="hot-category">{{ product.categoryName }}</span>
+              <h3>{{ product.name }}</h3>
+              <div class="hot-footer">
+                <span class="hot-price">{{ product.price | currency:'COP':'symbol':'1.0-0' }}</span>
+                <button
+                  class="hot-add-btn"
+                  [class.added]="addedProductId() === product.id"
+                  (click)="addToCart(product, $event)">
+                  {{ addedProductId() === product.id ? '✓' : '+' }}
+                </button>
+              </div>
+            </div>
+          </article>
+        }
+      </div>
+    </div>
+  </section>
+}
+
+<!-- Categories -->
+<section class="catalog">
+  <div class="catalog-header">
+    <div class="catalog-header-text">
+      <span class="catalog-label">CATÁLOGO</span>
+      <h2>{{ selectedCategory() ? 'Productos filtrados' : 'Nuestros Productos' }}</h2>
+      <p class="catalog-subtitle">Selecciona una categoría para encontrar lo que buscas</p>
+    </div>
+    <span class="product-count">{{ filteredProducts().length }} productos</span>
+  </div>
+
+  <div class="category-filters">
+    <button
+      [class.active]="selectedCategory() === null"
+      (click)="filterByCategory(null)">
+      Todos
+    </button>
+    @for (cat of categories(); track cat.id) {
+      <button
+        [class.active]="selectedCategory() === cat.id"
+        (click)="filterByCategory(cat.id)">
+        {{ cat.name }}
+      </button>
+    }
+  </div>
+
+  <!-- Skeleton loading -->
+  @if (loading()) {
+    <div class="products-grid">
+      @for (s of skeletons; track $index) {
+        <div class="product-card skeleton-card">
+          <div class="card-image skeleton-img"></div>
+          <div class="card-body">
+            <div class="skeleton-line w60"></div>
+            <div class="skeleton-line w80"></div>
+            <div class="skeleton-line w40"></div>
+          </div>
+        </div>
+      }
+    </div>
+  } @else {
+    <div class="products-grid">
+      @for (product of displayedProducts(); track product.id) {
+        <article class="product-card" [routerLink]="['/product', product.id]">
+          <div class="card-image">
+            @if (product.imageUrl) {
+              <img [src]="product.imageUrl" [alt]="product.name" loading="lazy">
+            } @else {
+              <div class="no-image">🧀</div>
+            }
+            <span class="card-category">{{ product.categoryName }}</span>
+            <span class="card-stock-badge" [class.out-of-stock]="product.stock <= 0">
+              {{ product.stock > 0 ? 'Disponible' : 'Agotado' }}
+            </span>
+          </div>
+          <div class="card-body">
+            <h3>{{ product.name }}</h3>
+            @if (product.description) {
+              <p class="card-desc">{{ product.description }}</p>
+            }
+            <div class="card-bottom">
+              <div class="card-pricing">
+                <span class="card-price">{{ product.price | currency:'COP':'symbol':'1.0-0' }}</span>
+              </div>
+              <button
+                class="card-add-btn"
+                [class.added]="addedProductId() === product.id"
+                [disabled]="product.stock <= 0"
+                (click)="addToCart(product, $event)">
+                {{ addedProductId() === product.id ? '✓' : '+' }}
+              </button>
+            </div>
+          </div>
+        </article>
+      } @empty {
+        <div class="empty-state">
+          <div class="empty-icon">🔍</div>
+          <h3>No hay productos</h3>
+          <p>No encontramos productos en esta categoría</p>
+        </div>
+      }
+    </div>
+
+    @if (hasMoreProducts()) {
+      <div class="load-more-wrapper">
+        <a routerLink="/catalog" class="load-more-btn">
+          <span class="load-more-icon">📦</span>
+          <span>Ver catálogo completo</span>
+          <span class="load-more-count">+{{ remainingCount() }}</span>
+          <span class="arrow">→</span>
+        </a>
+      </div>
+    }
+  }
+</section>
+
+<!-- Trust Badges -->
+<section class="trust-badges">
+  <div class="trust-badges-header">
+    <span class="trust-badges-label">Por qué elegirnos</span>
+    <h2>Compromiso con la <span>calidad</span></h2>
+  </div>
+  <div class="trust-badges-grid">
+    @for (badge of trustBadges; track badge.title; let i = $index) {
+      <a class="trust-badge" [routerLink]="badge.link" [style.--badge-delay]="(i * 0.1) + 's'">
+        <div class="trust-icon-wrapper">
+          <div class="trust-icon">{{ badge.icon }}</div>
+        </div>
+        <div class="trust-text">
+          <strong>{{ badge.title }}</strong>
+          <span>{{ badge.desc }}</span>
+        </div>
+        <span class="trust-arrow">→</span>
+      </a>
+    }
+  </div>
+</section>
+
+<!-- Mapa de sedes 3D -->
+<section class="locations-wrapper">
+  <app-locations-map />
+</section>
+
+<!-- Testimonios / Reseñas -->
+<section class="testimonials">
+  <div class="testimonials-header">
+    <span class="testimonials-badge">⭐ Opiniones verificadas</span>
+    <h2>Lo que dicen nuestros clientes</h2>
+    <div class="rating-summary">
+      <div class="rating-stars">
+        @for (i of [1,2,3,4,5]; track i) {
+          <span class="star filled">★</span>
+        }
+      </div>
+      <strong>{{ averageRating() }}</strong>
+      <span class="rating-count">basado en {{ totalReviews() }}+ reseñas reales</span>
+    </div>
+  </div>
+
+  <div class="testimonials-grid">
+    @for (review of testimonials; track review.name) {
+      <article class="testimonial-card">
+        <div class="testimonial-header">
+          <div class="avatar" [style.background]="review.avatarColor">
+            {{ review.initials }}
+          </div>
+          <div class="reviewer-info">
+            <div class="reviewer-name">
+              {{ review.name }}
+              <span class="verified-badge" title="Compra verificada">✓</span>
+            </div>
+            <div class="reviewer-meta">
+              <span>📍 {{ review.location }}</span>
+              <span>·</span>
+              <span>{{ review.date }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="testimonial-rating">
+          @for (i of [1,2,3,4,5]; track i) {
+            <span class="star" [class.filled]="i <= review.rating">★</span>
+          }
+        </div>
+
+        <p class="testimonial-comment">{{ review.comment }}</p>
+
+        <div class="testimonial-footer">
+          <span class="product-tag">🧀 {{ review.product }}</span>
+        </div>
+      </article>
+    }
+  </div>
+</section>

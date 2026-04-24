@@ -1,0 +1,59 @@
+@use 'scss/variables' as *;
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  overflow-x: hidden;
+  width: 100%;
+  max-width: 100vw;
+}
+
+body {
+  font-family: $font-family;
+  background: $bg-body;
+  color: $text-primary;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+h1, h2, h3, h4, h5, h6,
+.hero h1, .hero h2,
+.about-hero h1,
+.cart-header h1,
+.orders-header h1,
+.checkout-header h2 {
+  font-family: $font-family-heading !important;
+  letter-spacing: -0.02em;
+}
+
+button, input, select, textarea {
+  font-family: $font-family;
+}
+
+p, span, a, li, td, th, label {
+  font-family: $font-family;
+}
+
+img, video { max-width: 100%; height: auto; }
+
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: $bg-body;
+}
+
+::-webkit-scrollbar-thumb {
+  background: $border-color;
+  border-radius: $radius-sm;
+
+  &:hover {
+    background: $text-muted;
+  }
+}

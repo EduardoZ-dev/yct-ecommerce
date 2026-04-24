@@ -1,0 +1,458 @@
+@use '../../../scss/variables' as *;
+@use '../../../scss/mixins' as *;
+@use '../../../scss/animations' as *;
+
+// ---- Toast (mismo que shop) ----
+.toast {
+  position: fixed;
+  bottom: $spacing-2xl;
+  right: $spacing-2xl;
+  background: $primary-hover;
+  color: $text-on-primary;
+  padding: $spacing-md $spacing-xl;
+  border-radius: $radius-xl;
+  font-size: $font-size-base;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  z-index: 200;
+  box-shadow: $shadow-lg;
+  animation: toastSlide 3s ease both;
+
+  @include mobile {
+    left: $spacing-lg;
+    right: $spacing-lg;
+    bottom: $spacing-lg;
+    justify-content: center;
+  }
+}
+
+.toast-icon {
+  width: 22px;
+  height: 22px;
+  background: rgba(255, 255, 255, 0.25);
+  border-radius: 50%;
+  @include flex-center;
+  font-size: $font-size-sm;
+  flex-shrink: 0;
+}
+
+.catalog-page {
+  animation: fadeIn 0.4s ease both;
+}
+
+// ---- Header ----
+.page-header {
+  margin-bottom: $spacing-2xl;
+
+  h1 {
+    color: $text-primary;
+    font-size: 2rem;
+    margin: $spacing-sm 0;
+
+    @include tablet-up { font-size: 2.5rem; }
+  }
+
+  p {
+    color: $text-muted;
+    font-size: $font-size-base;
+    margin: 0;
+  }
+}
+
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: $spacing-xs;
+  font-size: $font-size-sm;
+  color: $text-muted;
+  margin-bottom: $spacing-sm;
+
+  a {
+    color: $primary;
+    text-decoration: none;
+
+    &:hover { color: $primary-hover; text-decoration: underline; }
+  }
+
+  .current { color: $text-secondary; font-weight: 500; }
+}
+
+// ---- Brand Banner ----
+.brand-banner {
+  display: flex;
+  align-items: center;
+  gap: $spacing-md;
+  padding: $spacing-md $spacing-lg;
+  background: linear-gradient(135deg, $brand-green-bg 0%, $brand-orange-bg 100%);
+  border: 1px solid rgba($primary, 0.2);
+  border-radius: $radius-lg;
+  margin-bottom: $spacing-lg;
+  animation: slideUp 0.4s ease both;
+
+  @include mobile {
+    flex-wrap: wrap;
+  }
+}
+
+.brand-banner-icon {
+  font-size: 1.6rem;
+  flex-shrink: 0;
+}
+
+.brand-banner-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+
+  strong {
+    color: $text-primary;
+    font-size: $font-size-base;
+  }
+
+  span {
+    color: $text-muted;
+    font-size: $font-size-xs;
+  }
+}
+
+.brand-banner-clear {
+  padding: $spacing-xs $spacing-md;
+  background: $bg-surface;
+  color: $primary-hover;
+  border: 1px solid $primary;
+  border-radius: $radius-pill;
+  text-decoration: none;
+  font-size: $font-size-xs;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: all $transition-fast;
+
+  &:hover { background: $primary; color: $text-on-primary; }
+}
+
+// ---- Toolbar ----
+.toolbar {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-md;
+  margin-bottom: $spacing-lg;
+
+  @include tablet-up {
+    flex-direction: row;
+    align-items: center;
+  }
+}
+
+.search-box {
+  position: relative;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  background: $bg-surface;
+  border: 1px solid $border-color;
+  border-radius: $radius-pill;
+  padding: 0 $spacing-md;
+  transition: all $transition-fast;
+
+  &:focus-within {
+    border-color: $primary;
+    box-shadow: 0 0 0 3px $primary-light;
+  }
+
+  input {
+    flex: 1;
+    border: none;
+    background: transparent;
+    padding: $spacing-md $spacing-sm;
+    font-size: $font-size-base;
+    font-family: $font-family;
+    color: $text-primary;
+    outline: none;
+
+    &::placeholder { color: $text-muted; }
+  }
+}
+
+.search-icon {
+  font-size: $font-size-base;
+  color: $text-muted;
+}
+
+.clear-search {
+  background: $border-color;
+  border: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  cursor: pointer;
+  color: $text-secondary;
+  font-size: 0.75rem;
+  @include flex-center;
+  transition: all $transition-fast;
+
+  &:hover { background: $accent; color: #fff; }
+}
+
+.sort-box {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+
+  label {
+    color: $text-muted;
+    font-size: $font-size-sm;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+
+  select {
+    padding: $spacing-sm $spacing-md;
+    background: $bg-surface;
+    border: 1px solid $border-color;
+    border-radius: $radius-lg;
+    color: $text-primary;
+    font-family: $font-family;
+    font-size: $font-size-sm;
+    cursor: pointer;
+    outline: none;
+    transition: all $transition-fast;
+
+    &:hover, &:focus { border-color: $primary; }
+  }
+}
+
+// ---- Filter chips ----
+.filters-bar {
+  display: flex;
+  gap: $spacing-sm;
+  overflow-x: auto;
+  padding: $spacing-xs 0 $spacing-md;
+  margin-bottom: $spacing-md;
+  -webkit-overflow-scrolling: touch;
+
+  &::-webkit-scrollbar { height: 6px; }
+  &::-webkit-scrollbar-thumb {
+    background: $border-color;
+    border-radius: $radius-pill;
+  }
+}
+
+.filter-chip {
+  padding: $spacing-sm $spacing-lg;
+  background: $bg-surface;
+  color: $text-secondary;
+  border: 1px solid $border-color;
+  border-radius: $radius-pill;
+  cursor: pointer;
+  font-size: $font-size-sm;
+  white-space: nowrap;
+  transition: all $transition-fast;
+  font-family: $font-family;
+  flex-shrink: 0;
+
+  &:hover { border-color: $primary; color: $primary; background: $primary-light; }
+  &.active { background: $primary; color: $text-on-primary; border-color: $primary; }
+}
+
+// ---- Results info ----
+.results-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: $spacing-lg;
+  padding: $spacing-md 0;
+  border-bottom: 1px solid $border-color;
+
+  span {
+    color: $text-muted;
+    font-size: $font-size-sm;
+  }
+}
+
+.clear-btn {
+  background: transparent;
+  border: 1px solid $border-color;
+  color: $text-secondary;
+  padding: $spacing-xs $spacing-md;
+  border-radius: $radius-pill;
+  cursor: pointer;
+  font-size: $font-size-sm;
+  font-family: $font-family;
+  transition: all $transition-fast;
+
+  &:hover { border-color: $accent; color: $accent; background: rgba($accent, 0.05); }
+}
+
+// ---- Grid (mismo estilo que shop) ----
+.products-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: $spacing-md;
+
+  @include tablet-up { grid-template-columns: repeat(3, 1fr); gap: $spacing-lg; }
+  @include desktop { grid-template-columns: repeat(4, 1fr); gap: $spacing-xl; }
+}
+
+.product-card {
+  background: $bg-surface;
+  border: 1px solid $border-color;
+  border-radius: $radius-xl;
+  overflow: hidden;
+  cursor: pointer;
+  transition: all $transition-normal;
+  text-decoration: none;
+  display: flex;
+  flex-direction: column;
+  animation: slideUp 0.4s ease both;
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: $shadow-lg;
+    border-color: rgba($primary, 0.3);
+  }
+}
+
+.card-image {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  background: linear-gradient(145deg, rgba($primary-light, 0.4), $bg-input);
+  overflow: hidden;
+  @include flex-center;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    padding: $spacing-md;
+    transition: transform $transition-normal;
+  }
+
+  .no-image { font-size: 3rem; opacity: 0.4; }
+}
+
+.product-card:hover .card-image img { transform: scale(1.05); }
+
+.card-category {
+  position: absolute;
+  top: $spacing-sm;
+  right: $spacing-sm;
+  background: rgba(255, 255, 255, 0.95);
+  color: $primary-hover;
+  padding: 4px 10px;
+  border-radius: $radius-pill;
+  font-size: $font-size-xs;
+  font-weight: 600;
+}
+
+.card-body {
+  padding: $spacing-md;
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-xs;
+  flex: 1;
+
+  h3 {
+    color: $text-primary;
+    font-size: $font-size-base;
+    margin: 0;
+    line-height: 1.3;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    min-height: 2.6em;
+  }
+}
+
+.card-desc {
+  color: $text-muted;
+  font-size: $font-size-xs;
+  margin: 0;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.card-bottom {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-top: auto;
+  padding-top: $spacing-sm;
+  gap: $spacing-sm;
+}
+
+.card-pricing {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.card-price {
+  color: $accent;
+  font-size: $font-size-lg;
+  font-weight: 800;
+}
+
+.card-stock {
+  color: $text-muted;
+  font-size: $font-size-xs;
+}
+
+.card-add-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: none;
+  background: $primary;
+  color: $text-on-primary;
+  font-size: $font-size-lg;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all $transition-fast;
+  @include flex-center;
+  flex-shrink: 0;
+
+  &:hover { background: $primary-hover; transform: scale(1.1); }
+  &.added { background: $accent; }
+}
+
+// ---- Skeleton ----
+.skeleton-card {
+  pointer-events: none;
+}
+
+.skeleton-img {
+  @include skeleton;
+}
+
+.skeleton-line {
+  height: 12px;
+  border-radius: $radius-sm;
+  margin-bottom: $spacing-sm;
+  @include skeleton;
+
+  &.w60 { width: 60%; }
+  &.w80 { width: 80%; }
+  &.w40 { width: 40%; }
+}
+
+// ---- Empty ----
+.empty-state {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: $spacing-3xl;
+  @include animate-fadeIn;
+
+  .empty-icon { font-size: 3rem; margin-bottom: $spacing-lg; opacity: 0.5; }
+  h3 { color: $text-primary; margin-bottom: $spacing-xs; }
+  p { color: $text-muted; margin-bottom: $spacing-lg; }
+}

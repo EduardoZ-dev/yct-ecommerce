@@ -1,0 +1,43 @@
+<section class="info-page">
+  <div class="breadcrumb">
+    <a routerLink="/shop">Inicio</a>
+    <span>/</span>
+    <span class="current">{{ content().badge }}</span>
+  </div>
+
+  <div class="info-hero">
+    <div class="info-icon">{{ content().icon }}</div>
+    <span class="info-badge">{{ content().badge }}</span>
+    <h1>{{ content().title }}</h1>
+    <p class="info-subtitle">{{ content().subtitle }}</p>
+  </div>
+
+  <div class="info-description">
+    <p>{{ content().description }}</p>
+  </div>
+
+  <div class="info-grid">
+    @for (section of content().sections; track section.title) {
+      <div class="info-card">
+        <div class="info-card-icon">{{ section.icon }}</div>
+        <h3>{{ section.title }}</h3>
+        <p>{{ section.text }}</p>
+      </div>
+    }
+  </div>
+
+  @if (content().cta) {
+    <div class="info-cta">
+      <button class="cta-btn" [disabled]="content().cta!.disabled">
+        {{ content().cta!.text }}
+      </button>
+      @if (content().cta!.disabled) {
+        <span class="cta-note">🚧 Esta funcionalidad estará disponible pronto</span>
+      }
+    </div>
+  }
+
+  <div class="back-link">
+    <a routerLink="/shop">← Volver al inicio</a>
+  </div>
+</section>

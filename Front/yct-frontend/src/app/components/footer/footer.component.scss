@@ -1,0 +1,129 @@
+@use '../../../scss/variables' as *;
+@use '../../../scss/mixins' as *;
+
+.footer {
+  background: $bg-footer;
+  color: rgba(255, 255, 255, 0.7);
+  margin-top: $spacing-3xl;
+}
+
+.footer-inner {
+  max-width: $container-max;
+  margin: 0 auto;
+  padding: $spacing-3xl $spacing-lg $spacing-xl;
+
+  @include tablet-up { padding: $spacing-3xl $spacing-2xl $spacing-xl; }
+}
+
+.footer-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: $spacing-2xl;
+  margin-bottom: $spacing-2xl;
+
+  @include tablet-up { grid-template-columns: 2fr 1fr 1fr 1fr; }
+}
+
+.footer-brand {
+  .footer-logo {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: $spacing-lg;
+  }
+
+  .logo-text { color: $accent; font-size: 1.8rem; font-weight: 800; line-height: 1; }
+  .logo-sub { color: $primary; font-size: $font-size-xs; font-weight: 600; }
+
+  p {
+    font-size: $font-size-sm;
+    line-height: 1.7;
+    max-width: 300px;
+  }
+}
+
+.footer-links {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-sm;
+
+  h4 {
+    color: #fff;
+    font-size: $font-size-base;
+    margin: 0 0 $spacing-sm;
+    font-weight: 600;
+  }
+
+  a, span {
+    font-size: $font-size-sm;
+    color: rgba(255, 255, 255, 0.6);
+    text-decoration: none;
+    transition: color $transition-fast;
+  }
+
+  a:hover { color: $accent; }
+}
+
+.footer-social-title {
+  margin-top: $spacing-md !important;
+}
+
+.footer-social {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-sm;
+
+  .social-icon {
+    display: inline-flex;
+    align-items: center;
+    gap: $spacing-sm;
+    color: rgba(255, 255, 255, 0.7);
+    text-decoration: none;
+    font-size: $font-size-sm;
+    transition: color $transition-fast, transform $transition-fast;
+
+    svg { flex-shrink: 0; }
+
+    &:hover {
+      color: $accent;
+      transform: translateX(2px);
+    }
+  }
+}
+
+.footer-solar {
+  display: flex;
+  align-items: center;
+  gap: $spacing-md;
+  padding: $spacing-md $spacing-lg;
+  margin-bottom: $spacing-lg;
+  background: linear-gradient(135deg, rgba($accent, 0.18) 0%, rgba($accent, 0.05) 100%);
+  border: 1px solid rgba($accent, 0.35);
+  border-radius: $radius-lg;
+
+  .solar-icon { font-size: 1.6rem; line-height: 1; }
+
+  .solar-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+
+    strong {
+      color: #fff;
+      font-size: $font-size-sm;
+      letter-spacing: 0.5px;
+    }
+
+    span {
+      color: rgba(255, 255, 255, 0.65);
+      font-size: $font-size-xs;
+    }
+  }
+}
+
+.footer-bottom {
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding-top: $spacing-xl;
+  text-align: center;
+  font-size: $font-size-xs;
+  color: rgba(255, 255, 255, 0.4);
+}

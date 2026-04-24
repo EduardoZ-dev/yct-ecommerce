@@ -1,0 +1,53 @@
+<div class="login-container">
+  <div class="login-card">
+    <div class="login-header">
+      <h1>YCT</h1>
+      <p>E-Commerce de Lácteos</p>
+    </div>
+
+    <h2>{{ isRegister() ? 'Crear Cuenta' : 'Iniciar Sesión' }}</h2>
+
+    @if (error()) {
+      <div class="error-message">{{ error() }}</div>
+    }
+
+    <form (ngSubmit)="onSubmit()">
+      @if (isRegister()) {
+        <div class="form-group">
+          <label>Nombre Completo</label>
+          <input type="text" [(ngModel)]="fullName" name="fullName" required placeholder="Tu nombre completo">
+        </div>
+      }
+
+      <div class="form-group">
+        <label>Usuario</label>
+        <input type="text" [(ngModel)]="username" name="username" required placeholder="Tu usuario">
+      </div>
+
+      <div class="form-group">
+        <label>Contraseña</label>
+        <input type="password" [(ngModel)]="password" name="password" required placeholder="Tu contraseña">
+      </div>
+
+      @if (isRegister()) {
+        <div class="form-group">
+          <label>Email (opcional)</label>
+          <input type="email" [(ngModel)]="email" name="email" placeholder="correo@ejemplo.com">
+        </div>
+        <div class="form-group">
+          <label>Teléfono (opcional)</label>
+          <input type="tel" [(ngModel)]="phone" name="phone" placeholder="+1234567890">
+        </div>
+      }
+
+      <button type="submit" [disabled]="loading()" class="btn-primary">
+        {{ loading() ? 'Cargando...' : (isRegister() ? 'Registrarse' : 'Entrar') }}
+      </button>
+    </form>
+
+    <p class="toggle-link">
+      {{ isRegister() ? '¿Ya tienes cuenta?' : '¿No tienes cuenta?' }}
+      <a (click)="toggleMode()">{{ isRegister() ? 'Inicia Sesión' : 'Regístrate' }}</a>
+    </p>
+  </div>
+</div>

@@ -1,0 +1,290 @@
+@use 'variables' as *;
+
+// ============================================
+// YCT - Mixins Reutilizables
+// ============================================
+
+// --- Botones ---
+@mixin btn-base {
+  border: none;
+  border-radius: $radius-lg;
+  font-size: $font-size-base;
+  cursor: pointer;
+  transition: all $transition-fast;
+  font-family: $font-family;
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+@mixin btn-primary {
+  @include btn-base;
+  padding: $spacing-md $spacing-xl;
+  background: $accent;
+  color: $text-on-primary;
+  font-weight: 600;
+
+  &:hover:not(:disabled) {
+    background: $accent-hover;
+  }
+}
+
+@mixin btn-green {
+  @include btn-base;
+  padding: $spacing-md $spacing-xl;
+  background: $primary;
+  color: $text-on-primary;
+  font-weight: 600;
+
+  &:hover:not(:disabled) {
+    background: $primary-hover;
+  }
+}
+
+@mixin btn-secondary {
+  @include btn-base;
+  padding: $spacing-md $spacing-xl;
+  background: transparent;
+  color: $text-secondary;
+  border: 1px solid $border-color;
+
+  &:hover {
+    border-color: $primary;
+    color: $primary;
+  }
+}
+
+@mixin btn-outline($color: $primary) {
+  @include btn-base;
+  padding: $spacing-sm;
+  background: transparent;
+  border: 1px solid $color;
+  color: $color;
+
+  &:hover {
+    background: $color;
+    color: $text-on-primary;
+  }
+}
+
+@mixin btn-icon {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: $spacing-lg;
+  padding: $spacing-xs;
+  border-radius: $radius-sm;
+
+  &:hover {
+    background: $bg-hover;
+  }
+
+  &.danger:hover {
+    background: $danger-light;
+  }
+}
+
+// --- Inputs ---
+@mixin input-base {
+  width: 100%;
+  padding: $spacing-md $spacing-lg;
+  background: $bg-surface;
+  border: 1px solid $border-color;
+  border-radius: $radius-lg;
+  color: $text-primary;
+  font-size: $font-size-base;
+  font-family: $font-family;
+  box-sizing: border-box;
+  transition: border-color $transition-fast;
+
+  &:focus {
+    outline: none;
+    border-color: $border-focus;
+    box-shadow: 0 0 0 3px rgba($primary, 0.15);
+  }
+
+  &::placeholder {
+    color: $text-placeholder;
+  }
+}
+
+@mixin select-base {
+  @include input-base;
+
+  option {
+    background: $bg-surface;
+  }
+}
+
+// --- Cards ---
+@mixin card {
+  background: $bg-surface;
+  border-radius: $radius-xl;
+  padding: $spacing-xl;
+  border: 1px solid $border-color;
+}
+
+@mixin card-shadow {
+  @include card;
+  box-shadow: $shadow-md;
+  border: none;
+}
+
+// --- Tables ---
+@mixin table-container {
+  background: $bg-surface;
+  border-radius: $radius-xl;
+  overflow: hidden;
+  border: 1px solid $border-color;
+}
+
+@mixin table-base {
+  width: 100%;
+  border-collapse: collapse;
+
+  th, td {
+    padding: $spacing-md $spacing-lg;
+    text-align: left;
+  }
+
+  th {
+    background: $primary-light;
+    color: $primary-hover;
+    font-size: $font-size-sm;
+    font-weight: 600;
+    text-transform: uppercase;
+  }
+
+  td {
+    border-bottom: 1px solid $border-color;
+    color: $text-secondary;
+    font-size: $font-size-base;
+  }
+
+  tbody tr:hover {
+    background: $bg-hover;
+  }
+}
+
+// --- Badges ---
+@mixin badge($bg, $color) {
+  padding: $spacing-xs $spacing-md;
+  border-radius: $radius-pill;
+  font-size: $font-size-sm;
+  font-weight: 500;
+  background: $bg;
+  color: $color;
+}
+
+@mixin badge-active {
+  @include badge($success-light, $success);
+}
+
+@mixin badge-inactive {
+  @include badge($danger-light, $danger);
+}
+
+// --- Form Groups ---
+@mixin form-group {
+  margin-bottom: $spacing-md;
+
+  label {
+    display: block;
+    color: $text-secondary;
+    font-size: $font-size-sm;
+    font-weight: 500;
+    margin-bottom: 0.3rem;
+  }
+
+  input, select {
+    @include input-base;
+  }
+
+  select {
+    @include select-base;
+  }
+}
+
+// --- Page Layout ---
+@mixin page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: $spacing-xl;
+
+  h2 {
+    font-size: $font-size-xl;
+    margin: 0;
+    color: $text-primary;
+  }
+}
+
+@mixin form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: $spacing-lg;
+}
+
+@mixin form-actions {
+  display: flex;
+  gap: $spacing-md;
+  margin-top: $spacing-lg;
+}
+
+// --- Utilidades ---
+@mixin text-center {
+  text-align: center;
+}
+
+@mixin flex-center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+// --- Error Message ---
+@mixin error-message {
+  background: $danger-light;
+  border: 1px solid $danger;
+  color: $danger;
+  padding: $spacing-md $spacing-lg;
+  border-radius: $radius-lg;
+  margin-bottom: $spacing-lg;
+  font-size: $font-size-sm;
+  text-align: center;
+}
+
+// --- Responsive ---
+@mixin mobile {
+  @media (max-width: $bp-tablet - 1px) { @content; }
+}
+
+@mixin tablet {
+  @media (min-width: $bp-tablet) and (max-width: $bp-desktop - 1px) { @content; }
+}
+
+@mixin tablet-up {
+  @media (min-width: $bp-tablet) { @content; }
+}
+
+@mixin desktop {
+  @media (min-width: $bp-desktop) { @content; }
+}
+
+@mixin wide {
+  @media (min-width: $bp-wide) { @content; }
+}
+
+// --- Container ---
+@mixin container {
+  width: 100%;
+  max-width: $container-max;
+  margin: 0 auto;
+  padding: 0 $spacing-lg;
+
+  @include tablet-up {
+    padding: 0 $spacing-2xl;
+  }
+}

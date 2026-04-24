@@ -1,0 +1,189 @@
+<section class="about-page">
+  <nav class="breadcrumb">
+    <a routerLink="/shop">Inicio</a>
+    <span>›</span>
+    <span class="current">Conócenos</span>
+  </nav>
+
+  <header class="about-hero">
+    <img src="assets/yct-logo.svg" alt="Distribuciones YCT" class="about-hero-logo">
+    <span class="about-badge">Conócenos</span>
+    <h1>Del campo a tu mesa, con la mejor calidad</h1>
+    <p class="about-hero-sub">
+      Somos <strong>Distribuciones YCT</strong>, especialistas en derivados lácteos frescos y naturales,
+      comprometidos con llevar a cada hogar productos auténticos, seguros y de la más alta calidad.
+    </p>
+  </header>
+
+  <section class="about-solar">
+    <div class="solar-icon">☀️</div>
+    <div class="solar-content">
+      <span class="solar-badge">Smart Solar Premium Quality</span>
+      <h2>Producción 100% con energía solar</h2>
+      <p>
+        En Distribuciones YCT fuimos reconocidos con el sello <strong>Smart Solar Premium Quality</strong>
+        por operar nuestros procesos productivos con energía solar. Cada quesillo y cada tajada que llega
+        a tu mesa fue elaborada de forma limpia, responsable con el planeta y comprometida con el futuro
+        de nuestra región.
+      </p>
+      <ul class="solar-highlights">
+        <li><span>🌱</span> Procesos productivos con energía renovable</li>
+        <li><span>⚡</span> Reducción de huella de carbono en cada producto</li>
+        <li><span>🏅</span> Reconocimiento Smart Solar Premium Quality</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="about-team">
+    <div class="team-image-wrapper">
+      <img src="assets/about/images/equipo-yct.png" alt="Equipo de Distribuciones YCT" loading="lazy">
+      <div class="team-overlay">
+        <span class="team-tag">Nuestro equipo</span>
+        <h2>Las personas detrás de cada producto</h2>
+      </div>
+    </div>
+    <div class="team-content">
+      <p class="team-lead">
+        Detrás de cada quesillo, cada tajada y cada entrega hay un equipo comprometido con la
+        calidad y la tradición láctea de la región.
+      </p>
+      <p>
+        Somos una familia de trabajadores apasionados por lo que hacemos: desde el proceso productivo
+        en nuestra planta con energía solar, hasta la logística que mantiene la cadena de frío hasta tu
+        mesa. Cada persona de Distribuciones YCT pone su conocimiento, su experiencia y su dedicación
+        para que lleves a tu hogar productos frescos, auténticos y con el sabor que solo el trabajo bien
+        hecho puede ofrecer.
+      </p>
+      <div class="team-stats">
+        <div class="team-stat">
+          <strong>100%</strong>
+          <span>Talento local de la región</span>
+        </div>
+        <div class="team-stat">
+          <strong>☀️</strong>
+          <span>Planta con energía solar</span>
+        </div>
+        <div class="team-stat">
+          <strong>❤️</strong>
+          <span>Tradición familiar</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="about-story">
+    <div class="about-story-text">
+      <span class="section-badge section-badge--primary">Historia</span>
+      <h2>Nuestra historia</h2>
+      <span class="section-divider"></span>
+      <p>
+        Nacimos con la convicción de que los productos lácteos deben conservar su esencia natural: frescos,
+        auténticos y elaborados con responsabilidad. Desde nuestros inicios trabajamos de la mano con
+        productores locales que comparten nuestros valores, garantizando que cada producto que distribuimos
+        cumpla con los más altos estándares.
+      </p>
+      <p>
+        Hoy, Distribuciones YCT lleva a hogares y negocios una cuidada selección de marcas reconocidas,
+        respaldadas por controles de calidad rigurosos y una logística que preserva la frescura desde el
+        origen hasta tu mesa.
+      </p>
+    </div>
+  </section>
+
+  <section class="about-pillars-section">
+    <header class="section-header">
+      <span class="section-badge section-badge--accent">Misión &amp; Visión</span>
+      <h2>Lo que nos mueve</h2>
+      <span class="section-divider"></span>
+    </header>
+    <div class="about-pillars">
+      <article class="pillar" style="--pillar-index: 0;">
+        <span class="pillar-number">01</span>
+        <div class="pillar-icon">🎯</div>
+        <h3>Misión</h3>
+        <p>
+          Garantizar la alta calidad de nuestros productos lácteos, manteniendo la frescura y autenticidad,
+          cumpliendo siempre con la legislación vigente y superando las expectativas de nuestros clientes.
+        </p>
+      </article>
+      <article class="pillar" style="--pillar-index: 1;">
+        <span class="pillar-number">02</span>
+        <div class="pillar-icon">🌟</div>
+        <h3>Visión</h3>
+        <p>
+          Ser referentes en la distribución de derivados lácteos, reconocidos por la innovación,
+          la sostenibilidad de nuestros procesos y la confianza que construimos con cada cliente.
+        </p>
+      </article>
+    </div>
+  </section>
+
+  <section class="about-values">
+    <header class="section-header">
+      <span class="section-badge section-badge--primary">Nuestros Valores</span>
+      <h2>Nuestros valores</h2>
+      <span class="section-divider"></span>
+    </header>
+    <p class="about-values-intro">
+      Los principios que guían cada decisión y cada proceso en Distribuciones YCT.
+    </p>
+    <div class="values-grid">
+      @for (v of values; track v.title; let i = $index) {
+        <article class="value-card" [style.--delay]="(i * 0.08) + 's'">
+          <div class="value-icon">{{ v.icon }}</div>
+          <h4>{{ v.title }}</h4>
+          <p>{{ v.text }}</p>
+        </article>
+      }
+    </div>
+  </section>
+
+  <section class="about-brands">
+    <header class="section-header">
+      <span class="section-badge section-badge--accent">Marcas</span>
+      <h2>Marcas que distribuimos</h2>
+      <span class="section-divider"></span>
+    </header>
+    <p class="about-brands-intro">
+      Trabajamos con marcas reconocidas que comparten nuestro compromiso con la calidad.
+    </p>
+    <div class="brands-grid">
+      @for (b of brands; track b.name) {
+        <div class="brand-card">
+          <img [src]="b.image" [alt]="b.name">
+          <span class="brand-name">{{ b.name }}</span>
+        </div>
+      }
+    </div>
+  </section>
+
+  <section class="about-legal">
+    <div class="legal-card">
+      <div class="legal-stamp" aria-hidden="true">✓ Verificado</div>
+      <h3>Información legal</h3>
+      <div class="legal-grid">
+        <div class="legal-item">
+          <span class="legal-label">Representante legal</span>
+          <span class="legal-value">Liesel Arzuaga</span>
+        </div>
+        <div class="legal-item">
+          <span class="legal-label">NIT</span>
+          <span class="legal-value">900.955.788-8</span>
+        </div>
+        <div class="legal-item legal-item--full">
+          <span class="legal-label">Razón social</span>
+          <span class="legal-value">Distribuciones YCT – Derivados Lácteos</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="about-cta">
+    <h2>¿Listo para probar lo mejor del campo?</h2>
+    <p>Explora nuestro catálogo y descubre la frescura que llevamos hasta tu puerta.</p>
+    <a routerLink="/shop" class="about-cta-btn">
+      <span class="about-cta-label">Ver productos</span>
+      <span class="about-cta-arrow" aria-hidden="true">→</span>
+    </a>
+  </section>
+</section>

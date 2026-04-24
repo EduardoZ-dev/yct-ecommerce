@@ -1,0 +1,42 @@
+<header class="navbar">
+  <div class="navbar-inner">
+    <a routerLink="/shop" class="logo">
+      <img src="assets/yct-logo.svg" alt="YCT Derivados Lácteos" class="logo-image">
+    </a>
+
+    <nav class="nav-links" [class.open]="mobileMenuOpen()">
+      <a routerLink="/shop" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" (click)="mobileMenuOpen.set(false)">Inicio</a>
+      <a routerLink="/catalog" routerLinkActive="active" (click)="mobileMenuOpen.set(false)">Catálogo</a>
+      <a routerLink="/about" routerLinkActive="active" (click)="mobileMenuOpen.set(false)">Conócenos</a>
+      <a routerLink="/contact" routerLinkActive="active" (click)="mobileMenuOpen.set(false)">Contacto</a>
+    </nav>
+
+    <div class="nav-actions">
+      <a routerLink="/cart" class="cart-icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
+          <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+        </svg>
+        @if (cart.itemCount() > 0) {
+          <span class="cart-count">{{ cart.itemCount() }}</span>
+        }
+      </a>
+
+      <button class="hamburger" (click)="toggleMobileMenu()">
+        <span [class.open]="mobileMenuOpen()"></span>
+      </button>
+    </div>
+  </div>
+</header>
+
+@if (mobileMenuOpen()) {
+  <div class="mobile-overlay" (click)="mobileMenuOpen.set(false)"></div>
+}
+
+<main class="store-main">
+  <router-outlet />
+</main>
+
+<app-footer />
+
+<app-whatsapp-button />

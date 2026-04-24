@@ -1,0 +1,423 @@
+@use '../../../scss/variables' as *;
+@use '../../../scss/mixins' as *;
+@use '../../../scss/animations' as *;
+
+// Toast
+.toast {
+  position: fixed;
+  bottom: $spacing-2xl;
+  right: $spacing-2xl;
+  background: $primary-hover;
+  color: $text-on-primary;
+  padding: $spacing-md $spacing-xl;
+  border-radius: $radius-xl;
+  font-size: $font-size-base;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  z-index: 200;
+  box-shadow: $shadow-lg;
+  animation: toastSlide 2.5s ease both;
+
+  @include mobile { left: $spacing-lg; right: $spacing-lg; bottom: $spacing-lg; justify-content: center; }
+}
+
+.toast-icon {
+  width: 22px; height: 22px;
+  background: rgba(255,255,255,0.25);
+  border-radius: 50%;
+  @include flex-center;
+  font-size: $font-size-sm;
+}
+
+// Breadcrumb
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  font-size: $font-size-sm;
+  color: $text-muted;
+  margin-bottom: $spacing-xl;
+  @include animate-fadeIn;
+  flex-wrap: wrap;
+
+  a { color: $primary; text-decoration: none; &:hover { text-decoration: underline; } }
+  .sep { color: $border-color; }
+  .current { color: $text-primary; font-weight: 500; }
+  @include mobile { font-size: $font-size-xs; }
+}
+
+// Detail layout
+.product-detail {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-2xl;
+  @include animate-slideUp(0.1s);
+
+  @include tablet-up { display: grid; grid-template-columns: 1fr 1fr; gap: $spacing-3xl; }
+}
+
+.detail-image {
+  background: $bg-surface;
+  border-radius: $radius-xl;
+  border: 1px solid $border-color;
+  aspect-ratio: 1;
+  @include flex-center;
+  overflow: hidden;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    object-position: center;
+    padding: $spacing-md;
+    display: block;
+    margin: auto;
+  }
+  .no-image { font-size: 5rem; opacity: 0.3; }
+}
+
+// Info
+.detail-info { @include animate-slideUp(0.2s); }
+
+.detail-meta {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  margin-bottom: $spacing-md;
+}
+
+.detail-category {
+  font-size: $font-size-xs;
+  color: $text-on-primary;
+  background: $primary;
+  padding: 3px $spacing-md;
+  border-radius: $radius-pill;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.detail-brand {
+  font-size: $font-size-xs;
+  color: $accent;
+  background: $accent-light;
+  padding: 3px $spacing-md;
+  border-radius: $radius-pill;
+  font-weight: 600;
+}
+
+.detail-info h1 {
+  font-size: $font-size-2xl;
+  color: $text-primary;
+  margin: 0 0 $spacing-sm;
+  line-height: 1.2;
+  @include tablet-up { font-size: $font-size-3xl; }
+}
+
+.detail-weight {
+  display: block;
+  font-size: $font-size-sm;
+  color: $text-muted;
+  margin-bottom: $spacing-lg;
+}
+
+.detail-price-row {
+  display: flex;
+  align-items: baseline;
+  gap: $spacing-lg;
+  margin-bottom: $spacing-lg;
+}
+
+.detail-price { font-size: 2rem; font-weight: 800; color: $accent; }
+
+.detail-stock {
+  font-size: $font-size-sm;
+  color: $primary;
+  font-weight: 500;
+  background: $primary-light;
+  padding: $spacing-xs $spacing-md;
+  border-radius: $radius-pill;
+  &.low { color: $accent; background: $accent-light; }
+}
+
+.detail-desc {
+  color: $text-secondary;
+  font-size: $font-size-base;
+  line-height: 1.7;
+  margin: 0 0 $spacing-2xl;
+  @include tablet-up { font-size: $font-size-md; }
+}
+
+// Actions
+.detail-actions {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-md;
+  margin-bottom: $spacing-2xl;
+  @include tablet-up { flex-direction: row; align-items: center; }
+}
+
+.qty-selector {
+  display: flex;
+  align-items: center;
+  border: 1px solid $border-color;
+  border-radius: $radius-lg;
+  overflow: hidden;
+  background: $bg-surface;
+
+  button {
+    width: 44px; height: 44px;
+    background: transparent;
+    border: none;
+    color: $text-primary;
+    font-size: 1.2rem;
+    cursor: pointer;
+    @include flex-center;
+    transition: background $transition-fast;
+    &:hover:not(:disabled) { background: $primary-light; }
+    &:disabled { opacity: 0.3; cursor: default; }
+  }
+
+  span { width: 50px; text-align: center; font-weight: 700; font-size: $font-size-lg; }
+}
+
+.add-btn {
+  flex: 1;
+  padding: $spacing-md $spacing-2xl;
+  background: $accent;
+  color: $text-on-primary;
+  border: none;
+  border-radius: $radius-lg;
+  font-size: $font-size-base;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all $transition-fast;
+  font-family: $font-family;
+  min-height: 44px;
+
+  &:hover:not(:disabled) { background: $accent-hover; transform: translateY(-1px); }
+  &:disabled { opacity: 0.5; cursor: default; }
+  &.added { background: $primary; animation: popIn 0.3s ease; }
+}
+
+// Features
+.detail-features {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-md;
+  padding-top: $spacing-xl;
+  border-top: 1px solid $border-color;
+}
+
+.feature {
+  display: flex;
+  align-items: center;
+  gap: $spacing-md;
+  .feature-icon { font-size: 1.5rem; flex-shrink: 0; }
+  div {
+    display: flex;
+    flex-direction: column;
+    strong { font-size: $font-size-sm; color: $text-primary; }
+    span { font-size: $font-size-xs; color: $text-muted; }
+  }
+}
+
+// =============== TABS ===============
+.product-tabs {
+  margin-top: $spacing-3xl;
+  @include animate-slideUp(0.3s);
+}
+
+.tabs-header {
+  display: flex;
+  border-bottom: 2px solid $border-color;
+  gap: $spacing-xs;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  &::-webkit-scrollbar { height: 0; }
+
+  button {
+    padding: $spacing-md $spacing-xl;
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+    color: $text-muted;
+    font-size: $font-size-sm;
+    font-weight: 500;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all $transition-fast;
+    font-family: $font-family;
+
+    &:hover { color: $text-primary; }
+
+    &.active {
+      color: $primary;
+      border-bottom-color: $primary;
+      font-weight: 600;
+    }
+
+    @include tablet-up { font-size: $font-size-base; padding: $spacing-lg $spacing-xl; }
+  }
+}
+
+.tabs-body {
+  padding-top: $spacing-2xl;
+}
+
+.tab-content {
+  @include animate-fadeIn;
+}
+
+// ---- Nutrition Tab ----
+.nutrition-card {
+  background: $bg-surface;
+  border: 1px solid $border-color;
+  border-radius: $radius-xl;
+  padding: $spacing-xl;
+  max-width: 600px;
+}
+
+.nutrition-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: $spacing-xl;
+  flex-wrap: wrap;
+  gap: $spacing-sm;
+
+  h3 { margin: 0; font-size: $font-size-lg; color: $text-primary; }
+}
+
+.serving-info {
+  font-size: $font-size-sm;
+  color: $text-muted;
+  background: $bg-input;
+  padding: $spacing-xs $spacing-md;
+  border-radius: $radius-pill;
+}
+
+.nutrition-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: $spacing-md;
+  margin-bottom: $spacing-xl;
+
+  @include mobile { grid-template-columns: repeat(2, 1fr); }
+}
+
+.nutri-item {
+  text-align: center;
+  padding: $spacing-lg $spacing-sm;
+  background: $bg-input;
+  border-radius: $radius-lg;
+
+  &.highlight {
+    background: $accent-light;
+    .nutri-value { color: $accent; }
+  }
+}
+
+.nutri-value { display: block; font-size: $font-size-2xl; font-weight: 800; color: $text-primary; line-height: 1; }
+.nutri-unit { font-size: $font-size-xs; color: $text-muted; }
+.nutri-label { display: block; font-size: $font-size-xs; color: $text-muted; margin-top: $spacing-xs; }
+
+// Nutrition table
+.nutrition-table {
+  width: 100%;
+  border-collapse: collapse;
+
+  td {
+    padding: $spacing-sm 0;
+    font-size: $font-size-sm;
+    border-bottom: 1px solid $border-color;
+    color: $text-secondary;
+  }
+
+  .val {
+    text-align: right;
+    font-weight: 600;
+    color: $text-primary;
+  }
+
+  tr.sub td {
+    padding-left: $spacing-xl;
+    font-size: $font-size-xs;
+    color: $text-muted;
+  }
+
+  tr.divider td {
+    padding: $spacing-xs 0;
+    border-bottom: 3px solid $border-color;
+  }
+}
+
+// ---- Ingredients Tab ----
+.info-card {
+  background: $bg-surface;
+  border: 1px solid $border-color;
+  border-radius: $radius-xl;
+  padding: $spacing-xl;
+  margin-bottom: $spacing-xl;
+
+  .card-icon { font-size: 2rem; margin-bottom: $spacing-md; }
+  h3 { margin: 0 0 $spacing-md; font-size: $font-size-lg; color: $text-primary; }
+  p { color: $text-secondary; font-size: $font-size-base; line-height: 1.7; margin: 0; }
+}
+
+.ingredients-text {
+  font-size: $font-size-base !important;
+  line-height: 1.8 !important;
+}
+
+.standards-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: $spacing-lg;
+
+  @include tablet-up { grid-template-columns: repeat(2, 1fr); }
+}
+
+.standard-item {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-xs;
+  background: $bg-surface;
+  border: 1px solid $border-color;
+  border-radius: $radius-xl;
+  padding: $spacing-xl;
+
+  .std-icon { font-size: 1.8rem; }
+  strong { color: $text-primary; font-size: $font-size-base; }
+  span { color: $text-muted; font-size: $font-size-sm; line-height: 1.5; }
+}
+
+// ---- Storage Tab ----
+.storage-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: $spacing-lg;
+
+  @include tablet-up { grid-template-columns: repeat(3, 1fr); }
+}
+
+// States
+.no-data { color: $text-muted; padding: $spacing-2xl; text-align: center; }
+
+// Skeleton
+.detail-skeleton {
+  display: flex; flex-direction: column; gap: $spacing-2xl;
+  @include tablet-up { display: grid; grid-template-columns: 1fr 1fr; }
+}
+.skel-image { aspect-ratio: 1; border-radius: $radius-xl; @include skeleton; }
+.skel-info { display: flex; flex-direction: column; gap: $spacing-lg; padding-top: $spacing-lg; }
+.skel-line { height: 20px; @include skeleton; &.w80{width:80%} &.w60{width:60%} &.w40{width:40%} &.w30{width:30%} }
+
+// Not found
+.not-found {
+  text-align: center; padding: $spacing-3xl; color: $text-muted;
+  h2 { margin-bottom: $spacing-lg; color: $text-primary; }
+  a { color: $primary; text-decoration: none; &:hover { text-decoration: underline; } }
+}

@@ -1,0 +1,43 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Backend (.NET API)",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build-backend",
+      "program": "${workspaceFolder}/Back/YCT.API/bin/Debug/net9.0/YCT.API.dll",
+      "cwd": "${workspaceFolder}/Back/YCT.API",
+      "stopAtEntry": false,
+      "env": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "ASPNETCORE_URLS": "http://localhost:5088"
+      },
+      "console": "internalConsole"
+    },
+    {
+      "name": "Frontend (Edge)",
+      "type": "msedge",
+      "request": "launch",
+      "preLaunchTask": "start-frontend",
+      "url": "http://localhost:4200",
+      "webRoot": "${workspaceFolder}/Front/yct-frontend",
+      "sourceMaps": true,
+      "skipFiles": [
+        "<node_internals>/**",
+        "**/node_modules/**",
+        "chrome-error://**"
+      ]
+    }
+  ],
+  "compounds": [
+    {
+      "name": "🚀 Full Stack",
+      "configurations": [
+        "Backend (.NET API)",
+        "Frontend (Edge)"
+      ],
+      "stopAll": true
+    }
+  ]
+}

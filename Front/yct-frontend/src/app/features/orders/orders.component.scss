@@ -1,0 +1,202 @@
+@use '../../../scss/variables' as *;
+@use '../../../scss/mixins' as *;
+@use '../../../shared-styles';
+
+.orders-page {
+  color: $text-primary;
+  width: 100%;
+}
+
+.orders-header {
+  margin-bottom: $spacing-xl;
+
+  h1 {
+    margin: 0;
+    font-size: $font-size-2xl;
+    @include tablet-up { font-size: $font-size-3xl; }
+  }
+
+  .orders-sub {
+    color: $text-muted;
+    margin: $spacing-xs 0 0;
+    font-size: $font-size-sm;
+  }
+}
+
+/* Visibility helpers */
+.desktop-only { display: none; @include tablet-up { display: block; } }
+.mobile-only  { display: block; @include tablet-up { display: none; } }
+
+/* ============================================
+   Empty state
+   ============================================ */
+.orders-empty {
+  text-align: center;
+  padding: $spacing-3xl $spacing-lg;
+  background: $bg-surface;
+  border: 1px dashed $border-color;
+  border-radius: $radius-xl;
+
+  .empty-icon {
+    font-size: 4rem;
+    margin-bottom: $spacing-lg;
+    opacity: 0.7;
+  }
+
+  h2 {
+    font-size: $font-size-xl;
+    margin: 0 0 $spacing-sm;
+  }
+
+  p {
+    color: $text-muted;
+    margin: 0 0 $spacing-xl;
+  }
+
+  .empty-cta {
+    display: inline-block;
+    padding: $spacing-md $spacing-2xl;
+    background: $primary;
+    color: $text-on-primary;
+    border-radius: $radius-pill;
+    font-weight: 600;
+    text-decoration: none;
+    transition: background $transition-fast, transform $transition-fast;
+
+    &:hover { background: $primary-hover; transform: translateY(-1px); }
+  }
+}
+
+/* ============================================
+   Status badge
+   ============================================ */
+.status-badge {
+  padding: $spacing-xs $spacing-md;
+  border-radius: $radius-pill;
+  font-size: $font-size-xs;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+
+  &.pending   { @include badge($warning-light, $warning); }
+  &.confirmed { @include badge($info-light, $info); }
+  &.shipped   { @include badge($purple-light, $purple); }
+  &.delivered { @include badge($success-light, $success); }
+  &.cancelled { @include badge($danger-light, $danger); }
+}
+
+.status-select {
+  background: $bg-input;
+  color: $text-primary;
+  border: 1px solid $border-color;
+  border-radius: $radius-md;
+  padding: $spacing-sm;
+  font-size: $font-size-sm;
+  width: 100%;
+
+  &:focus {
+    outline: none;
+    border-color: $border-focus;
+  }
+}
+
+/* ============================================
+   Mobile cards
+   ============================================ */
+.orders-cards {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-md;
+}
+
+.order-card {
+  background: $bg-surface;
+  border: 1px solid $border-color;
+  border-radius: $radius-xl;
+  padding: $spacing-lg;
+  box-shadow: $shadow-sm;
+  transition: box-shadow $transition-fast, border-color $transition-fast;
+
+  &:hover {
+    box-shadow: $shadow-md;
+    border-color: rgba($primary, 0.3);
+  }
+}
+
+.order-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: $spacing-md;
+  padding-bottom: $spacing-md;
+  margin-bottom: $spacing-md;
+  border-bottom: 1px solid $border-color;
+
+  .order-id {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+
+    .order-id-label {
+      font-size: $font-size-xs;
+      color: $text-muted;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    strong {
+      font-size: $font-size-md;
+      color: $text-primary;
+      word-break: break-all;
+    }
+  }
+}
+
+.order-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-sm;
+}
+
+.order-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: $font-size-sm;
+
+  span {
+    color: $text-muted;
+  }
+
+  strong {
+    color: $text-primary;
+    font-weight: 600;
+    text-align: right;
+  }
+
+  &.total {
+    margin-top: $spacing-sm;
+    padding-top: $spacing-sm;
+    border-top: 1px dashed $border-color;
+
+    span { color: $text-primary; font-weight: 600; }
+    strong { color: $accent; font-size: $font-size-lg; font-weight: 800; }
+  }
+}
+
+.order-card-footer {
+  margin-top: $spacing-lg;
+  padding-top: $spacing-md;
+  border-top: 1px solid $border-color;
+
+  label {
+    display: block;
+    font-size: $font-size-xs;
+    color: $text-muted;
+    margin-bottom: $spacing-xs;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+}

@@ -1,0 +1,809 @@
+@use '../../../scss/variables' as *;
+@use '../../../scss/mixins' as *;
+@use '../../../scss/animations' as *;
+
+.about-page {
+  max-width: 1100px;
+  margin: 0 auto;
+  animation: fadeIn 0.5s ease both;
+}
+
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: $spacing-xs;
+  font-size: $font-size-sm;
+  color: $text-muted;
+  margin-bottom: $spacing-lg;
+
+  a {
+    color: $primary;
+    text-decoration: none;
+    &:hover { color: $primary-hover; text-decoration: underline; }
+  }
+  .current { color: $text-secondary; font-weight: 500; }
+}
+
+// ============================================
+// Section helpers (badges + divider)
+// ============================================
+.section-header {
+  text-align: center;
+  margin-bottom: $spacing-2xl;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: $spacing-sm;
+
+  h2 {
+    color: $text-primary;
+    font-family: $font-family-heading;
+    font-size: $font-size-2xl;
+    margin: 0;
+    line-height: 1.25;
+  }
+}
+
+.section-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: $spacing-xs;
+  font-family: $font-family-heading;
+  font-size: $font-size-xs;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  padding: $spacing-xs $spacing-md;
+  border-radius: $radius-pill;
+  background: $primary-light;
+  color: $primary;
+
+  &--accent {
+    background: $accent-light;
+    color: $accent;
+  }
+
+  &--primary {
+    background: $primary-light;
+    color: $primary;
+  }
+}
+
+.section-divider {
+  display: block;
+  width: 60px;
+  height: 3px;
+  border-radius: $radius-pill;
+  background: linear-gradient(90deg, $primary 0%, $accent 100%);
+  margin: $spacing-xs auto 0;
+}
+
+.about-hero {
+  text-align: center;
+  padding: $spacing-3xl $spacing-2xl;
+  background: linear-gradient(135deg, $brand-green-bg 0%, #fff 50%, $brand-orange-bg 100%);
+  border-radius: $radius-xl;
+  border: 1px solid rgba($primary, 0.12);
+  margin-bottom: $spacing-3xl;
+  animation: slideUp 0.5s ease both;
+
+  .about-hero-logo {
+    width: 180px;
+    height: 180px;
+    object-fit: contain;
+    margin-bottom: $spacing-md;
+
+    @include tablet-up {
+      width: 240px;
+      height: 240px;
+    }
+  }
+
+  .about-badge {
+    display: inline-block;
+    background: $primary;
+    color: $text-on-primary;
+    font-size: $font-size-xs;
+    font-weight: 600;
+    padding: $spacing-xs $spacing-md;
+    border-radius: $radius-pill;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+
+  h1 {
+    color: $text-primary;
+    font-size: 1.9rem;
+    margin: $spacing-md 0 $spacing-sm;
+    line-height: 1.25;
+
+    @include tablet-up { font-size: $font-size-3xl; }
+  }
+
+  .about-hero-sub {
+    color: $text-secondary;
+    font-size: $font-size-md;
+    max-width: 700px;
+    margin: 0 auto;
+    line-height: 1.7;
+  }
+}
+
+.about-solar {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: $spacing-2xl;
+  align-items: center;
+  padding: $spacing-2xl;
+  margin-bottom: $spacing-3xl;
+  background: linear-gradient(135deg, #FFF8E1 0%, #FFE4B5 100%);
+  border: 2px solid rgba($accent, 0.3);
+  border-radius: $radius-xl;
+  box-shadow: $shadow-md;
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 10% 10%, rgba(255, 200, 50, 0.25), transparent 60%);
+    pointer-events: none;
+  }
+
+  .solar-icon {
+    font-size: 4rem;
+    line-height: 1;
+    animation: solarPulse 3s ease-in-out infinite;
+  }
+
+  .solar-content { position: relative; z-index: 1; }
+
+  .solar-badge {
+    display: inline-block;
+    background: $accent;
+    color: $text-on-primary;
+    font-size: $font-size-xs;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    padding: $spacing-xs $spacing-md;
+    border-radius: $radius-pill;
+    margin-bottom: $spacing-sm;
+  }
+
+  h2 {
+    color: $text-primary;
+    font-size: $font-size-2xl;
+    margin: 0 0 $spacing-md;
+    line-height: 1.3;
+  }
+
+  p {
+    color: $text-secondary;
+    line-height: 1.7;
+    margin: 0 0 $spacing-lg;
+    font-size: $font-size-md;
+  }
+
+  .solar-highlights {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-sm;
+
+    li {
+      display: flex;
+      align-items: center;
+      gap: $spacing-sm;
+      color: $text-primary;
+      font-size: $font-size-sm;
+      font-weight: 500;
+
+      span { font-size: 1.2rem; }
+    }
+  }
+
+  @media (max-width: $bp-tablet) {
+    grid-template-columns: 1fr;
+    text-align: center;
+
+    .solar-icon { font-size: 3.5rem; }
+    .solar-highlights li { justify-content: center; }
+  }
+}
+
+@keyframes solarPulse {
+  0%, 100% { transform: scale(1) rotate(0deg); }
+  50% { transform: scale(1.08) rotate(8deg); }
+}
+
+.about-team {
+  margin-bottom: $spacing-3xl;
+  background: $bg-surface;
+  border: 1px solid $border-color;
+  border-radius: $radius-xl;
+  overflow: hidden;
+  box-shadow: $shadow-sm;
+  animation: slideUp 0.5s ease both;
+}
+
+.team-image-wrapper {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 3 / 2;
+  overflow: hidden;
+  background: linear-gradient(135deg, $brand-green-bg, $brand-orange-bg);
+
+  @media (max-width: $bp-tablet) { aspect-ratio: 4 / 3; }
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    transition: transform 0.8s ease;
+  }
+
+  &:hover img { transform: scale(1.03); }
+}
+
+.team-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: $spacing-2xl;
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.75) 0%,
+    rgba(0, 0, 0, 0.35) 45%,
+    transparent 75%
+  );
+  color: #fff;
+
+  .team-tag {
+    display: inline-block;
+    align-self: flex-start;
+    background: $accent;
+    color: $text-on-primary;
+    font-size: $font-size-xs;
+    font-weight: 700;
+    padding: $spacing-xs $spacing-md;
+    border-radius: $radius-pill;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-bottom: $spacing-md;
+    box-shadow: 0 4px 12px rgba($accent, 0.4);
+  }
+
+  h2 {
+    font-size: 1.6rem;
+    font-weight: 800;
+    line-height: 1.2;
+    max-width: 700px;
+    margin: 0;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+
+    @include tablet-up { font-size: 2.4rem; }
+  }
+}
+
+.team-content {
+  padding: $spacing-2xl;
+
+  @include tablet-up { padding: $spacing-3xl; }
+
+  .team-lead {
+    color: $text-primary;
+    font-size: $font-size-lg;
+    font-weight: 600;
+    line-height: 1.5;
+    margin: 0 0 $spacing-lg;
+
+    @include tablet-up { font-size: 1.25rem; }
+  }
+
+  p:not(.team-lead) {
+    color: $text-secondary;
+    line-height: 1.75;
+    font-size: $font-size-md;
+    margin: 0 0 $spacing-xl;
+  }
+}
+
+.team-stats {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: $spacing-lg;
+  padding-top: $spacing-xl;
+  border-top: 1px dashed $border-color;
+
+  @include tablet-up { grid-template-columns: repeat(3, 1fr); }
+
+  .team-stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: $spacing-xs;
+
+    strong {
+      font-size: 2rem;
+      color: $primary;
+      font-weight: 800;
+      line-height: 1;
+    }
+
+    span {
+      color: $text-secondary;
+      font-size: $font-size-sm;
+      font-weight: 500;
+    }
+  }
+}
+
+// ============================================
+// Historia — ahora con badge + divider
+// ============================================
+.about-story {
+  margin-bottom: $spacing-3xl;
+  text-align: center;
+
+  .section-badge {
+    margin-bottom: $spacing-sm;
+  }
+
+  h2 {
+    color: $text-primary;
+    font-family: $font-family-heading;
+    font-size: $font-size-2xl;
+    margin: 0 0 $spacing-sm;
+  }
+
+  .section-divider {
+    margin-bottom: $spacing-xl;
+  }
+
+  p {
+    color: $text-secondary;
+    line-height: 1.75;
+    font-size: $font-size-md;
+    margin: 0 auto $spacing-lg;
+    max-width: 780px;
+    text-align: left;
+  }
+}
+
+// ============================================
+// Pilares (Misión & Visión) — rediseño
+// ============================================
+.about-pillars-section {
+  margin-bottom: $spacing-3xl;
+}
+
+.about-pillars {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: $spacing-xl;
+
+  @include tablet-up { grid-template-columns: 1fr 1fr; }
+
+  .pillar {
+    position: relative;
+    overflow: hidden;
+    background: $bg-surface;
+    border: 1px solid $border-color;
+    border-radius: $radius-xl;
+    padding: $spacing-2xl;
+    box-shadow: $shadow-sm;
+    transition:
+      transform $transition-normal,
+      box-shadow $transition-normal,
+      border-color $transition-normal;
+    animation: slideUp 0.5s ease both;
+    animation-delay: calc(var(--pillar-index, 0) * 0.1s);
+
+    // Barra superior con gradiente (oculta, se revela en hover)
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, $primary 0%, $accent 100%);
+      transform: scaleX(0);
+      transform-origin: left center;
+      transition: transform $transition-normal;
+    }
+
+    &:hover {
+      transform: translateY(-6px);
+      box-shadow: $shadow-lg;
+      border-color: $primary;
+
+      &::before { transform: scaleX(1); }
+
+      .pillar-icon {
+        transform: scale(1.05);
+      }
+    }
+
+    .pillar-number {
+      position: absolute;
+      top: $spacing-lg;
+      right: $spacing-xl;
+      font-family: $font-family-heading;
+      font-size: 3rem;
+      font-weight: 800;
+      line-height: 1;
+      color: rgba($text-primary, 0.08);
+      pointer-events: none;
+      user-select: none;
+    }
+
+    .pillar-icon {
+      width: 80px;
+      height: 80px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.25rem;
+      border-radius: 50%;
+      background: $primary-light;
+      margin-bottom: $spacing-lg;
+      transition: transform $transition-normal, background $transition-normal;
+
+      @include tablet-up {
+        width: 96px;
+        height: 96px;
+        font-size: 2.75rem;
+      }
+    }
+
+    // Segundo pillar (Visión) usa paleta accent para el icono
+    &:nth-child(2) .pillar-icon {
+      background: $accent-light;
+    }
+
+    h3 {
+      color: $text-primary;
+      font-family: $font-family-heading;
+      font-size: $font-size-xl;
+      margin: 0 0 $spacing-sm;
+    }
+
+    p {
+      color: $text-secondary;
+      line-height: 1.7;
+      font-size: $font-size-md;
+      margin: 0;
+    }
+  }
+}
+
+// ============================================
+// Values grid
+// ============================================
+.about-values {
+  margin-bottom: $spacing-3xl;
+
+  .about-values-intro {
+    color: $text-muted;
+    text-align: center;
+    margin: 0 auto $spacing-2xl;
+    max-width: 600px;
+    font-size: $font-size-md;
+  }
+
+  .values-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: $spacing-lg;
+
+    @include tablet-up { grid-template-columns: repeat(2, 1fr); }
+
+    @media (min-width: $bp-desktop) { grid-template-columns: repeat(3, 1fr); }
+  }
+
+  .value-card {
+    background: $bg-surface;
+    border: 1px solid $border-color;
+    border-radius: $radius-lg;
+    padding: $spacing-xl;
+    text-align: center;
+    transition:
+      border-color $transition-fast,
+      transform $transition-fast,
+      box-shadow $transition-fast;
+    opacity: 0;
+    animation: slideUp 0.5s ease forwards;
+    animation-delay: var(--delay, 0s);
+
+    &:hover {
+      border-color: $primary;
+      transform: translateY(-4px);
+      box-shadow: $shadow-md;
+
+      .value-icon {
+        background: $primary;
+        color: $text-on-primary;
+        transform: scale(1.1);
+      }
+    }
+
+    .value-icon {
+      width: 64px;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto $spacing-md;
+      font-size: 1.75rem;
+      border-radius: 50%;
+      background: $primary-light;
+      color: $primary;
+      transition:
+        background $transition-normal,
+        color $transition-normal,
+        transform $transition-normal;
+    }
+
+    h4 {
+      color: $text-primary;
+      font-family: $font-family-heading;
+      font-size: $font-size-lg;
+      margin: 0 0 $spacing-sm;
+    }
+
+    p {
+      color: $text-secondary;
+      line-height: 1.65;
+      font-size: $font-size-sm;
+      margin: 0;
+    }
+  }
+}
+
+// ============================================
+// Brands
+// ============================================
+.about-brands {
+  margin-bottom: $spacing-3xl;
+  text-align: center;
+
+  .about-brands-intro {
+    color: $text-muted;
+    margin: 0 auto $spacing-2xl;
+    max-width: 600px;
+    font-size: $font-size-md;
+  }
+
+  .brands-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: $spacing-xl;
+    max-width: 700px;
+    margin: 0 auto;
+
+    @include tablet-up { grid-template-columns: 1fr 1fr; }
+  }
+
+  .brand-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: $spacing-md;
+    padding: $spacing-xl;
+    background: $bg-surface;
+    border: 1px solid $border-color;
+    border-radius: $radius-lg;
+    transition: box-shadow $transition-normal, transform $transition-normal;
+
+    &:hover {
+      box-shadow: $shadow-md;
+      transform: translateY(-2px);
+    }
+
+    img {
+      max-width: 160px;
+      max-height: 120px;
+      object-fit: contain;
+    }
+
+    .brand-name {
+      color: $text-secondary;
+      font-weight: 600;
+      font-size: $font-size-md;
+    }
+  }
+}
+
+// ============================================
+// Legal card — apariencia de documento certificado
+// ============================================
+.about-legal {
+  margin-bottom: $spacing-3xl;
+
+  .legal-card {
+    position: relative;
+    background: $bg-input;
+    border: 1px solid $border-color;
+    border-top: 3px solid $primary;
+    border-radius: $radius-lg;
+    padding: $spacing-2xl;
+    overflow: hidden;
+    box-shadow: $shadow-sm;
+
+    // Patrón sutil de puntos verdes (textura de documento)
+    &::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        radial-gradient(circle at 1px 1px, rgba($primary, 0.08) 1px, transparent 0);
+      background-size: 18px 18px;
+      pointer-events: none;
+      opacity: 0.6;
+    }
+
+    > * { position: relative; z-index: 1; }
+
+    h3 {
+      color: $text-primary;
+      font-family: $font-family-heading;
+      font-size: $font-size-lg;
+      margin: 0 0 $spacing-lg;
+      padding-bottom: $spacing-sm;
+      border-bottom: 1px dashed rgba($primary, 0.3);
+    }
+  }
+
+  .legal-stamp {
+    display: inline-flex;
+    align-items: center;
+    gap: $spacing-xs;
+    background: $success-light;
+    color: $success;
+    border: 1px solid $success;
+    border-radius: $radius-pill;
+    padding: $spacing-xs $spacing-md;
+    font-family: $font-family-heading;
+    font-size: $font-size-xs;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    margin-bottom: $spacing-md;
+    box-shadow: $shadow-sm;
+    width: fit-content;
+  }
+
+  .legal-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: $spacing-lg;
+
+    @include tablet-up {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  .legal-item {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-xs;
+
+    &--full {
+      @include tablet-up { grid-column: 1 / -1; }
+    }
+  }
+
+  .legal-label {
+    color: $text-muted;
+    font-size: $font-size-xs;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+  }
+
+  .legal-value {
+    color: $text-primary;
+    font-family: $font-family-heading;
+    font-size: $font-size-lg;
+    font-weight: 600;
+    line-height: 1.3;
+  }
+}
+
+// ============================================
+// CTA final — patrón decorativo + flecha animada
+// ============================================
+.about-cta {
+  position: relative;
+  overflow: hidden;
+  text-align: center;
+  padding: $spacing-3xl $spacing-xl;
+  background: linear-gradient(135deg, $primary 0%, $primary-hover 100%);
+  border-radius: $radius-xl;
+  color: $text-on-primary;
+  isolation: isolate;
+
+  // Patrón de puntos decorativo
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+      radial-gradient(circle at 2px 2px, rgba(#fff, 0.18) 1.5px, transparent 0);
+    background-size: 24px 24px;
+    opacity: 0.35;
+    pointer-events: none;
+    z-index: -1;
+  }
+
+  // Glow radial en la esquina
+  &::after {
+    content: '';
+    position: absolute;
+    top: -120px;
+    right: -120px;
+    width: 360px;
+    height: 360px;
+    background: radial-gradient(circle, rgba($accent, 0.45) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: -1;
+  }
+
+  h2 {
+    font-family: $font-family-heading;
+    font-size: $font-size-2xl;
+    margin: 0 0 $spacing-sm;
+    position: relative;
+  }
+
+  p {
+    font-size: $font-size-md;
+    opacity: 0.92;
+    margin: 0 0 $spacing-xl;
+    position: relative;
+  }
+
+  .about-cta-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: $spacing-sm;
+    background: $accent;
+    color: $text-on-primary;
+    font-family: $font-family-heading;
+    font-weight: 600;
+    padding: $spacing-md $spacing-2xl;
+    border-radius: $radius-pill;
+    text-decoration: none;
+    box-shadow: $shadow-sm;
+    transition:
+      background $transition-fast,
+      transform $transition-fast,
+      box-shadow $transition-fast;
+
+    .about-cta-arrow {
+      display: inline-block;
+      transition: transform $transition-fast;
+    }
+
+    &:hover {
+      background: $accent-hover;
+      transform: scale(1.02);
+      box-shadow: $shadow-lg;
+
+      .about-cta-arrow { transform: translateX(4px); }
+    }
+
+    &:active {
+      transform: scale(0.99);
+    }
+  }
+}

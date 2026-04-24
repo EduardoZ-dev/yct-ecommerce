@@ -1,0 +1,140 @@
+<!-- Toast notification -->
+@if (toastMessage()) {
+  <div class="toast">
+    <span class="toast-icon">✓</span>
+    {{ toastMessage() }}
+  </div>
+}
+
+<section class="catalog-page">
+  <!-- Header -->
+  <div class="page-header">
+    <div class="breadcrumb">
+      <a routerLink="/shop">Inicio</a>
+      <span>/</span>
+      <span class="current">{{ brandName() ?? 'Catálogo Completo' }}</span>
+    </div>
+    <h1>{{ brandName() ?? 'Catálogo Completo' }}</h1>
+    <p>Explora todos nuestros {{ products().length }} productos</p>
+  </div>
+
+  @if (brandName()) {
+    <div class="brand-banner">
+      <span class="brand-banner-icon">🏷️</span>
+      <div class="brand-banner-text">
+        <strong>Mostrando productos de {{ brandName() }}</strong>
+        <span>Próximamente filtraremos automáticamente por marca</span>
+      </div>
+      <a routerLink="/catalog" class="brand-banner-clear">Ver todas las marcas</a>
+    </div>
+  }
+
+  <!-- Toolbar: búsqueda + orden -->
+  <div class="toolbar">
+    <div class="search-box">
+      <span class="search-icon">🔍</span>
+      <input
+        type="text"
+        placeholder="Buscar productos..."
+        [ngModel]="searchTerm()"
+        (ngModelChange)="searchTerm.set($event)">
+      @if (searchTerm()) {
+        <button class="clear-search" (click)="searchTerm.set('')">✕</button>
+      }
+    </div>
+
+    <div class="sort-box">
+      <label>Ordenar:</label>
+      <select [ngModel]="sortBy()" (ngModelChange)="sortBy.set($event)">
+        <option value="name-asc">Nombre (A-Z)</option>
+        <option value="name-desc">Nombre (Z-A)</option>
+        <option value="price-asc">Precio (menor a mayor)</option>
+        <option value="price-desc">Precio (mayor a menor)</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Category filters -->
+  <div class="filters-bar">
+    <button
+      class="filter-chip"
+      [class.active]="selectedCategory() === null"
+      (click)="filterByCategory(null)">
+      Todos
+    </button>
+    @for (cat of categories(); track cat.id) {
+      <button
+        class="filter-chip"
+        [class.active]="selectedCategory() === cat.id"
+        (click)="filterByCategory(cat.id)">
+        {{ cat.name }}
+      </button>
+    }
+  </div>
+
+  <!-- Results info -->
+  <div class="results-info">
+    <span>{{ filteredProducts().length }} productos encontrados</span>
+    @if (selectedCategory() !== null || searchTerm()) {
+      <button class="clear-btn" (click)="clearFilters()">
+        ✕ Limpiar filtros
+      </button>
+    }
+  </div>
+
+  <!-- Grid -->
+  @if (loading()) {
+    <div class="products-grid">
+      @for (s of skeletons; track $index) {
+        <div class="product-card skeleton-card">
+          <div class="card-image skeleton-img"></div>
+          <div class="card-body">
+            <div class="skeleton-line w60"></div>
+            <div class="skeleton-line w80"></div>
+            <div class="skeleton-line w40"></div>
+          </div>
+        </div>
+      }
+    </div>
+  } @else {
+    <div class="products-grid">
+      @for (product of filteredProducts(); track product.id) {
+        <article class="product-card" [routerLink]="['/product', product.id]">
+          <div class="card-image">
+            @if (product.imageUrl) {
+              <img [src]="product.imageUrl" [alt]="product.name" loading="lazy">
+            } @else {
+              <div class="no-image">🧀</div>
+            }
+            <span class="card-category">{{ product.categoryName }}</span>
+          </div>
+          <div class="card-body">
+            <h3>{{ product.name }}</h3>
+            @if (product.description) {
+              <p class="card-desc">{{ product.description }}</p>
+            }
+            <div class="card-bottom">
+              <div class="card-pricing">
+                <span class="card-price">{{ product.price | currency:'COP':'symbol':'1.0-0' }}</span>
+                <span class="card-stock">{{ product.stock > 0 ? 'Disponible' : 'Agotado' }}</span>
+              </div>
+              <button
+                class="card-add-btn"
+                [class.added]="addedProductId() === product.id"
+                (click)="addToCart(product, $event)">
+                {{ addedProductId() === product.id ? '✓' : '+' }}
+              </button>
+            </div>
+          </div>
+        </article>
+      } @empty {
+        <div class="empty-state">
+          <div class="empty-icon">🔍</div>
+          <h3>No hay resultados</h3>
+          <p>Prueba con otra búsqueda o limpia los filtros</p>
+          <button class="clear-btn" (click)="clearFilters()">Limpiar filtros</button>
+        </div>
+      }
+    </div>
+  }
+</section>

@@ -1,0 +1,78 @@
+<div class="orders-page">
+  <div class="orders-header">
+    <h1>Mis Pedidos</h1>
+    <p class="orders-sub">Consulta el estado y detalle de tus órdenes.</p>
+  </div>
+
+  @if (loading()) {
+    <p class="loading">Cargando...</p>
+  } @else if (orders().length === 0) {
+    <div class="orders-empty">
+      <div class="empty-icon">📦</div>
+      <h2>Aún no tienes pedidos</h2>
+      <p>Cuando realices tu primera compra aparecerá aquí con su estado de envío.</p>
+      <a routerLink="/shop" class="empty-cta">Explorar catálogo</a>
+    </div>
+  } @else {
+    <!-- Desktop: tabla -->
+    <div class="table-container desktop-only">
+      <table>
+        <thead>
+          <tr>
+            <th>Orden #</th>
+            <th>Fecha</th>
+            <th>Total</th>
+            <th>Estado</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (order of orders(); track order.id) {
+            <tr>
+              <td>{{ order.orderNumber }}</td>
+              <td>{{ order.orderDate | date:'dd/MM/yyyy HH:mm' }}</td>
+              <td>{{ order.total | currency:'COP':'symbol':'1.0-0' }}</td>
+              <td>
+                <span class="status-badge" [class]="getStatusClass(order.status)">
+                  {{ order.status }}
+                </span>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Móvil: cards -->
+    <div class="orders-cards mobile-only">
+      @for (order of orders(); track order.id) {
+        <article class="order-card">
+          <header class="order-card-header">
+            <div class="order-id">
+              <span class="order-id-label">Orden</span>
+              <strong>#{{ order.orderNumber }}</strong>
+            </div>
+            <span class="status-badge" [class]="getStatusClass(order.status)">
+              {{ order.status }}
+            </span>
+          </header>
+
+          <div class="order-card-body">
+            <div class="order-row">
+              <span>Fecha</span>
+              <strong>{{ order.orderDate | date:'dd MMM yyyy · HH:mm' }}</strong>
+            </div>
+            <div class="order-row">
+              <span>Cliente</span>
+              <strong>{{ order.userFullName }}</strong>
+            </div>
+            <div class="order-row total">
+              <span>Total</span>
+              <strong>{{ order.total | currency:'COP':'symbol':'1.0-0' }}</strong>
+            </div>
+          </div>
+
+        </article>
+      }
+    </div>
+  }
+</div>

@@ -1,0 +1,124 @@
+// ============================================
+// YCT - Animaciones
+// ============================================
+
+// --- Keyframes ---
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes popIn {
+  0% { transform: scale(0); }
+  70% { transform: scale(1.15); }
+  100% { transform: scale(1); }
+}
+
+@keyframes cartBounce {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.25); }
+}
+
+@keyframes checkmark {
+  0% { transform: scale(0) rotate(-45deg); opacity: 0; }
+  50% { transform: scale(1.2) rotate(-45deg); opacity: 1; }
+  100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+
+@keyframes toastSlide {
+  0% { transform: translateX(110%); opacity: 0; }
+  10% { transform: translateX(0); opacity: 1; }
+  90% { transform: translateX(0); opacity: 1; }
+  100% { transform: translateX(110%); opacity: 0; }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-12px) rotate(2deg); }
+}
+
+@keyframes floatReverse {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(8px) rotate(-1.5deg); }
+}
+
+@keyframes badgePulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(122, 182, 72, 0.35); }
+  50% { box-shadow: 0 0 0 8px rgba(122, 182, 72, 0); }
+}
+
+// --- Mixins de animación ---
+@mixin animate-fadeIn($delay: 0s) {
+  animation: fadeIn 0.4s ease $delay both;
+}
+
+@mixin animate-slideUp($delay: 0s) {
+  animation: slideUp 0.5s ease $delay both;
+}
+
+@mixin animate-scaleIn($delay: 0s) {
+  animation: scaleIn 0.3s ease $delay both;
+}
+
+// Stagger para listas (aplica a hijos directos)
+@mixin stagger-children($base-delay: 0.05s, $max: 12) {
+  @for $i from 1 through $max {
+    &:nth-child(#{$i}) {
+      animation-delay: $base-delay * $i;
+    }
+  }
+}
+
+// Skeleton loading
+@mixin skeleton {
+  background: linear-gradient(90deg, #e8ebe4 25%, #f0f2ed 50%, #e8ebe4 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 4px;
+  color: transparent !important;
+
+  * { visibility: hidden; }
+}
+
+// Hover lift
+@mixin hover-lift($y: -4px) {
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+
+  &:hover {
+    transform: translateY($y);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+  }
+}
+
+// Image zoom on hover
+@mixin img-zoom($scale: 1.08) {
+  overflow: hidden;
+
+  img {
+    transition: transform 0.4s ease;
+  }
+
+  &:hover img {
+    transform: scale($scale);
+  }
+}

@@ -1,0 +1,78 @@
+@use 'scss/variables' as *;
+@use 'scss/mixins' as *;
+
+.page {
+  color: $text-primary;
+}
+
+.page-header {
+  @include page-header;
+}
+
+.btn-primary {
+  @include btn-primary;
+}
+
+.btn-secondary {
+  @include btn-secondary;
+}
+
+.form-card {
+  @include card;
+  margin-bottom: $spacing-xl;
+
+  h3 {
+    margin: 0 0 $spacing-lg;
+    color: $text-primary;
+    font-size: $font-size-lg;
+  }
+}
+
+.form-group {
+  @include form-group;
+}
+
+.form-row {
+  @include form-row;
+}
+
+.form-actions {
+  @include form-actions;
+}
+
+.table-container {
+  @include table-container;
+}
+
+table {
+  @include table-base;
+}
+
+.badge {
+  @include badge-inactive;
+
+  &.active {
+    @include badge-active;
+  }
+}
+
+.actions {
+  display: flex;
+  gap: $spacing-sm;
+}
+
+.btn-icon {
+  @include btn-icon;
+}
+
+.loading {
+  color: $text-muted;
+  text-align: center;
+  padding: $spacing-2xl;
+}
+
+.empty {
+  text-align: center;
+  color: $text-placeholder;
+  padding: $spacing-2xl !important;
+}

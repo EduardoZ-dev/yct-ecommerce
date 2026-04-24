@@ -1,0 +1,112 @@
+// ============================================
+// YCT - Variables de Marca
+// Distribuciones YCT - Derivados Lácteos
+// ============================================
+
+// --- Colores de Marca (extraídos del logo) ---
+$brand-green:         #7AB648;
+$brand-green-dark:    #5A9E2F;
+$brand-green-light:   #8EC95E;
+$brand-green-bg:      #EDF7E5;
+$brand-orange:        #E8862A;
+$brand-orange-dark:   #C96E1A;
+$brand-orange-light:  #F09D4A;
+$brand-orange-bg:     #FEF3E8;
+
+// --- Colores Primarios (verde = identidad láctea, frescura) ---
+$primary:             $brand-green;
+$primary-hover:       $brand-green-dark;
+$primary-light:       $brand-green-bg;
+
+// --- Colores de Acción (naranja = CTAs, comprar, destacar) ---
+$accent:              $brand-orange;
+$accent-hover:        $brand-orange-dark;
+$accent-light:        $brand-orange-bg;
+
+// --- Colores Secundarios (mantener alias) ---
+$secondary:           $brand-orange;
+$secondary-hover:     $brand-orange-dark;
+$secondary-light:     $brand-orange-bg;
+
+// --- Fondos (tema claro, fresco) ---
+$bg-body:             #F5F7F2;
+$bg-surface:          #FFFFFF;
+$bg-input:            #F0F2ED;
+$bg-hover:            rgba($brand-green, 0.06);
+$bg-navbar:           #FFFFFF;
+$bg-footer:           #2D3A2E;
+
+// --- Bordes ---
+$border-color:        #E0E4DB;
+$border-focus:        $brand-green;
+
+// --- Texto ---
+$text-primary:        #1E2A1E;
+$text-secondary:      #3D4A3D;
+$text-muted:          #7A8A7A;
+$text-placeholder:    #A0ADA0;
+$text-on-primary:     #FFFFFF;
+$text-on-dark:        #FFFFFF;
+
+// --- Estados ---
+$success:             #4caf50;
+$success-light:       #E8F5E9;
+$warning:             #FF9800;
+$warning-light:       #FFF3E0;
+$danger:              #E53935;
+$danger-light:        #FFEBEE;
+$info:                #1E88E5;
+$info-light:          #E3F2FD;
+$purple:              #7B1FA2;
+$purple-light:        #F3E5F5;
+
+// --- Tipografía ---
+$font-family:         'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+$font-family-heading: 'Poppins', 'Inter', 'Segoe UI', sans-serif;
+$font-size-xs:        0.75rem;
+$font-size-sm:        0.8rem;
+$font-size-base:      0.9rem;
+$font-size-md:        0.95rem;
+$font-size-lg:        1.1rem;
+$font-size-xl:        1.5rem;
+$font-size-2xl:       1.8rem;
+$font-size-3xl:       2rem;
+$font-size-4xl:       2.5rem;
+
+// --- Espaciado ---
+$spacing-xs:          0.25rem;
+$spacing-sm:          0.5rem;
+$spacing-md:          0.75rem;
+$spacing-lg:          1rem;
+$spacing-xl:          1.5rem;
+$spacing-2xl:         2rem;
+$spacing-3xl:         2.5rem;
+
+// --- Bordes Redondeados ---
+$radius-sm:           4px;
+$radius-md:           6px;
+$radius-lg:           8px;
+$radius-xl:           12px;
+$radius-pill:         20px;
+
+// --- Sombras (más suaves para tema claro) ---
+$shadow-sm:           0 1px 3px rgba(0, 0, 0, 0.08);
+$shadow-md:           0 4px 12px rgba(0, 0, 0, 0.1);
+$shadow-lg:           0 8px 24px rgba(0, 0, 0, 0.12);
+$shadow-sidebar:      2px 0 8px rgba(0, 0, 0, 0.06);
+$shadow-navbar:       0 1px 4px rgba(0, 0, 0, 0.06);
+
+// --- Layout ---
+$sidebar-width:       250px;
+$navbar-height:       84px;
+$container-max:       1200px;
+
+// --- Breakpoints ---
+$bp-mobile:           480px;
+$bp-tablet:           768px;
+$bp-desktop:          1024px;
+$bp-wide:             1280px;
+
+// --- Transiciones ---
+$transition-fast:     0.2s ease;
+$transition-normal:   0.3s ease;

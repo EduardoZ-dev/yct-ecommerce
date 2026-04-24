@@ -1,0 +1,27 @@
+<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  <!-- Fondo círculo -->
+  <circle cx="50" cy="50" r="48" fill="#5FB878"/>
+
+  <!-- Cabeza -->
+  <circle cx="50" cy="50" r="28" fill="#4A9B6F"/>
+
+  <!-- Ojos -->
+  <circle cx="40" cy="45" r="3" fill="white"/>
+  <circle cx="40" cy="45" r="1.5" fill="black"/>
+  <circle cx="60" cy="45" r="3" fill="white"/>
+  <circle cx="60" cy="45" r="1.5" fill="black"/>
+
+  <!-- Nariz -->
+  <ellipse cx="50" cy="58" rx="4" ry="5" fill="#2D7A4F"/>
+  <circle cx="47" cy="56" r="1.2" fill="black"/>
+  <circle cx="53" cy="56" r="1.2" fill="black"/>
+
+  <!-- Cuernos -->
+  <path d="M 32 28 Q 18 18 10 8" stroke="#FF9F1C" stroke-width="4" fill="none" stroke-linecap="round"/>
+  <path d="M 32 35 Q 12 40 5 50" stroke="#FF9F1C" stroke-width="4" fill="none" stroke-linecap="round"/>
+  <path d="M 68 28 Q 82 18 90 8" stroke="#FF9F1C" stroke-width="4" fill="none" stroke-linecap="round"/>
+  <path d="M 68 35 Q 88 40 95 50" stroke="#FF9F1C" stroke-width="4" fill="none" stroke-linecap="round"/>
+
+  <!-- YCT en centro superior (muy pequeño) -->
+  <text x="50" y="75" font-size="16" font-weight="bold" font-family="Arial, sans-serif" fill="#FF9F1C" text-anchor="middle">YCT</text>
+</svg>

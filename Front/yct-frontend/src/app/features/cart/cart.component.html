@@ -1,0 +1,164 @@
+<div class="cart-page">
+  <!-- Step indicator -->
+  <nav class="checkout-steps" aria-label="Progreso de compra">
+    @for (step of steps; track step.key; let i = $index) {
+      <div class="step" [class.active]="i === 0" [class.completed]="false">
+        <span class="step-num">{{ i + 1 }}</span>
+        <span class="step-label">{{ step.label }}</span>
+      </div>
+      @if (i < steps.length - 1) {
+        <div class="step-connector"></div>
+      }
+    }
+  </nav>
+
+  <header class="cart-header">
+    <div>
+      <h1>Tu carrito</h1>
+      @if (cart.items().length > 0) {
+        <span class="cart-subtitle">{{ cart.itemCount() }} {{ cart.itemCount() === 1 ? 'producto' : 'productos' }} listos para comprar</span>
+      }
+    </div>
+    <a routerLink="/shop" class="back-link">← Seguir comprando</a>
+  </header>
+
+  @if (cart.items().length === 0) {
+    <section class="empty-cart">
+      <div class="empty-illustration">
+        <div class="empty-icon">🛒</div>
+        <div class="empty-pulse"></div>
+      </div>
+      <h2>Tu carrito está vacío</h2>
+      <p>Agrega productos frescos y recíbelos en la puerta de tu casa.</p>
+      <a routerLink="/shop" class="shop-link">Explorar catálogo</a>
+
+      @if (suggested().length > 0) {
+        <div class="suggested">
+          <h3>Nuestros productos destacados</h3>
+          <div class="suggested-grid">
+            @for (p of suggested(); track p.id) {
+              <article class="suggested-card">
+                <div class="suggested-image">
+                  @if (p.imageUrl) {
+                    <img [src]="p.imageUrl" [alt]="p.name">
+                  } @else {
+                    <div class="no-img">🧀</div>
+                  }
+                </div>
+                <div class="suggested-body">
+                  <h4>{{ p.name }}</h4>
+                  <span class="suggested-price">{{ p.price | currency:'COP':'symbol':'1.0-0' }}</span>
+                  <button
+                    class="quick-add"
+                    [class.added]="justAddedId() === p.id"
+                    (click)="quickAdd(p)">
+                    {{ justAddedId() === p.id ? '✓ Agregado' : 'Agregar' }}
+                  </button>
+                </div>
+              </article>
+            }
+          </div>
+        </div>
+      }
+    </section>
+  } @else {
+    <div class="cart-content">
+      <div class="cart-items">
+        @for (item of cart.items(); track item.product.id) {
+          <article class="cart-item">
+            <div class="item-image">
+              @if (item.product.imageUrl) {
+                <img [src]="item.product.imageUrl" [alt]="item.product.name">
+              } @else {
+                <div class="no-img">🧀</div>
+              }
+            </div>
+
+            <div class="item-info">
+              <span class="item-cat">{{ item.product.categoryName }}</span>
+              <h3>{{ item.product.name }}</h3>
+              @if (item.product.weight) {
+                <span class="item-weight">Contenido: {{ item.product.weight }}</span>
+              }
+              <span class="item-unit-price">
+                {{ item.product.price | currency:'COP':'symbol':'1.0-0' }} <small>c/u</small>
+              </span>
+            </div>
+
+            <div class="item-actions">
+              <div class="qty-controls">
+                <button (click)="decrement(item.product.id)" class="qty-btn" aria-label="Disminuir">−</button>
+                <span class="qty-val">{{ item.quantity }}</span>
+                <button (click)="increment(item.product.id)" class="qty-btn" aria-label="Aumentar" [disabled]="item.quantity >= item.product.stock">+</button>
+              </div>
+              <span class="item-subtotal">{{ item.product.price * item.quantity | currency:'COP':'symbol':'1.0-0' }}</span>
+              <button class="remove-btn" (click)="remove(item.product.id)" aria-label="Eliminar">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="3 6 5 6 21 6"/><path d="M19 6l-2 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/>
+                </svg>
+              </button>
+            </div>
+          </article>
+        }
+      </div>
+
+      <aside class="cart-summary">
+        <h3>Resumen del pedido</h3>
+
+        <!-- Progreso hacia envío gratis -->
+        <div class="free-ship-progress" [class.achieved]="cart.isFreeShipping()">
+          @if (cart.isFreeShipping()) {
+            <span class="free-ship-msg">🎉 ¡Obtuviste envío gratis!</span>
+          } @else {
+            <span class="free-ship-msg">
+              Te faltan <strong>{{ cart.amountForFreeShipping() | currency:'COP':'symbol':'1.0-0' }}</strong> para envío gratis
+            </span>
+          }
+          <div class="progress-bar">
+            <div class="progress-fill" [style.width.%]="cart.freeShippingProgress()"></div>
+          </div>
+        </div>
+
+        <div class="sum-row">
+          <span>Subtotal ({{ cart.itemCount() }} {{ cart.itemCount() === 1 ? 'producto' : 'productos' }})</span>
+          <span>{{ cart.subtotal() | currency:'COP':'symbol':'1.0-0' }}</span>
+        </div>
+        <div class="sum-row">
+          <span>Envío</span>
+          @if (cart.isFreeShipping()) {
+            <span class="free">Gratis</span>
+          } @else {
+            <span>{{ cart.shippingCost() | currency:'COP':'symbol':'1.0-0' }}</span>
+          }
+        </div>
+
+        <div class="sum-total">
+          <span>Total</span>
+          <strong>{{ cart.grandTotal() | currency:'COP':'symbol':'1.0-0' }}</strong>
+        </div>
+
+        <a routerLink="/checkout" class="checkout-btn">
+          Proceder al pago
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <polyline points="9 18 15 12 9 6"/>
+          </svg>
+        </a>
+
+        <ul class="trust-list">
+          <li><span>🔒</span> Pago 100% seguro</li>
+          <li><span>☀️</span> Producción con energía solar</li>
+          <li><span>🚚</span> Entrega en 24h</li>
+        </ul>
+      </aside>
+    </div>
+
+    <!-- Mobile sticky summary -->
+    <div class="mobile-total-bar">
+      <div class="mobile-total-info">
+        <span class="mobile-total-label">Total</span>
+        <strong>{{ cart.grandTotal() | currency:'COP':'symbol':'1.0-0' }}</strong>
+      </div>
+      <a routerLink="/checkout" class="mobile-checkout-btn">Pagar</a>
+    </div>
+  }
+</div>

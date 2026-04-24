@@ -1,0 +1,269 @@
+@if (toastMessage()) {
+  <div class="toast">
+    <span class="toast-icon">✓</span>
+    {{ toastMessage() }}
+  </div>
+}
+
+@if (loading()) {
+  <div class="detail-skeleton">
+    <div class="skel-image"></div>
+    <div class="skel-info">
+      <div class="skel-line w40"></div>
+      <div class="skel-line w80"></div>
+      <div class="skel-line w60"></div>
+      <div class="skel-line w30"></div>
+    </div>
+  </div>
+} @else if (product()) {
+  <div class="breadcrumb">
+    <a routerLink="/shop">Catálogo</a>
+    <span class="sep">/</span>
+    <span>{{ product()!.categoryName }}</span>
+    <span class="sep">/</span>
+    <span class="current">{{ product()!.name }}</span>
+  </div>
+
+  <!-- Main product section -->
+  <div class="product-detail">
+    <div class="detail-image">
+      @if (product()!.imageUrl) {
+        <img [src]="product()!.imageUrl" [alt]="product()!.name">
+      } @else {
+        <div class="no-image">🧀</div>
+      }
+    </div>
+
+    <div class="detail-info">
+      <div class="detail-meta">
+        <span class="detail-category">{{ product()!.categoryName }}</span>
+        @if (product()!.brand) {
+          <span class="detail-brand">{{ product()!.brand }}</span>
+        }
+      </div>
+
+      <h1>{{ product()!.name }}</h1>
+
+      @if (product()!.weight) {
+        <span class="detail-weight">Contenido: {{ product()!.weight }}</span>
+      }
+
+      <div class="detail-price-row">
+        <span class="detail-price">{{ product()!.price | currency:'COP':'symbol':'1.0-0' }}</span>
+        <span class="detail-stock">
+          {{ product()!.stock > 0 ? 'Disponible' : 'Agotado' }}
+        </span>
+      </div>
+
+      @if (product()!.description) {
+        <p class="detail-desc">{{ product()!.description }}</p>
+      }
+
+      <div class="detail-actions">
+        <div class="qty-selector">
+          <button (click)="decrement()" [disabled]="quantity() <= 1">−</button>
+          <span>{{ quantity() }}</span>
+          <button (click)="increment()" [disabled]="quantity() >= product()!.stock">+</button>
+        </div>
+
+        <button class="add-btn" [class.added]="added()" (click)="addToCart()" [disabled]="product()!.stock === 0">
+          @if (added()) {
+            ✓ Agregado al carrito
+          } @else {
+            Agregar al carrito — {{ (product()!.price * quantity()) | currency:'COP':'symbol':'1.0-0' }}
+          }
+        </button>
+      </div>
+
+      <div class="detail-features">
+        <div class="feature">
+          <span class="feature-icon">🚚</span>
+          <div><strong>Envío gratis</strong><span>En pedidos mayores a $20</span></div>
+        </div>
+        <div class="feature">
+          <span class="feature-icon">❄️</span>
+          <div><strong>Cadena de frío</strong><span>Producto refrigerado</span></div>
+        </div>
+        <div class="feature">
+          <span class="feature-icon">✅</span>
+          <div><strong>Calidad garantizada</strong><span>Productos frescos del día</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabs section -->
+  <section class="product-tabs">
+    <div class="tabs-header">
+      <button [class.active]="activeTab() === 'nutrition'" (click)="activeTab.set('nutrition')">
+        Información Nutricional
+      </button>
+      <button [class.active]="activeTab() === 'ingredients'" (click)="activeTab.set('ingredients')">
+        Ingredientes
+      </button>
+      <button [class.active]="activeTab() === 'storage'" (click)="activeTab.set('storage')">
+        Conservación
+      </button>
+    </div>
+
+    <div class="tabs-body">
+      <!-- Tab: Nutricional -->
+      @if (activeTab() === 'nutrition') {
+        <div class="tab-content nutrition-tab">
+          @if (product()!.calories !== null && product()!.calories !== undefined) {
+            <div class="nutrition-card">
+              <div class="nutrition-header">
+                <h3>Datos Nutricionales</h3>
+                @if (product()!.servingSize) {
+                  <span class="serving-info">Porción: {{ product()!.servingSize }}</span>
+                }
+              </div>
+
+              <div class="nutrition-grid">
+                <div class="nutri-item highlight">
+                  <span class="nutri-value">{{ product()!.calories }}</span>
+                  <span class="nutri-unit">kcal</span>
+                  <span class="nutri-label">Calorías</span>
+                </div>
+                <div class="nutri-item">
+                  <span class="nutri-value">{{ product()!.protein }}</span>
+                  <span class="nutri-unit">g</span>
+                  <span class="nutri-label">Proteína</span>
+                </div>
+                <div class="nutri-item">
+                  <span class="nutri-value">{{ product()!.totalFat }}</span>
+                  <span class="nutri-unit">g</span>
+                  <span class="nutri-label">Grasa Total</span>
+                </div>
+                <div class="nutri-item">
+                  <span class="nutri-value">{{ product()!.totalCarbs }}</span>
+                  <span class="nutri-unit">g</span>
+                  <span class="nutri-label">Carbohidratos</span>
+                </div>
+              </div>
+
+              <table class="nutrition-table">
+                <tbody>
+                  <tr>
+                    <td>Grasa Total</td>
+                    <td class="val">{{ product()!.totalFat }} g</td>
+                  </tr>
+                  <tr class="sub">
+                    <td>Grasa Saturada</td>
+                    <td class="val">{{ product()!.saturatedFat }} g</td>
+                  </tr>
+                  <tr>
+                    <td>Colesterol</td>
+                    <td class="val">{{ product()!.cholesterol }} mg</td>
+                  </tr>
+                  <tr>
+                    <td>Sodio</td>
+                    <td class="val">{{ product()!.sodium }} mg</td>
+                  </tr>
+                  <tr>
+                    <td>Carbohidratos Totales</td>
+                    <td class="val">{{ product()!.totalCarbs }} g</td>
+                  </tr>
+                  <tr class="sub">
+                    <td>Azúcares</td>
+                    <td class="val">{{ product()!.sugars }} g</td>
+                  </tr>
+                  <tr>
+                    <td>Proteína</td>
+                    <td class="val">{{ product()!.protein }} g</td>
+                  </tr>
+                  <tr class="divider"><td colspan="2"></td></tr>
+                  <tr>
+                    <td>Calcio</td>
+                    <td class="val">{{ product()!.calcium }} mg</td>
+                  </tr>
+                  <tr>
+                    <td>Hierro</td>
+                    <td class="val">{{ product()!.iron }} mg</td>
+                  </tr>
+                  @if (product()!.vitaminD) {
+                    <tr>
+                      <td>Vitamina D</td>
+                      <td class="val">{{ product()!.vitaminD }} mcg</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          } @else {
+            <p class="no-data">Información nutricional no disponible para este producto.</p>
+          }
+        </div>
+      }
+
+      <!-- Tab: Ingredientes -->
+      @if (activeTab() === 'ingredients') {
+        <div class="tab-content ingredients-tab">
+          @if (product()!.ingredients) {
+            <div class="info-card">
+              <h3>Lista de Ingredientes</h3>
+              <p class="ingredients-text">{{ product()!.ingredients }}</p>
+            </div>
+          } @else {
+            <p class="no-data">Lista de ingredientes no disponible.</p>
+          }
+
+          <div class="standards-grid">
+            <div class="standard-item">
+              <span class="std-icon">🏭</span>
+              <strong>Registro INVIMA</strong>
+              <span>Producto aprobado por el Instituto Nacional de Vigilancia de Medicamentos y Alimentos</span>
+            </div>
+            <div class="standard-item">
+              <span class="std-icon">🐄</span>
+              <strong>Origen 100% Natural</strong>
+              <span>Leche proveniente de ganado alimentado con pastos naturales</span>
+            </div>
+            <div class="standard-item">
+              <span class="std-icon">🔬</span>
+              <strong>Control de Calidad</strong>
+              <span>Cada lote es analizado en laboratorio antes de su distribución</span>
+            </div>
+            <div class="standard-item">
+              <span class="std-icon">♻️</span>
+              <strong>Empaque Reciclable</strong>
+              <span>Comprometidos con el medio ambiente</span>
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- Tab: Conservación -->
+      @if (activeTab() === 'storage') {
+        <div class="tab-content storage-tab">
+          <div class="storage-grid">
+            @if (product()!.storageInstructions) {
+              <div class="info-card">
+                <div class="card-icon">❄️</div>
+                <h3>Instrucciones de Almacenamiento</h3>
+                <p>{{ product()!.storageInstructions }}</p>
+              </div>
+            }
+            @if (product()!.expirationInfo) {
+              <div class="info-card">
+                <div class="card-icon">📅</div>
+                <h3>Vida Útil</h3>
+                <p>{{ product()!.expirationInfo }}</p>
+              </div>
+            }
+            <div class="info-card">
+              <div class="card-icon">⚠️</div>
+              <h3>Recomendaciones</h3>
+              <p>No congelar. Mantener la cadena de frío. Verificar fecha de vencimiento antes de consumir. Este producto contiene derivados lácteos.</p>
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  </section>
+} @else {
+  <div class="not-found">
+    <h2>Producto no encontrado</h2>
+    <a routerLink="/shop">Volver al catálogo</a>
+  </div>
+}

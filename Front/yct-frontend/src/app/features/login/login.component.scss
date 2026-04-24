@@ -1,0 +1,77 @@
+@use '../../../scss/variables' as *;
+@use '../../../scss/mixins' as *;
+
+.login-container {
+  @include flex-center;
+  min-height: 100vh;
+  background: $bg-body;
+  padding: $spacing-lg;
+}
+
+.login-card {
+  @include card-shadow;
+  width: 100%;
+  max-width: 420px;
+  padding: $spacing-xl;
+
+  @include tablet-up {
+    padding: $spacing-3xl;
+  }
+}
+
+.login-header {
+  text-align: center;
+  margin-bottom: $spacing-xl;
+
+  h1 {
+    color: $accent;
+    font-size: $font-size-4xl;
+    margin: 0;
+    font-weight: 800;
+  }
+
+  p {
+    color: $text-muted;
+    margin: $spacing-xs 0 0;
+    font-size: $font-size-base;
+  }
+}
+
+h2 {
+  color: $text-primary;
+  text-align: center;
+  margin-bottom: $spacing-xl;
+  font-weight: 500;
+}
+
+.form-group {
+  @include form-group;
+}
+
+.btn-primary {
+  @include btn-primary;
+  width: 100%;
+  margin-top: $spacing-sm;
+}
+
+.error-message {
+  @include error-message;
+}
+
+.toggle-link {
+  text-align: center;
+  color: $text-muted;
+  margin-top: 1.2rem;
+  font-size: $font-size-base;
+
+  a {
+    color: $primary;
+    cursor: pointer;
+    text-decoration: none;
+    font-weight: 500;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}

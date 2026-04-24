@@ -1,0 +1,13 @@
+{
+  "folders": [
+    {
+      "path": "Back",
+      "name": "Backend (.NET 9)"
+    },
+    {
+      "path": "Front/yct-frontend",
+      "name": "Frontend (Angular 19)"
+    }
+  ],
+  "settings": {}
+}
