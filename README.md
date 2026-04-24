@@ -9,73 +9,41 @@ Plataforma e-commerce de lácteos para las marcas YCT, Mamá Sara y Lácteos Ide
 
 ---
 
-## Setup en máquina nueva
+## Setup en portátil nuevo (1 comando)
 
-### 1. Prerrequisitos
+### Prerrequisitos
 - [.NET 9 SDK](https://dotnet.microsoft.com/download/dotnet/9.0)
-- [Node.js 20+](https://nodejs.org/) y npm
-- SQL Server (Express sirve) + SSMS
-- `dotnet-ef` tool: `dotnet tool install --global dotnet-ef`
+- [Node.js 20+](https://nodejs.org/)
+- SQL Server instalado (cualquier edición)
 
-### 2. Clonar
+### Pasos
 
 ```bash
 git clone https://github.com/EduardoZ-dev/yct-ecommerce.git
 cd yct-ecommerce
+setup-laptop.bat
 ```
 
-### 3. Backend
+Ese script hace todo automático:
+1. Apunta el backend a `Server=JOSEDAZA`
+2. Instala `dotnet-ef` si falta
+3. Crea la BD `YctDb` y aplica migraciones
+4. Carga datos semilla (9 categorías, 37 productos, admin)
+5. Corre `npm install`
 
-**a) Ajustar connection string** en `Back/YCT.API/appsettings.json`:
-
-```json
-"ConnectionStrings": {
-  "DefaultConnection": "Server=.\\SQLEXPRESS;Database=YctDb;Trusted_Connection=True;TrustServerCertificate=True"
-}
-```
-
-Cambia `Server=` al nombre del SQL Server local (ej. `.\SQLEXPRESS`, `localhost`, o el nombre del equipo).
-
-**b) Crear la BD con migraciones:**
+### Arrancar los servidores
 
 ```bash
-cd Back/YCT.API
-dotnet ef database update --project ../YCT.Infrastructure
+dev.bat
 ```
+Abre backend en http://localhost:5088 y frontend en http://localhost:4200
 
-**c) Cargar datos (productos, categorías, usuario admin):**
-
-```bash
-sqlcmd -S .\SQLEXPRESS -d YctDb -E -i ../db-scripts/seed.sql
-```
-
-(Ajusta `-S` al servidor. Alternativa: abrir `Back/db-scripts/seed.sql` en SSMS y ejecutar.)
-
-**d) Correr:**
-
-```bash
-dotnet run
-```
-
-→ http://localhost:5088
-
-### 4. Frontend
-
-```bash
-cd Front/yct-frontend
-npm install
-npm start
-```
-
-→ http://localhost:4200
-
-### 5. Credenciales admin
-
+### Credenciales admin
 - Usuario: `admin`
-- Password: `admin123` (solo dev)
+- Password: `admin123`
 
 ---
 
-## Scripts rápidos
+### Si el nombre del SQL Server cambia
 
-- `dev.bat` (Windows) / `dev.sh` (Unix) — arrancan backend + frontend juntos.
+Edita la línea `set "SQL_SERVER=JOSEDAZA"` al inicio de `setup-laptop.bat` antes de ejecutarlo.
