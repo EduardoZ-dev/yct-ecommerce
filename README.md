@@ -9,41 +9,67 @@ Plataforma e-commerce de lácteos para las marcas YCT, Mamá Sara y Lácteos Ide
 
 ---
 
-## Setup en portátil nuevo (1 comando)
-
-### Prerrequisitos
+## Prerrequisitos
 - [.NET 9 SDK](https://dotnet.microsoft.com/download/dotnet/9.0)
 - [Node.js 20+](https://nodejs.org/)
 - SQL Server instalado (cualquier edición)
 
-### Pasos
+---
+
+## Setup
 
 ```bash
 git clone https://github.com/EduardoZ-dev/yct-ecommerce.git
 cd yct-ecommerce
-setup-laptop.bat
 ```
 
-Ese script hace todo automático:
-1. Apunta el backend a `Server=JOSEDAZA`
-2. Instala `dotnet-ef` si falta
-3. Crea la BD `YctDb` y aplica migraciones
-4. Carga datos semilla (9 categorías, 37 productos, admin)
-5. Corre `npm install`
+### 1. Configurar connection string
 
-### Arrancar los servidores
+Edita `Back/YCT.API/appsettings.json` y ajusta `ConnectionStrings.DefaultConnection`
+con el nombre de tu instancia local de SQL Server:
+
+```json
+"DefaultConnection": "Server=TU_INSTANCIA;Database=YctDb;Trusted_Connection=True;TrustServerCertificate=True"
+```
+
+### 2. Instalar dotnet-ef (si no lo tienes)
+
+```bash
+dotnet tool install --global dotnet-ef
+```
+
+### 3. Crear la BD y aplicar migraciones
+
+```bash
+cd Back/YCT.API
+dotnet ef database update --project ../YCT.Infrastructure
+cd ../..
+```
+
+### 4. Cargar datos semilla (9 categorías, 37 productos, admin)
+
+```bash
+sqlcmd -S TU_INSTANCIA -d YctDb -E -i Back/db-scripts/seed.sql
+```
+
+### 5. Instalar dependencias del frontend
+
+```bash
+cd Front/yct-frontend
+npm install
+cd ../..
+```
+
+---
+
+## Arrancar los servidores
 
 ```bash
 dev.bat
 ```
-Abre backend en http://localhost:5088 y frontend en http://localhost:4200
 
-### Credenciales admin
+Abre backend en http://localhost:5088 y frontend en http://localhost:4200.
+
+## Credenciales admin
 - Usuario: `admin`
 - Password: `admin123`
-
----
-
-### Si el nombre del SQL Server cambia
-
-Edita la línea `set "SQL_SERVER=JOSEDAZA"` al inicio de `setup-laptop.bat` antes de ejecutarlo.
