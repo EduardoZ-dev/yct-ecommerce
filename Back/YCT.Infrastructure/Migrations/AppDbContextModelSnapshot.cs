@@ -17,10 +17,82 @@ namespace YCT.Infrastructure.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.14")
+                .HasAnnotation("ProductVersion", "9.0.15")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
+
+            modelBuilder.Entity("YCT.Domain.Entities.AuditLog", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Action")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Details")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("EntityId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("EntityType")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("IpAddress")
+                        .HasMaxLength(45)
+                        .HasColumnType("nvarchar(45)");
+
+                    b.Property<bool>("Success")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Summary")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UserAgent")
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
+                    b.Property<int?>("UserId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("UserRole")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<string>("Username")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Action");
+
+                    b.HasIndex("CreatedAt");
+
+                    b.HasIndex("EntityType");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("AuditLogs", (string)null);
+                });
 
             modelBuilder.Entity("YCT.Domain.Entities.Category", b =>
                 {
@@ -53,7 +125,7 @@ namespace YCT.Infrastructure.Migrations
                     b.ToTable("Categories", (string)null);
                 });
 
-            modelBuilder.Entity("YCT.Domain.Entities.Order", b =>
+            modelBuilder.Entity("YCT.Domain.Entities.Distributor", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -63,6 +135,66 @@ namespace YCT.Infrastructure.Migrations
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
+                    b.Property<string>("Phone")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("VehiclePlate")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("VehicleType")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Distributors", (string)null);
+                });
+
+            modelBuilder.Entity("YCT.Domain.Entities.Order", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("Consecutive")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("CustomerRating")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("DeliveredAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("DistributorId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("FeedbackComment")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
 
                     b.Property<string>("Notes")
                         .HasMaxLength(500)
@@ -76,9 +208,35 @@ namespace YCT.Infrastructure.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
+                    b.Property<DateTime?>("PaidAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("PaymentMethod")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<string>("PaymentStatus")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<DateTime?>("ShippedAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("ShippingAddress")
                         .HasMaxLength(300)
                         .HasColumnType("nvarchar(300)");
+
+                    b.Property<string>("ShippingCity")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<decimal?>("ShippingLat")
+                        .HasColumnType("decimal(10,7)");
+
+                    b.Property<decimal?>("ShippingLng")
+                        .HasColumnType("decimal(10,7)");
 
                     b.Property<string>("Status")
                         .IsRequired()
@@ -88,13 +246,25 @@ namespace YCT.Infrastructure.Migrations
                     b.Property<decimal>("Total")
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<string>("TrackingNumber")
+                        .HasMaxLength(80)
+                        .HasColumnType("nvarchar(80)");
+
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
 
                     b.Property<int>("UserId")
                         .HasColumnType("int");
 
+                    b.Property<DateTime?>("ValidatedAt")
+                        .HasColumnType("datetime2");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("Consecutive")
+                        .IsUnique();
+
+                    b.HasIndex("DistributorId");
 
                     b.HasIndex("OrderNumber")
                         .IsUnique();
@@ -175,6 +345,9 @@ namespace YCT.Infrastructure.Migrations
                     b.Property<string>("Description")
                         .HasMaxLength(1000)
                         .HasColumnType("nvarchar(1000)");
+
+                    b.Property<int>("DisplayOrder")
+                        .HasColumnType("int");
 
                     b.Property<string>("ExpirationInfo")
                         .HasMaxLength(200)
@@ -309,13 +482,30 @@ namespace YCT.Infrastructure.Migrations
                     b.ToTable("Users", (string)null);
                 });
 
+            modelBuilder.Entity("YCT.Domain.Entities.AuditLog", b =>
+                {
+                    b.HasOne("YCT.Domain.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("YCT.Domain.Entities.Order", b =>
                 {
+                    b.HasOne("YCT.Domain.Entities.Distributor", "Distributor")
+                        .WithMany("Orders")
+                        .HasForeignKey("DistributorId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.HasOne("YCT.Domain.Entities.User", "User")
                         .WithMany("Orders")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.Navigation("Distributor");
 
                     b.Navigation("User");
                 });
@@ -353,6 +543,11 @@ namespace YCT.Infrastructure.Migrations
             modelBuilder.Entity("YCT.Domain.Entities.Category", b =>
                 {
                     b.Navigation("Products");
+                });
+
+            modelBuilder.Entity("YCT.Domain.Entities.Distributor", b =>
+                {
+                    b.Navigation("Orders");
                 });
 
             modelBuilder.Entity("YCT.Domain.Entities.Order", b =>

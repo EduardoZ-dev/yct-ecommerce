@@ -63,6 +63,31 @@
 
     &:hover { color: $primary; background: $primary-light; }
     &.active { color: $primary-hover; background: $primary-light; font-weight: 600; }
+
+    &.nav-track {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: linear-gradient(135deg, $brand-orange-bg, #fff);
+      color: $brand-orange-dark;
+      border: 1px solid rgba($brand-orange, 0.3);
+      font-weight: 600;
+      margin-left: $spacing-sm;
+
+      svg { flex-shrink: 0; }
+
+      &:hover {
+        background: $brand-orange;
+        color: #fff;
+        border-color: $brand-orange;
+      }
+
+      &.active {
+        background: $brand-orange;
+        color: #fff;
+        border-color: $brand-orange;
+      }
+    }
   }
 
   @include mobile {

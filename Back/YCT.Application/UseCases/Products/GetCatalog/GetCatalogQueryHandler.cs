@@ -18,7 +18,10 @@ public class GetCatalogQueryHandler : IRequestHandler<GetCatalogQuery, ResponseB
     public async Task<ResponseBase<List<ProductDto>>> Handle(GetCatalogQuery request, CancellationToken cancellationToken)
     {
         var products = await _repository.FindAsync(p => p.IsActive && p.Stock > 0, p => p.Category);
-        var dtos = products.Select(p => new ProductDto
+        var dtos = products
+            .OrderBy(p => p.DisplayOrder)
+            .ThenBy(p => p.Id)
+            .Select(p => new ProductDto
         {
             Id = p.Id,
             Name = p.Name,

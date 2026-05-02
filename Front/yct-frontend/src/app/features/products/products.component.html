@@ -1,87 +1,447 @@
-<div class="page">
-  <div class="page-header">
-    <h2>Productos</h2>
-    <button class="btn-primary" (click)="openCreate()">+ Nuevo Producto</button>
+<div class="products-page">
+  <!-- Header -->
+  <header class="page-header">
+    <div>
+      <h1>Productos</h1>
+      <p class="subtitle">{{ filtered().length }} de {{ products().length }} productos</p>
+    </div>
+    <button class="btn-add" (click)="openCreate()">
+      <app-icon name="plus" [size]="18"/> Nuevo producto
+    </button>
+  </header>
+
+  <!-- Toolbar: search + status -->
+  <div class="toolbar">
+    <div class="search-box">
+      <span class="search-icon"><app-icon name="search" [size]="18"/></span>
+      <input type="text"
+             [ngModel]="searchTerm()"
+             (ngModelChange)="searchTerm.set($event)"
+             placeholder="Buscar por nombre, marca o categoría…">
+      @if (searchTerm()) {
+        <button class="clear-input" (click)="searchTerm.set('')" aria-label="Limpiar">
+          <app-icon name="close" [size]="14"/>
+        </button>
+      }
+    </div>
+
+    <div class="status-tabs">
+      <button [class.active]="filterStatus() === 'all'" (click)="setFilterStatus('all')">Todos</button>
+      <button [class.active]="filterStatus() === 'active'" (click)="setFilterStatus('active')">Activos</button>
+      <button [class.active]="filterStatus() === 'inactive'" (click)="setFilterStatus('inactive')">Inactivos</button>
+    </div>
   </div>
 
-  @if (showForm()) {
-    <div class="form-card">
-      <h3>{{ editingId() ? 'Editar' : 'Nuevo' }} Producto</h3>
-      <div class="form-row">
-        <div class="form-group">
-          <label>Nombre</label>
-          <input type="text" [(ngModel)]="formName" placeholder="Nombre del producto">
-        </div>
-        <div class="form-group">
-          <label>Categoría</label>
-          <select [(ngModel)]="formCategoryId">
-            <option [value]="0" disabled>Seleccione...</option>
-            @for (cat of categories(); track cat.id) {
-              <option [value]="cat.id">{{ cat.name }}</option>
-            }
-          </select>
-        </div>
-      </div>
-      <div class="form-group">
-        <label>Descripción</label>
-        <input type="text" [(ngModel)]="formDescription" placeholder="Descripción (opcional)">
-      </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label>Precio</label>
-          <input type="number" [(ngModel)]="formPrice" placeholder="0.00">
-        </div>
-        <div class="form-group">
-          <label>Stock</label>
-          <input type="number" [(ngModel)]="formStock" placeholder="0">
-        </div>
-      </div>
-      <div class="form-group">
-        <label>URL de Imagen (opcional)</label>
-        <input type="text" [(ngModel)]="formImageUrl" placeholder="https://...">
-      </div>
-      <div class="form-actions">
-        <button class="btn-primary" (click)="save()">Guardar</button>
-        <button class="btn-secondary" (click)="cancel()">Cancelar</button>
-      </div>
-    </div>
-  }
+  <!-- Category chips bar -->
+  <div class="category-bar">
+    <button class="cat-chip"
+            [class.active]="filterCategory() === null"
+            (click)="setFilterCategory(null)">
+      <app-icon name="dashboard" [size]="14"/>
+      <span class="chip-label">Todas</span>
+      <span class="chip-count">{{ categoryCounts().total }}</span>
+    </button>
 
+    @for (c of categories(); track c.id) {
+      <button class="cat-chip"
+              [class.active]="filterCategory() === c.id"
+              (click)="setFilterCategory(c.id)">
+        <span class="chip-dot" [style.background]="'hsl(' + ((c.id * 47) % 360) + ', 55%, 55%)'"></span>
+        <span class="chip-label">{{ c.name }}</span>
+        <span class="chip-count">{{ categoryCount(c.id) }}</span>
+      </button>
+    }
+  </div>
+
+  <!-- Cards grid -->
   @if (loading()) {
-    <p class="loading">Cargando...</p>
+    <div class="cards-grid">
+      @for (i of [1,2,3,4,5,6,7,8]; track i) {
+        <div class="card skeleton-card">
+          <div class="card-image skeleton"></div>
+          <div class="card-body">
+            <div class="skeleton skeleton-line w70"></div>
+            <div class="skeleton skeleton-line w50"></div>
+          </div>
+        </div>
+      }
+    </div>
+  } @else if (filtered().length === 0) {
+    <div class="empty-state">
+      <app-icon name="cube" [size]="64"/>
+      <h3>{{ products().length === 0 ? 'No hay productos' : 'Sin coincidencias' }}</h3>
+      <p>{{ products().length === 0 ? 'Crea tu primer producto para empezar' : 'Ajusta los filtros para ver más resultados' }}</p>
+      @if (products().length > 0) {
+        <button class="btn-secondary" (click)="clearFilters()">Limpiar filtros</button>
+      } @else {
+        <button class="btn-add" (click)="openCreate()">
+          <app-icon name="plus" [size]="18"/> Crear producto
+        </button>
+      }
+    </div>
   } @else {
-    <div class="table-container">
-      <table>
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Nombre</th>
-            <th>Categoría</th>
-            <th>Precio</th>
-            <th>Stock</th>
-            <th>Estado</th>
-            <th>Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (p of products(); track p.id) {
-            <tr>
-              <td>{{ p.id }}</td>
-              <td>{{ p.name }}</td>
-              <td>{{ p.categoryName }}</td>
-              <td>{{ p.price | currency:'COP':'symbol':'1.0-0' }}</td>
-              <td>{{ p.stock }}</td>
-              <td><span class="badge" [class.active]="p.isActive">{{ p.isActive ? 'Activo' : 'Inactivo' }}</span></td>
-              <td class="actions">
-                <button class="btn-icon" (click)="openEdit(p)">✏️</button>
-                <button class="btn-icon danger" (click)="delete(p.id)">🗑️</button>
-              </td>
-            </tr>
-          } @empty {
-            <tr><td colspan="7" class="empty">No hay productos registrados</td></tr>
-          }
-        </tbody>
-      </table>
+    @if (canReorder()) {
+      <p class="reorder-hint">
+        <app-icon name="menu" [size]="14"/>
+        Arrastra las cards para reordenar el catálogo
+      </p>
+    } @else {
+      <p class="reorder-hint disabled">
+        <app-icon name="search" [size]="14"/>
+        Quita los filtros para reordenar el catálogo
+      </p>
+    }
+
+    <div class="cards-grid"
+         cdkDropList
+         cdkDropListOrientation="mixed"
+         [cdkDropListDisabled]="!canReorder()"
+         (cdkDropListDropped)="onDrop($event)">
+      @for (p of filtered(); track p.id) {
+        <article class="card"
+                 cdkDrag
+                 [cdkDragDisabled]="!canReorder()"
+                 [class.inactive]="!p.isActive"
+                 [class.draggable]="canReorder()">
+
+          <div class="drag-handle" cdkDragHandle *ngIf="canReorder()" title="Arrastrar para reordenar">
+            <span></span><span></span><span></span>
+          </div>
+
+          <div class="card-image">
+            @if (p.imageUrl) {
+              <img [src]="p.imageUrl" [alt]="p.name" />
+            } @else {
+              <div class="no-image"><app-icon name="image" [size]="36"/></div>
+            }
+
+            @if (p.brand) {
+              <span class="brand-badge">{{ p.brand }}</span>
+            }
+            @if (!p.isActive) {
+              <span class="status-overlay">Inactivo</span>
+            }
+          </div>
+
+          <div class="card-body">
+            <span class="card-category">{{ p.categoryName }}</span>
+            <h3 class="card-name" [title]="p.name">{{ p.name }}</h3>
+            @if (p.weight) {
+              <span class="card-weight">{{ p.weight }}</span>
+            }
+
+            <div class="card-meta">
+              <strong class="card-price">{{ p.price | currency:'COP':'symbol-narrow':'1.0-0' }}</strong>
+              <span class="card-stock" [class]="stockClass(p.stock)">
+                <app-icon name="cube" [size]="12"/> {{ p.stock }}
+              </span>
+            </div>
+
+            <div class="card-actions">
+              <button class="action-btn primary" (click)="openEdit(p)" title="Editar">
+                <app-icon name="edit" [size]="15"/> Editar
+              </button>
+              <button class="action-btn ghost"
+                      (click)="toggleActive(p)"
+                      [title]="p.isActive ? 'Desactivar' : 'Activar'">
+                <app-icon [name]="p.isActive ? 'eye-off' : 'eye'" [size]="15"/>
+              </button>
+              <button class="action-btn danger" (click)="delete(p)" title="Eliminar">
+                <app-icon name="trash" [size]="15"/>
+              </button>
+            </div>
+          </div>
+        </article>
+      }
     </div>
   }
 </div>
+
+<!-- ===== Form Modal (drawer overlay) ===== -->
+@if (showForm()) {
+  <div class="form-overlay" (click)="closeForm()"></div>
+  <div class="form-drawer" (click)="$event.stopPropagation()">
+    <header class="drawer-header">
+      <div>
+        <h2>{{ editingId() ? 'Editar producto' : 'Nuevo producto' }}</h2>
+        <p>{{ editingId() ? 'Actualiza la información del producto' : 'Registra un nuevo producto en el catálogo' }}</p>
+      </div>
+      <button class="close-drawer" (click)="closeForm()" aria-label="Cerrar">
+        <app-icon name="close" [size]="20"/>
+      </button>
+    </header>
+
+    <!-- Section tabs -->
+    <nav class="section-tabs">
+      <button [class.active]="formSection() === 'basic'" (click)="formSection.set('basic')">
+        Básico
+      </button>
+      <button [class.active]="formSection() === 'info'" (click)="formSection.set('info')">
+        Información
+      </button>
+      <button [class.active]="formSection() === 'nutrition'" (click)="formSection.set('nutrition')">
+        Nutricional
+      </button>
+    </nav>
+
+    <div class="drawer-body">
+      @if (formError()) {
+        <div class="alert">{{ formError() }}</div>
+      }
+
+      <!-- Section: Básico -->
+      @if (formSection() === 'basic') {
+        <div class="form-section">
+          <div class="field">
+            <label>Nombre <span class="req">*</span></label>
+            <input type="text"
+                   [ngModel]="form().name"
+                   (ngModelChange)="updateForm('name', $event)"
+                   placeholder="Ej: Quesillo Tajado 400g">
+          </div>
+
+          <div class="field-row">
+            <div class="field">
+              <label>Categoría <span class="req">*</span></label>
+              <select [ngModel]="form().categoryId"
+                      (ngModelChange)="updateForm('categoryId', +$event)">
+                <option [ngValue]="0" disabled>Seleccione…</option>
+                @for (c of categories(); track c.id) {
+                  <option [ngValue]="c.id">{{ c.name }}</option>
+                }
+              </select>
+            </div>
+            <div class="field">
+              <label>Marca</label>
+              <input type="text"
+                     [ngModel]="form().brand"
+                     (ngModelChange)="updateForm('brand', $event)"
+                     placeholder="Ej: YCT, Mamá Sara…">
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Descripción</label>
+            <textarea rows="3"
+                      [ngModel]="form().description"
+                      (ngModelChange)="updateForm('description', $event)"
+                      placeholder="Breve descripción del producto"></textarea>
+          </div>
+
+          <div class="field-row">
+            <div class="field">
+              <label>Precio (COP) <span class="req">*</span></label>
+              <input type="number"
+                     [ngModel]="form().price"
+                     (ngModelChange)="updateForm('price', $event)"
+                     placeholder="0" min="0">
+            </div>
+            <div class="field">
+              <label>Stock <span class="req">*</span></label>
+              <input type="number"
+                     [ngModel]="form().stock"
+                     (ngModelChange)="updateForm('stock', $event)"
+                     placeholder="0" min="0">
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Imagen del producto</label>
+
+            @if (form().imageUrl) {
+              <div class="image-uploaded">
+                <img [src]="form().imageUrl" alt="Imagen seleccionada" />
+                <div class="image-actions">
+                  <label class="replace-btn" [class.disabled]="uploadingImage()">
+                    <app-icon name="refresh" [size]="14"/>
+                    {{ uploadingImage() ? 'Subiendo…' : 'Reemplazar' }}
+                    <input type="file" accept="image/*" (change)="onImageSelected($event)" hidden [disabled]="uploadingImage()">
+                  </label>
+                  <button type="button" class="remove-btn" (click)="clearImage()" [disabled]="uploadingImage()">
+                    <app-icon name="trash" [size]="14"/> Quitar
+                  </button>
+                </div>
+              </div>
+            } @else {
+              <label class="image-dropzone" [class.uploading]="uploadingImage()">
+                @if (uploadingImage()) {
+                  <span class="spinner"></span>
+                  <p>Subiendo imagen…</p>
+                } @else {
+                  <app-icon name="image" [size]="40"/>
+                  <p><strong>Click para subir</strong> o arrastra aquí</p>
+                  <small>JPG, PNG, WEBP o GIF · Máx. 2 MB</small>
+                }
+                <input type="file" accept="image/*" (change)="onImageSelected($event)" hidden [disabled]="uploadingImage()">
+              </label>
+            }
+          </div>
+
+          @if (editingId()) {
+            <div class="field">
+              <label class="switch-label">
+                <input type="checkbox"
+                       [checked]="form().isActive"
+                       (change)="updateForm('isActive', $any($event.target).checked)">
+                <span class="switch-track"><span class="switch-knob"></span></span>
+                <span>Producto activo (visible en la tienda)</span>
+              </label>
+            </div>
+          }
+        </div>
+      }
+
+      <!-- Section: Información -->
+      @if (formSection() === 'info') {
+        <div class="form-section">
+          <div class="field-row">
+            <div class="field">
+              <label>Peso / Volumen</label>
+              <input type="text"
+                     [ngModel]="form().weight"
+                     (ngModelChange)="updateForm('weight', $event)"
+                     placeholder="Ej: 400g, 1L">
+            </div>
+            <div class="field">
+              <label>Tamaño de porción</label>
+              <input type="text"
+                     [ngModel]="form().servingSize"
+                     (ngModelChange)="updateForm('servingSize', $event)"
+                     placeholder="Ej: 100 g">
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Ingredientes</label>
+            <textarea rows="3"
+                      [ngModel]="form().ingredients"
+                      (ngModelChange)="updateForm('ingredients', $event)"
+                      placeholder="Lista de ingredientes, separados por comas"></textarea>
+          </div>
+
+          <div class="field">
+            <label>Conservación</label>
+            <textarea rows="2"
+                      [ngModel]="form().storageInstructions"
+                      (ngModelChange)="updateForm('storageInstructions', $event)"
+                      placeholder="Ej: Mantener refrigerado entre 2°C y 8°C"></textarea>
+          </div>
+
+          <div class="field">
+            <label>Información de vencimiento</label>
+            <input type="text"
+                   [ngModel]="form().expirationInfo"
+                   (ngModelChange)="updateForm('expirationInfo', $event)"
+                   placeholder="Ej: Ver fecha en el empaque">
+          </div>
+        </div>
+      }
+
+      <!-- Section: Nutricional -->
+      @if (formSection() === 'nutrition') {
+        <div class="form-section">
+          <p class="section-hint">Valores por porción ({{ form().servingSize || 'no definida' }})</p>
+
+          <div class="field-row">
+            <div class="field">
+              <label>Calorías (kcal)</label>
+              <input type="number" step="0.1"
+                     [ngModel]="form().calories"
+                     (ngModelChange)="updateForm('calories', $event)"
+                     placeholder="0">
+            </div>
+            <div class="field">
+              <label>Proteína (g)</label>
+              <input type="number" step="0.1"
+                     [ngModel]="form().protein"
+                     (ngModelChange)="updateForm('protein', $event)"
+                     placeholder="0">
+            </div>
+          </div>
+
+          <div class="field-row">
+            <div class="field">
+              <label>Grasa total (g)</label>
+              <input type="number" step="0.1"
+                     [ngModel]="form().totalFat"
+                     (ngModelChange)="updateForm('totalFat', $event)"
+                     placeholder="0">
+            </div>
+            <div class="field">
+              <label>Grasa saturada (g)</label>
+              <input type="number" step="0.1"
+                     [ngModel]="form().saturatedFat"
+                     (ngModelChange)="updateForm('saturatedFat', $event)"
+                     placeholder="0">
+            </div>
+          </div>
+
+          <div class="field-row">
+            <div class="field">
+              <label>Carbohidratos (g)</label>
+              <input type="number" step="0.1"
+                     [ngModel]="form().totalCarbs"
+                     (ngModelChange)="updateForm('totalCarbs', $event)"
+                     placeholder="0">
+            </div>
+            <div class="field">
+              <label>Azúcares (g)</label>
+              <input type="number" step="0.1"
+                     [ngModel]="form().sugars"
+                     (ngModelChange)="updateForm('sugars', $event)"
+                     placeholder="0">
+            </div>
+          </div>
+
+          <div class="field-row">
+            <div class="field">
+              <label>Colesterol (mg)</label>
+              <input type="number" step="0.1"
+                     [ngModel]="form().cholesterol"
+                     (ngModelChange)="updateForm('cholesterol', $event)"
+                     placeholder="0">
+            </div>
+            <div class="field">
+              <label>Sodio (mg)</label>
+              <input type="number" step="0.1"
+                     [ngModel]="form().sodium"
+                     (ngModelChange)="updateForm('sodium', $event)"
+                     placeholder="0">
+            </div>
+          </div>
+
+          <div class="field-row">
+            <div class="field">
+              <label>Calcio (mg)</label>
+              <input type="number" step="0.1"
+                     [ngModel]="form().calcium"
+                     (ngModelChange)="updateForm('calcium', $event)"
+                     placeholder="0">
+            </div>
+            <div class="field">
+              <label>Hierro (mg)</label>
+              <input type="number" step="0.1"
+                     [ngModel]="form().iron"
+                     (ngModelChange)="updateForm('iron', $event)"
+                     placeholder="0">
+            </div>
+            <div class="field">
+              <label>Vitamina D (mcg)</label>
+              <input type="number" step="0.1"
+                     [ngModel]="form().vitaminD"
+                     (ngModelChange)="updateForm('vitaminD', $event)"
+                     placeholder="0">
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+
+    <footer class="drawer-footer">
+      <button class="btn-secondary" (click)="closeForm()">Cancelar</button>
+      <button class="btn-primary" (click)="save()">
+        {{ editingId() ? 'Guardar cambios' : 'Crear producto' }}
+      </button>
+    </footer>
+  </div>
+}

@@ -57,3 +57,25 @@ img, video { max-width: 100%; height: auto; }
     background: $text-muted;
   }
 }
+
+// ===== CDK drag-drop (vive en body, fuera del scope del componente) =====
+.cdk-drag-preview {
+  border-radius: $radius-xl;
+  background: $bg-surface;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.25);
+  overflow: hidden;
+  border: 1px solid $primary;
+  transform: rotate(-1.5deg);
+  cursor: grabbing;
+}
+
+.cdk-drag-placeholder {
+  opacity: 0.35;
+  background: $primary-light;
+  border: 2px dashed $primary;
+  border-radius: $radius-xl;
+}
+
+.cdk-drag-animating {
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}

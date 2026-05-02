@@ -1,0 +1,252 @@
+@use '../../../scss/admin' as *;
+@use '../../../scss/variables' as *;
+@use '../../../scss/mixins' as *;
+@use '../../../scss/animations' as *;
+
+@keyframes spin { to { transform: rotate(360deg); } }
+.spinning { animation: spin 1s linear infinite; display: inline-block; }
+
+// ===== Filters =====
+.filters-card {
+  background: $bg-surface;
+  border: 1px solid $border-color;
+  border-radius: $radius-xl;
+  padding: $spacing-lg;
+  margin-bottom: $spacing-xl;
+}
+
+.filter-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $spacing-md;
+  align-items: flex-end;
+}
+
+.filter-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 160px;
+  flex: 1;
+
+  label {
+    color: $text-muted;
+    font-size: $font-size-xs;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+  }
+
+  select {
+    @include styled-select;
+  }
+}
+
+.clear-btn {
+  background: transparent;
+  border: 1px solid $border-color;
+  color: $text-secondary;
+  padding: 9px 16px;
+  border-radius: $radius-md;
+  font-family: $font-family;
+  font-size: $font-size-sm;
+  cursor: pointer;
+  transition: all $transition-fast;
+
+  &:hover { border-color: $accent; color: $accent; background: rgba($accent, 0.05); }
+}
+
+// ===== Logs list =====
+.logs-card {
+  background: $bg-surface;
+  border: 1px solid $border-color;
+  border-radius: $radius-xl;
+  overflow: hidden;
+}
+
+.logs-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.log-item {
+  border-bottom: 1px solid $border-color;
+  &:last-child { border-bottom: none; }
+  transition: background $transition-fast;
+
+  &:hover { background: $bg-hover; }
+  &.failed:not(.expanded) { background: rgba($danger, 0.03); }
+  &.expanded { background: $bg-hover; }
+}
+
+.log-header {
+  width: 100%;
+  background: transparent;
+  border: none;
+  display: flex;
+  align-items: flex-start;
+  gap: $spacing-md;
+  padding: $spacing-md $spacing-xl;
+  cursor: pointer;
+  text-align: left;
+  font-family: $font-family;
+}
+
+.log-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: $radius-md;
+  background: $bg-input;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: $text-secondary;
+}
+
+.log-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.log-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: $spacing-sm;
+  margin-bottom: 4px;
+}
+
+.action-badge {
+  font-size: $font-size-xs;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  padding: 3px 10px;
+  border-radius: $radius-pill;
+  background: $bg-input;
+  color: $text-secondary;
+
+  &.create { background: $success-light; color: $success; }
+  &.update { background: $info-light; color: $info; }
+  &.delete { background: $danger-light; color: $danger; }
+  &.login { background: rgba($brand-green, 0.12); color: $brand-green-dark; }
+  &.logout { background: $bg-input; color: $text-secondary; }
+  &.status { background: $purple-light; color: $purple; }
+  &.failed { background: $danger-light; color: $danger; }
+}
+
+.entity-tag {
+  font-size: $font-size-xs;
+  color: $text-muted;
+  font-family: monospace;
+  font-weight: 500;
+}
+
+.fail-tag {
+  font-size: $font-size-xs;
+  color: $danger;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.log-summary {
+  margin: 0 0 4px 0;
+  color: $text-primary;
+  font-size: $font-size-base;
+  line-height: 1.4;
+}
+
+.log-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  align-items: center;
+  font-size: $font-size-xs;
+  color: $text-muted;
+
+  .meta-user strong { color: $text-secondary; }
+  .meta-sep { opacity: 0.5; }
+  .meta-ip { font-family: monospace; }
+}
+
+.chevron {
+  color: $text-muted;
+  transition: transform $transition-fast;
+  display: flex;
+  align-items: center;
+  &.open { transform: rotate(180deg); }
+}
+
+.log-details {
+  padding: $spacing-md $spacing-xl $spacing-lg calc(#{$spacing-xl} + 40px + #{$spacing-md});
+  animation: slideDown 0.2s ease;
+
+  h4 {
+    margin: 0 0 $spacing-sm 0;
+    color: $text-secondary;
+    font-size: $font-size-xs;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+  }
+
+  pre {
+    background: $text-primary;
+    color: #c2e9c2;
+    padding: $spacing-md;
+    border-radius: $radius-md;
+    font-size: $font-size-xs;
+    overflow-x: auto;
+    margin: 0;
+    line-height: 1.5;
+    font-family: 'Cascadia Code', Consolas, monospace;
+  }
+}
+
+@keyframes slideDown {
+  from { opacity: 0; max-height: 0; }
+  to { opacity: 1; max-height: 600px; }
+}
+
+// ===== Pagination =====
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: $spacing-md $spacing-xl;
+  border-top: 1px solid $border-color;
+  background: $bg-input;
+  gap: $spacing-md;
+  flex-wrap: wrap;
+}
+
+.page-btn {
+  background: $bg-surface;
+  border: 1px solid $border-color;
+  color: $text-secondary;
+  padding: 6px 14px;
+  border-radius: $radius-md;
+  cursor: pointer;
+  font-family: $font-family;
+  font-size: $font-size-sm;
+  transition: all $transition-fast;
+
+  &:hover:not(:disabled) { border-color: $primary; color: $primary; }
+  &:disabled { opacity: 0.5; cursor: not-allowed; }
+}
+
+.page-info {
+  color: $text-muted;
+  font-size: $font-size-sm;
+}
+
+@media (max-width: 768px) {
+  .filter-field { min-width: 100%; }
+  .log-header { padding: $spacing-md; }
+  .log-details {
+    padding-left: $spacing-md;
+    padding-right: $spacing-md;
+  }
+}

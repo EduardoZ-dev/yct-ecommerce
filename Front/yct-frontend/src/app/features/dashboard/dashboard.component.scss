@@ -1,52 +1,648 @@
 @use '../../../scss/variables' as *;
 @use '../../../scss/mixins' as *;
+@use '../../../scss/animations' as *;
 
 .dashboard {
-  color: $text-primary;
+  animation: fadeIn 0.4s ease both;
 }
 
-h2 {
-  margin: 0 0 $spacing-xs;
-  font-size: $font-size-2xl;
+// ===== Header =====
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: $spacing-md;
+  margin-bottom: $spacing-2xl;
+
+  h1 {
+    font-family: $font-family-heading;
+    font-size: 1.75rem;
+    color: $text-primary;
+    margin: 0 0 $spacing-xs 0;
+  }
+  .subtitle {
+    color: $text-muted;
+    font-size: $font-size-base;
+    margin: 0;
+  }
 }
 
-.subtitle {
-  color: $text-muted;
-  margin: 0 0 $spacing-2xl;
-}
-
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: $spacing-xl;
-}
-
-.stat-card {
-  @include card;
+.refresh-btn {
+  background: $bg-surface;
+  border: 1px solid $border-color;
+  color: $text-secondary;
+  padding: 8px 16px;
+  border-radius: $radius-pill;
+  cursor: pointer;
+  font-family: $font-family;
+  font-size: $font-size-sm;
+  font-weight: 500;
   display: flex;
   align-items: center;
+  gap: 6px;
+  transition: all $transition-fast;
+
+  &:hover { border-color: $primary; color: $primary; }
+
+  span.spinning { animation: spin 1s linear infinite; display: inline-block; }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+// ===== KPI cards =====
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
   gap: $spacing-lg;
-  transition: transform $transition-fast;
+  margin-bottom: $spacing-2xl;
+}
+
+.kpi-card {
+  background: $bg-surface;
+  border: 1px solid $border-color;
+  border-radius: $radius-xl;
+  padding: $spacing-xl;
+  display: flex;
+  align-items: flex-start;
+  gap: $spacing-md;
+  transition: all $transition-fast;
+  position: relative;
+  overflow: hidden;
+  text-decoration: none;
+  color: inherit;
+  font-family: inherit;
+  text-align: left;
+  width: 100%;
 
   &:hover {
     transform: translateY(-2px);
+    box-shadow: $shadow-md;
+  }
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 4px;
+    height: 100%;
+    background: $primary;
+  }
+
+  &.revenue::before { background: $brand-orange; }
+  &.orders::before { background: $info; }
+  &.products::before { background: $brand-green; }
+  &.categories::before { background: $purple; }
+
+  &.clickable {
+    cursor: pointer;
+    border: 1px solid $border-color;
+    background: $bg-surface;
+    padding-bottom: calc(#{$spacing-xl} + 22px);
+
+    &:hover {
+      border-color: rgba($primary, 0.4);
+      .kpi-cta { opacity: 1; transform: translateY(0); }
+    }
   }
 }
 
-.stat-icon {
-  font-size: $font-size-4xl;
+.kpi-cta {
+  position: absolute;
+  bottom: $spacing-md;
+  right: $spacing-xl;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: $font-size-xs;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  opacity: 0.4;
+  transform: translateY(2px);
+  transition: all $transition-fast;
+  color: $text-muted;
+
+  .revenue & { color: $brand-orange; }
+  .orders & { color: $info; }
+  .products & { color: $brand-green-dark; }
+  .categories & { color: $purple; }
 }
 
-.stat-info {
+.kpi-icon {
+  background: $bg-input;
+  width: 52px;
+  height: 52px;
+  border-radius: $radius-lg;
+  @include flex-center;
+  flex-shrink: 0;
+  color: $primary;
+
+  .revenue & { color: $brand-orange; background: rgba($brand-orange, 0.1); }
+  .orders & { color: $info; background: $info-light; }
+  .products & { color: $brand-green; background: $primary-light; }
+  .categories & { color: $purple; background: $purple-light; }
+}
+
+.kpi-content {
+  flex: 1;
+  min-width: 0;
+
+  .kpi-label {
+    color: $text-muted;
+    font-size: $font-size-sm;
+    margin: 0 0 4px 0;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    font-weight: 500;
+  }
+
+  .kpi-value {
+    font-family: $font-family-heading;
+    font-size: 1.75rem;
+    color: $text-primary;
+    margin: 0;
+    line-height: 1.1;
+    word-break: break-word;
+
+    small {
+      color: $text-muted;
+      font-size: 1rem;
+      font-weight: 500;
+    }
+  }
+
+  .kpi-foot {
+    color: $text-muted;
+    font-size: $font-size-xs;
+    margin-top: 6px;
+    display: block;
+
+    &.kpi-warn { color: $warning; font-weight: 500; }
+  }
+}
+
+// ===== Lists grid =====
+.lists-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+  gap: $spacing-lg;
+}
+
+.panel {
+  background: $bg-surface;
+  border: 1px solid $border-color;
+  border-radius: $radius-xl;
+  overflow: hidden;
+}
+
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: $spacing-lg $spacing-xl;
+  border-bottom: 1px solid $border-color;
+
   h3 {
+    font-family: $font-family-heading;
     margin: 0;
     color: $text-primary;
-    font-size: $font-size-lg;
+    font-size: 1.05rem;
   }
 
-  p {
-    margin: $spacing-xs 0 0;
+  .link-more {
+    color: $primary;
+    text-decoration: none;
+    font-size: $font-size-sm;
+    font-weight: 500;
+    &:hover { color: $primary-hover; }
+  }
+}
+
+.empty {
+  padding: $spacing-2xl;
+  text-align: center;
+  color: $text-muted;
+
+  app-icon {
+    display: inline-flex;
+    color: $text-muted;
+    opacity: 0.5;
+    margin-bottom: $spacing-sm;
+  }
+  p { margin: 0; }
+}
+
+// ===== Orders list =====
+.orders-list, .products-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.order-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: $spacing-md $spacing-xl;
+  border-bottom: 1px solid $border-color;
+  gap: $spacing-md;
+
+  &:last-child { border-bottom: none; }
+
+  &:hover { background: $bg-hover; }
+}
+
+.order-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+
+  strong {
+    color: $text-primary;
+    font-family: $font-family-heading;
+    font-size: $font-size-base;
+  }
+  small {
+    color: $text-muted;
+    font-size: $font-size-xs;
+  }
+}
+
+.order-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+.order-total {
+  color: $accent;
+  font-family: $font-family-heading;
+}
+
+.badge {
+  font-size: $font-size-xs;
+  padding: 3px 10px;
+  border-radius: $radius-pill;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+
+  &.badge-pending { background: $warning-light; color: $warning; }
+  &.badge-confirmed { background: $info-light; color: $info; }
+  &.badge-shipped { background: $purple-light; color: $purple; }
+  &.badge-delivered { background: $success-light; color: $success; }
+  &.badge-cancelled { background: $danger-light; color: $danger; }
+}
+
+// ===== Products list =====
+.product-row {
+  display: flex;
+  align-items: center;
+  gap: $spacing-md;
+  padding: $spacing-md $spacing-xl;
+  border-bottom: 1px solid $border-color;
+
+  &:last-child { border-bottom: none; }
+  &:hover { background: $bg-hover; }
+}
+
+.product-img {
+  width: 44px;
+  height: 44px;
+  border-radius: $radius-md;
+  background: $bg-input;
+  @include flex-center;
+  overflow: hidden;
+  flex-shrink: 0;
+  color: $text-muted;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    padding: 4px;
+  }
+}
+
+.product-info {
+  flex: 1;
+  min-width: 0;
+
+  strong {
+    color: $text-primary;
+    font-family: $font-family-heading;
+    font-size: $font-size-base;
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  small {
+    color: $text-muted;
+    font-size: $font-size-xs;
+  }
+}
+
+.stock-warn {
+  color: $warning;
+  font-weight: 700;
+}
+
+// ===== Skeleton =====
+.loading-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: $spacing-lg;
+}
+
+.skeleton-card {
+  height: 110px;
+  background: $bg-surface;
+  border: 1px solid $border-color;
+  border-radius: $radius-xl;
+  @include skeleton;
+}
+
+// ============================================================
+//  Modal de Proyección de Ingresos
+// ============================================================
+.revenue-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(2px);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: $spacing-xl;
+  z-index: 1000;
+  overflow-y: auto;
+  animation: fadeIn 0.2s ease;
+}
+
+.revenue-modal {
+  background: $bg-surface;
+  border-radius: $radius-xl;
+  width: 100%;
+  max-width: 940px;
+  box-shadow: $shadow-lg;
+  animation: slideUp 0.25s ease;
+  margin: auto 0;
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.revenue-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: $spacing-md;
+  padding: $spacing-xl;
+  border-bottom: 1px solid $border-color;
+
+  h2 {
+    margin: 0;
+    font-family: $font-family-heading;
+    color: $text-primary;
+    font-size: 1.3rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    app-icon { color: $brand-orange; }
+  }
+  .muted {
+    margin: 4px 0 0;
     color: $text-muted;
     font-size: $font-size-sm;
   }
+}
+
+.close-btn {
+  background: $bg-input;
+  border: none;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  cursor: pointer;
+  color: $text-muted;
+  transition: all $transition-fast;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  &:hover { background: $danger-light; color: $danger; }
+}
+
+.revenue-loading {
+  padding: $spacing-3xl;
+  text-align: center;
+  color: $text-muted;
+}
+
+// ----- Tarjetas resumen -----
+.proj-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: $spacing-md;
+  padding: $spacing-xl;
+  background: $bg-input;
+  border-bottom: 1px solid $border-color;
+}
+
+.proj-stat {
+  background: $bg-surface;
+  border-radius: $radius-md;
+  padding: $spacing-md;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  border: 1px solid $border-color;
+
+  small {
+    color: $text-muted;
+    font-size: $font-size-xs;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    font-weight: 600;
+  }
+
+  strong {
+    color: $text-primary;
+    font-family: $font-family-heading;
+    font-size: 1.15rem;
+    font-weight: 800;
+    line-height: 1.2;
+  }
+
+  .muted {
+    color: $text-muted;
+    font-size: $font-size-xs;
+  }
+
+  .trend {
+    font-size: $font-size-xs;
+    font-weight: 600;
+
+    &.up { color: $success; }
+    &.down { color: $danger; }
+  }
+
+  &.highlight {
+    background: linear-gradient(135deg, $brand-orange-bg, rgba($brand-orange, 0.08));
+    border-color: rgba($brand-orange, 0.3);
+    strong { color: $brand-orange-dark; }
+  }
+
+  &.total {
+    background: linear-gradient(135deg, $brand-green-bg, rgba($brand-green, 0.08));
+    border-color: rgba($brand-green, 0.3);
+    strong { color: $brand-green-dark; }
+  }
+}
+
+// ----- Gráfica -----
+.chart-card, .proj-table-card {
+  padding: $spacing-xl;
+  border-bottom: 1px solid $border-color;
+
+  &:last-child { border-bottom: none; }
+
+  h3 {
+    margin: 0 0 $spacing-md 0;
+    color: $text-primary;
+    font-family: $font-family-heading;
+    font-size: 1rem;
+  }
+}
+
+.chart {
+  display: flex;
+  align-items: flex-end;
+  gap: $spacing-sm;
+  height: 200px;
+  padding: $spacing-md $spacing-sm 0;
+  background: $bg-input;
+  border-radius: $radius-md;
+
+  .bar-col {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    height: 100%;
+    cursor: help;
+
+    .bar-track {
+      flex: 1;
+      width: 100%;
+      max-width: 36px;
+      display: flex;
+      align-items: flex-end;
+      position: relative;
+    }
+
+    .bar-fill {
+      width: 100%;
+      background: linear-gradient(180deg, $brand-green-light, $brand-green);
+      border-radius: $radius-sm $radius-sm 0 0;
+      min-height: 2px;
+      transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .bar-label {
+      font-size: 0.65rem;
+      color: $text-muted;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+
+    &:hover .bar-fill {
+      filter: brightness(1.1);
+      box-shadow: 0 0 0 2px rgba($brand-green, 0.3);
+    }
+
+    &.current {
+      .bar-fill {
+        background: linear-gradient(180deg, $brand-orange-light, $brand-orange);
+      }
+      .bar-label {
+        color: $brand-orange-dark;
+        font-weight: 700;
+      }
+    }
+  }
+}
+
+// ----- Tabla -----
+.proj-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: $font-size-sm;
+
+  thead {
+    background: $bg-input;
+    th {
+      padding: 10px 14px;
+      text-align: left;
+      color: $text-secondary;
+      font-size: $font-size-xs;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+
+      &.num { text-align: right; }
+    }
+  }
+
+  tbody tr {
+    border-top: 1px solid $border-color;
+    transition: background $transition-fast;
+
+    &:hover { background: $bg-hover; }
+
+    &.current {
+      background: rgba($brand-orange, 0.05);
+      td { font-weight: 600; }
+    }
+
+    td {
+      padding: 10px 14px;
+      color: $text-primary;
+
+      &.num { text-align: right; }
+      &.muted { color: $text-muted; font-weight: 400; }
+    }
+  }
+}
+
+.now-tag {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 2px 8px;
+  background: $brand-orange;
+  color: #fff;
+  border-radius: $radius-pill;
+  font-size: 0.6rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+@media (max-width: 768px) {
+  .revenue-backdrop { padding: 0; }
+  .revenue-modal { border-radius: 0; max-width: 100%; min-height: 100%; }
+  .revenue-head, .proj-stats, .chart-card, .proj-table-card { padding: $spacing-md; }
+  .chart { height: 160px; }
+  .proj-table { font-size: $font-size-xs; }
 }

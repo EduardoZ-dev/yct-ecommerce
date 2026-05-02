@@ -1,77 +1,507 @@
 @use '../../../scss/variables' as *;
 @use '../../../scss/mixins' as *;
+@use '../../../scss/animations' as *;
 
-.login-container {
-  @include flex-center;
+// =====================================================
+//  Sliding Auth — YCT brand
+// =====================================================
+.auth-page {
   min-height: 100vh;
-  background: $bg-body;
+  background:
+    radial-gradient(circle at 10% 20%, rgba($brand-green, 0.10), transparent 50%),
+    radial-gradient(circle at 90% 80%, rgba($brand-orange, 0.10), transparent 50%),
+    $bg-body;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   padding: $spacing-lg;
+  position: relative;
+  overflow: hidden;
 }
 
-.login-card {
-  @include card-shadow;
+.auth-shell {
+  position: relative;
   width: 100%;
-  max-width: 420px;
-  padding: $spacing-xl;
+  max-width: 920px;
+  min-height: 580px;
+  background: $bg-surface;
+  border-radius: 22px;
+  box-shadow: 0 24px 60px rgba(30, 50, 30, 0.18);
+  overflow: hidden;
+  animation: fadeIn 0.5s ease both;
+}
 
-  @include tablet-up {
-    padding: $spacing-3xl;
+// =====================================================
+//  Form containers (dos formularios apilados, uno se mueve)
+// =====================================================
+.form-container {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  width: 50%;
+  transition: all 0.6s ease-in-out;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  form {
+    width: 100%;
+    max-width: 340px;
+    padding: $spacing-2xl $spacing-xl;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
   }
 }
 
-.login-header {
-  text-align: center;
-  margin-bottom: $spacing-xl;
-
-  h1 {
-    color: $accent;
-    font-size: $font-size-4xl;
-    margin: 0;
-    font-weight: 800;
-  }
-
-  p {
-    color: $text-muted;
-    margin: $spacing-xs 0 0;
-    font-size: $font-size-base;
-  }
+.sign-in {
+  left: 0;
+  z-index: 2;
 }
 
+.sign-up {
+  left: 0;
+  z-index: 1;
+  opacity: 0;
+}
+
+.auth-shell.right-active {
+  .sign-in {
+    transform: translateX(100%);
+    opacity: 0;
+    z-index: 1;
+  }
+  .sign-up {
+    transform: translateX(100%);
+    opacity: 1;
+    z-index: 5;
+    animation: fadeShow 0.6s;
+  }
+  .overlay-container {
+    transform: translateX(-100%);
+  }
+  .overlay {
+    transform: translateX(50%);
+  }
+  .overlay-left { transform: translateX(0); }
+  .overlay-right { transform: translateX(20%); }
+}
+
+@keyframes fadeShow {
+  0%, 49.99% { opacity: 0; z-index: 1; }
+  50%, 100% { opacity: 1; z-index: 5; }
+}
+
+// =====================================================
+//  Form content
+// =====================================================
 h2 {
+  font-family: $font-family-heading;
   color: $text-primary;
+  font-size: 2.1rem;
+  font-weight: 700;
+  margin: 0;
   text-align: center;
-  margin-bottom: $spacing-xl;
+  letter-spacing: -0.5px;
+
+  // Underline accent
+  position: relative;
+  padding-bottom: 14px;
+
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 56px;
+    height: 3px;
+    background: linear-gradient(90deg, $brand-green, $brand-orange);
+    border-radius: 2px;
+  }
+}
+
+.hint {
+  color: $text-muted;
+  font-size: $font-size-sm;
+  margin: 6px 0 $spacing-md 0;
+  text-align: center;
+}
+
+.alert {
+  background: $danger-light;
+  color: $danger;
+  border: 1px solid rgba($danger, 0.2);
+  border-radius: $radius-md;
+  padding: 10px 14px;
+  font-size: $font-size-sm;
   font-weight: 500;
+  animation: shake 0.4s;
+  text-align: center;
 }
 
-.form-group {
-  @include form-group;
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-6px); }
+  75% { transform: translateX(6px); }
 }
 
-.btn-primary {
-  @include btn-primary;
-  width: 100%;
+// ===== Field with icon + eye =====
+.field {
+  position: relative;
+  display: flex;
+  align-items: center;
+  background: $bg-input;
+  border: 1.5px solid transparent;
+  border-radius: 14px;
+  transition: all $transition-fast;
+
+  &:focus-within {
+    background: $bg-surface;
+    border-color: $primary;
+    box-shadow: 0 0 0 4px rgba($primary, 0.1);
+
+    .field-icon { color: $primary; }
+  }
+
+  input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    padding: 13px 14px 13px 44px;
+    font-family: $font-family;
+    font-size: $font-size-base;
+    color: $text-primary;
+    width: 100%;
+
+    &::placeholder { color: $text-placeholder; }
+  }
+}
+
+.field-icon {
+  position: absolute;
+  left: 14px;
+  pointer-events: none;
+  color: $text-muted;
+  display: flex;
+  align-items: center;
+  transition: color $transition-fast;
+}
+
+.eye-btn {
+  position: absolute;
+  right: 8px;
+  background: transparent;
+  border: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  cursor: pointer;
+  color: $text-muted;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all $transition-fast;
+
+  &:hover {
+    background: rgba($primary, 0.1);
+    color: $primary;
+  }
+}
+
+.forgot {
+  align-self: flex-end;
+  font-size: $font-size-sm;
+  color: $primary;
+  text-decoration: none;
+  margin: 2px 4px 6px 0;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all $transition-fast;
+  position: relative;
+
+  &::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -2px;
+    height: 1.5px;
+    background: $primary;
+    transform: scaleX(0);
+    transform-origin: right;
+    transition: transform 0.25s ease;
+  }
+
+  &:hover {
+    color: $primary-hover;
+    &::after { transform: scaleX(1); transform-origin: left; }
+  }
+}
+
+// ===== Botón principal — más elegante =====
+.primary-btn {
+  position: relative;
+  background: linear-gradient(135deg, $brand-green 0%, $brand-green-dark 60%, $brand-orange-dark 130%);
+  background-size: 200% 100%;
+  background-position: 0% 50%;
+  color: $text-on-primary;
+  border: none;
+  padding: 14px 28px;
+  border-radius: 14px;
+  font-family: $font-family-heading;
+  font-size: 0.95rem;
+  font-weight: 600;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow:
+    0 6px 16px rgba($brand-green, 0.28),
+    inset 0 1px 0 rgba(255,255,255,0.18);
   margin-top: $spacing-sm;
+  overflow: hidden;
+
+  // Shine sweep
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      120deg,
+      transparent 30%,
+      rgba(255,255,255,0.25) 50%,
+      transparent 70%
+    );
+    transform: translateX(-100%);
+    transition: transform 0.6s ease;
+  }
+
+  &:hover:not(:disabled) {
+    background-position: 100% 50%;
+    transform: translateY(-1.5px);
+    box-shadow:
+      0 10px 24px rgba($brand-green, 0.4),
+      inset 0 1px 0 rgba(255,255,255,0.25);
+
+    &::before { transform: translateX(100%); }
+  }
+
+  &:active:not(:disabled) {
+    transform: translateY(0);
+  }
+
+  &:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+  }
 }
 
-.error-message {
-  @include error-message;
+// =====================================================
+//  Overlay (panel verde con la marca + slide)
+// =====================================================
+.overlay-container {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 50%;
+  height: 100%;
+  overflow: hidden;
+  transition: transform 0.6s ease-in-out;
+  z-index: 100;
+  border-radius: 22px 0 0 22px;
 }
 
-.toggle-link {
+.auth-shell.right-active .overlay-container {
+  border-radius: 0 22px 22px 0;
+}
+
+.overlay {
+  position: relative;
+  background:
+    radial-gradient(circle at 80% 20%, rgba($brand-orange, 0.45), transparent 40%),
+    radial-gradient(circle at 20% 80%, rgba($brand-green-light, 0.4), transparent 50%),
+    linear-gradient(135deg, $brand-green-dark 0%, $brand-green 70%, $brand-orange 130%);
+  color: $text-on-primary;
+  left: -100%;
+  height: 100%;
+  width: 200%;
+  transform: translateX(0);
+  transition: transform 0.6s ease-in-out;
+
+  &::before, &::after {
+    content: '';
+    position: absolute;
+    border-radius: 50%;
+    pointer-events: none;
+  }
+  &::before {
+    width: 220px;
+    height: 220px;
+    background: rgba(255,255,255,0.06);
+    top: -40px;
+    right: -40px;
+  }
+  &::after {
+    width: 160px;
+    height: 160px;
+    background: rgba(255,255,255,0.05);
+    bottom: -50px;
+    left: -30px;
+  }
+}
+
+.overlay-panel {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  width: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: $spacing-2xl;
+  transition: transform 0.6s ease-in-out;
+}
+
+.overlay-left {
+  transform: translateX(-20%);
+  left: 0;
+}
+
+.overlay-right {
+  right: 0;
+  transform: translateX(0);
+}
+
+.brand-big {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: $spacing-lg;
+
+  img {
+    width: 80px;
+    height: 80px;
+    background: rgba(255,255,255,0.95);
+    border-radius: 18px;
+    padding: 10px;
+    box-shadow: 0 12px 30px rgba(0,0,0,0.18);
+    margin-bottom: $spacing-md;
+  }
+
+  h3 {
+    font-family: $font-family-heading;
+    margin: 0;
+    font-size: 1.05rem;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    opacity: 0.95;
+  }
+}
+
+.overlay-panel h1 {
+  font-family: $font-family-heading;
+  margin: 0 0 $spacing-md 0;
+  font-size: 2.4rem;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.overlay-panel p {
+  font-size: $font-size-base;
+  line-height: 1.55;
+  opacity: 0.92;
+  margin: 0 0 $spacing-xl 0;
+  max-width: 320px;
+}
+
+.ghost-btn {
+  background: transparent;
+  border: 2px solid rgba(255,255,255,0.95);
+  color: #fff;
+  padding: 12px 36px;
+  border-radius: 50px;
+  font-family: $font-family-heading;
+  font-size: $font-size-sm;
+  font-weight: 600;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all $transition-fast;
+
+  &:hover {
+    background: #fff;
+    color: $primary;
+    transform: translateY(-2px);
+  }
+}
+
+// ===== Back link =====
+.back-link {
+  margin-top: $spacing-xl;
+  color: $text-muted;
+  text-decoration: none;
+  font-size: $font-size-sm;
+  font-weight: 500;
+  padding: 8px 18px;
+  border-radius: $radius-pill;
+  transition: all $transition-fast;
+
+  &:hover {
+    color: $primary;
+    background: rgba($primary, 0.08);
+  }
+}
+
+// ===== Mobile toggle link =====
+.mobile-toggle {
+  display: none;
   text-align: center;
   color: $text-muted;
-  margin-top: 1.2rem;
-  font-size: $font-size-base;
+  font-size: $font-size-sm;
+  margin: $spacing-md 0 0 0;
 
   a {
     color: $primary;
+    font-weight: 600;
     cursor: pointer;
-    text-decoration: none;
-    font-weight: 500;
+    margin-left: 4px;
+    &:hover { text-decoration: underline; }
+  }
+}
 
-    &:hover {
-      text-decoration: underline;
+// =====================================================
+//  Responsive — móvil
+// =====================================================
+@include mobile {
+  .auth-shell {
+    min-height: auto;
+    border-radius: 18px;
+  }
+
+  .form-container {
+    width: 100%;
+    position: relative;
+    transition: opacity 0.4s ease;
+
+    form {
+      padding: $spacing-2xl $spacing-xl;
     }
   }
+
+  .sign-up { display: none; opacity: 1; }
+
+  .auth-shell.right-active {
+    .sign-in { display: none; transform: none; }
+    .sign-up { display: flex; transform: none; animation: none; }
+    .overlay-container { transform: none; }
+  }
+
+  .overlay-container { display: none; }
+
+  .mobile-toggle { display: block; }
 }

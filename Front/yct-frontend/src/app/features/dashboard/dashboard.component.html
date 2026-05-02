@@ -1,28 +1,244 @@
 <div class="dashboard">
-  <h2>Bienvenido, {{ auth.fullName() }}</h2>
-  <p class="subtitle">Panel de administración - YCT E-Commerce de Lácteos</p>
+  <!-- Header -->
+  <div class="page-header">
+    <div>
+      <h1>Buenos días, {{ auth.fullName() || 'Admin' }}</h1>
+      <p class="subtitle">Aquí tienes un resumen de Distribuciones YCT</p>
+    </div>
+    <button class="refresh-btn" (click)="loadMetrics()" [disabled]="loading()">
+      <span [class.spinning]="loading()"><app-icon name="refresh" [size]="16"/></span> Actualizar
+    </button>
+  </div>
 
-  <div class="stats-grid">
-    <div class="stat-card">
-      <span class="stat-icon">📁</span>
-      <div class="stat-info">
-        <h3>Categorías</h3>
-        <p>Gestiona las categorías de productos</p>
+  <!-- Loading -->
+  @if (loading() && !metrics()) {
+    <div class="loading-grid">
+      <div class="skeleton-card" *ngFor="let i of [1,2,3,4]"></div>
+    </div>
+  }
+
+  <!-- Metrics -->
+  @if (metrics(); as m) {
+    <!-- KPI cards -->
+    <div class="kpi-grid">
+      <button class="kpi-card revenue clickable" (click)="openRevenueModal()" type="button">
+        <div class="kpi-icon"><app-icon name="money" [size]="26"/></div>
+        <div class="kpi-content">
+          <p class="kpi-label">Ingresos del mes</p>
+          <h2 class="kpi-value">{{ m.monthlyRevenue | currency:'COP':'symbol-narrow':'1.0-0' }}</h2>
+          <small class="kpi-foot">Total acumulado: {{ m.totalRevenue | currency:'COP':'symbol-narrow':'1.0-0' }}</small>
+        </div>
+        <span class="kpi-cta"><app-icon name="arrow-right" [size]="14"/> Ver detalle</span>
+      </button>
+
+      <a class="kpi-card orders clickable" routerLink="/admin/orders">
+        <div class="kpi-icon"><app-icon name="shopping-bag" [size]="26"/></div>
+        <div class="kpi-content">
+          <p class="kpi-label">Pedidos totales</p>
+          <h2 class="kpi-value">{{ m.totalOrders }}</h2>
+          <small class="kpi-foot kpi-warn" *ngIf="m.pendingOrders > 0">
+            {{ m.pendingOrders }} pendiente{{ m.pendingOrders === 1 ? '' : 's' }}
+          </small>
+          <small class="kpi-foot" *ngIf="m.pendingOrders === 0">Sin pendientes</small>
+        </div>
+        <span class="kpi-cta"><app-icon name="arrow-right" [size]="14"/> Ver pedidos</span>
+      </a>
+
+      <a class="kpi-card products clickable" routerLink="/admin/products">
+        <div class="kpi-icon"><app-icon name="cube" [size]="26"/></div>
+        <div class="kpi-content">
+          <p class="kpi-label">Productos activos</p>
+          <h2 class="kpi-value">{{ m.activeProducts }} <small>/ {{ m.totalProducts }}</small></h2>
+          <small class="kpi-foot kpi-warn" *ngIf="m.lowStockProducts > 0">
+            {{ m.lowStockProducts }} con stock bajo
+          </small>
+          <small class="kpi-foot" *ngIf="m.lowStockProducts === 0">Stock saludable</small>
+        </div>
+        <span class="kpi-cta"><app-icon name="arrow-right" [size]="14"/> Ver productos</span>
+      </a>
+
+      <a class="kpi-card categories clickable" routerLink="/admin/categories">
+        <div class="kpi-icon"><app-icon name="folder" [size]="26"/></div>
+        <div class="kpi-content">
+          <p class="kpi-label">Categorías</p>
+          <h2 class="kpi-value">{{ m.totalCategories }}</h2>
+          <small class="kpi-foot">Activas en la tienda</small>
+        </div>
+        <span class="kpi-cta"><app-icon name="arrow-right" [size]="14"/> Ver categorías</span>
+      </a>
+    </div>
+
+    <!-- Lists -->
+    <div class="lists-grid">
+      <!-- Recent orders -->
+      <div class="panel">
+        <div class="panel-header">
+          <h3>Últimos pedidos</h3>
+          <a routerLink="/admin/orders" class="link-more">Ver todos →</a>
+        </div>
+        @if (m.recentOrders.length === 0) {
+          <div class="empty">
+            <app-icon name="inbox" [size]="40"/>
+            <p>Aún no hay pedidos registrados</p>
+          </div>
+        } @else {
+          <div class="orders-list">
+            <div class="order-row" *ngFor="let o of m.recentOrders">
+              <div class="order-info">
+                <strong>{{ o.orderNumber }}</strong>
+                <small>{{ o.customerName }} · {{ o.orderDate | date:'dd/MM/yyyy' }}</small>
+              </div>
+              <div class="order-right">
+                <span class="badge" [class]="'badge-' + statusClass(o.status)">{{ statusLabel(o.status) }}</span>
+                <strong class="order-total">{{ o.total | currency:'COP':'symbol-narrow':'1.0-0' }}</strong>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+
+      <!-- Low stock -->
+      <div class="panel">
+        <div class="panel-header">
+          <h3>Stock bajo</h3>
+          <a routerLink="/admin/products" class="link-more">Gestionar →</a>
+        </div>
+        @if (m.lowStockList.length === 0) {
+          <div class="empty">
+            <app-icon name="check-circle" [size]="40"/>
+            <p>Todos los productos tienen stock saludable</p>
+          </div>
+        } @else {
+          <div class="products-list">
+            <div class="product-row" *ngFor="let p of m.lowStockList">
+              <div class="product-img">
+                @if (p.imageUrl) {
+                  <img [src]="p.imageUrl" [alt]="p.name" />
+                } @else {
+                  <app-icon name="image" [size]="20"/>
+                }
+              </div>
+              <div class="product-info">
+                <strong>{{ p.name }}</strong>
+                <small>Quedan <span class="stock-warn">{{ p.stock }}</span> unidades</small>
+              </div>
+            </div>
+          </div>
+        }
       </div>
     </div>
-    <div class="stat-card">
-      <span class="stat-icon">🧀</span>
-      <div class="stat-info">
-        <h3>Productos</h3>
-        <p>Administra el catálogo de lácteos</p>
-      </div>
-    </div>
-    <div class="stat-card">
-      <span class="stat-icon">📦</span>
-      <div class="stat-info">
-        <h3>Pedidos</h3>
-        <p>Revisa y gestiona los pedidos</p>
-      </div>
+  }
+</div>
+
+<!-- ===== Modal de Proyección de Ingresos ===== -->
+@if (showRevenueModal()) {
+  <div class="revenue-backdrop" (click)="closeRevenueModal()">
+    <div class="revenue-modal" (click)="$event.stopPropagation()">
+
+      <header class="revenue-head">
+        <div>
+          <h2><app-icon name="money" [size]="22"/> Resumen de ingresos</h2>
+          <p class="muted">Comportamiento real de las ventas durante los últimos 12 meses.</p>
+        </div>
+        <button class="close-btn" (click)="closeRevenueModal()" aria-label="Cerrar">
+          <app-icon name="close" [size]="18"/>
+        </button>
+      </header>
+
+      @if (loadingProjection() && !projection()) {
+        <div class="revenue-loading">Calculando proyección…</div>
+      } @else if (projection()) {
+        @let p = projection()!;
+
+        <!-- Tarjetas resumen -->
+        <div class="proj-stats">
+          <div class="proj-stat">
+            <small>Mes actual</small>
+            <strong>{{ p.currentMonthRevenue | currency:'COP':'symbol-narrow':'1.0-0' }}</strong>
+            @if (p.growthVsPreviousMonth !== 0) {
+              <span class="trend"
+                    [class.up]="p.growthVsPreviousMonth > 0"
+                    [class.down]="p.growthVsPreviousMonth < 0">
+                {{ p.growthVsPreviousMonth > 0 ? '+' : '' }}{{ p.growthVsPreviousMonth }}% vs mes anterior
+              </span>
+            } @else {
+              <span class="trend muted">Sin variación</span>
+            }
+          </div>
+
+          <div class="proj-stat">
+            <small>Promedio mensual</small>
+            <strong>{{ p.monthlyAverage | currency:'COP':'symbol-narrow':'1.0-0' }}</strong>
+            <span class="muted">meses con ventas</span>
+          </div>
+
+          <div class="proj-stat">
+            <small>Mejor mes</small>
+            <strong>{{ p.bestMonthRevenue | currency:'COP':'symbol-narrow':'1.0-0' }}</strong>
+            <span class="muted">{{ p.bestMonthLabel }}</span>
+          </div>
+
+          <div class="proj-stat highlight">
+            <small>Ticket promedio</small>
+            <strong>{{ p.averageTicket | currency:'COP':'symbol-narrow':'1.0-0' }}</strong>
+            <span class="muted">{{ p.totalOrders }} pedido{{ p.totalOrders === 1 ? '' : 's' }} histórico</span>
+          </div>
+
+          <div class="proj-stat total">
+            <small>Total acumulado</small>
+            <strong>{{ p.totalRevenue | currency:'COP':'symbol-narrow':'1.0-0' }}</strong>
+            <span class="muted">histórico</span>
+          </div>
+        </div>
+
+        <!-- Gráfica de barras -->
+        <div class="chart-card">
+          <h3>Ingresos por mes</h3>
+          <div class="chart">
+            @for (mo of p.months; track mo.year + '-' + mo.month) {
+              <div class="bar-col" [class.current]="mo.isCurrent" [title]="mo.label + ': ' + (mo.revenue | currency:'COP':'symbol-narrow':'1.0-0')">
+                <div class="bar-track">
+                  <div class="bar-fill" [style.height.%]="barHeight(mo)"></div>
+                </div>
+                <span class="bar-label">{{ mo.label.substring(0, 3) }}</span>
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- Tabla detallada -->
+        <div class="proj-table-card">
+          <h3>Detalle mes a mes</h3>
+          <table class="proj-table">
+            <thead>
+              <tr>
+                <th>Mes</th>
+                <th class="num">Pedidos</th>
+                <th class="num">Ingresos</th>
+                <th class="num">Ticket promedio</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (mo of p.months.slice().reverse(); track mo.year + '-' + mo.month) {
+                <tr [class.current]="mo.isCurrent">
+                  <td>
+                    {{ mo.label }}
+                    @if (mo.isCurrent) { <span class="now-tag">En curso</span> }
+                  </td>
+                  <td class="num">{{ mo.orderCount }}</td>
+                  <td class="num"><strong>{{ mo.revenue | currency:'COP':'symbol-narrow':'1.0-0' }}</strong></td>
+                  <td class="num muted">
+                    @if (mo.orderCount > 0) {
+                      {{ mo.revenue / mo.orderCount | currency:'COP':'symbol-narrow':'1.0-0' }}
+                    } @else { — }
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+      }
     </div>
   </div>
-</div>
+}

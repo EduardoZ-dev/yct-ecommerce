@@ -10,6 +10,7 @@ public class Product : BaseEntity
     public int Stock { get; set; }
     public string? ImageUrl { get; set; }
     public bool IsActive { get; set; } = true;
+    public int DisplayOrder { get; set; } = 0;
 
     // Info del producto
     public string? Weight { get; set; }

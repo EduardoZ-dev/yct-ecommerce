@@ -10,11 +10,13 @@ public class UpdateOrderStatusCommandHandler : IRequestHandler<UpdateOrderStatus
 {
     private readonly IGenericRepository<Order> _repository;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IAuditLogger _audit;
 
-    public UpdateOrderStatusCommandHandler(IGenericRepository<Order> repository, IUnitOfWork unitOfWork)
+    public UpdateOrderStatusCommandHandler(IGenericRepository<Order> repository, IUnitOfWork unitOfWork, IAuditLogger audit)
     {
         _repository = repository;
         _unitOfWork = unitOfWork;
+        _audit = audit;
     }
 
     public async Task<ResponseBase<OrderDto>> Handle(UpdateOrderStatusCommand request, CancellationToken cancellationToken)
@@ -27,11 +29,17 @@ public class UpdateOrderStatusCommandHandler : IRequestHandler<UpdateOrderStatus
         if (order == null)
             return ResponseBase<OrderDto>.Fail("Orden no encontrada");
 
+        var previousStatus = order.Status;
         order.Status = request.Status;
         order.UpdatedAt = DateTime.UtcNow;
 
         await _repository.UpdateAsync(order);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        await _audit.LogAsync("StatusChange", "Order", order.Id,
+            $"Pedido {order.OrderNumber}: {previousStatus} → {request.Status}",
+            new { order.OrderNumber, previousStatus, newStatus = request.Status },
+            ct: cancellationToken);
 
         return ResponseBase<OrderDto>.Ok(new OrderDto
         {

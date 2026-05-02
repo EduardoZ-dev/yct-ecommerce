@@ -3,10 +3,13 @@
 @use '../../../scss/animations' as *;
 
 // ---- Toast ----
+// Se posiciona ARRIBA del FAB de WhatsApp para que no se tape el texto.
+// FAB: 64px alto + $spacing-xl bottom + buffer = aprox 100px desde abajo.
 .toast {
   position: fixed;
-  bottom: $spacing-2xl;
-  right: $spacing-2xl;
+  bottom: calc(#{$spacing-xl} + 64px + #{$spacing-md});
+  right: $spacing-xl;
+  max-width: calc(100vw - #{$spacing-xl} * 2);
   background: $primary-hover;
   color: $text-on-primary;
   padding: $spacing-md $spacing-xl;
@@ -23,7 +26,8 @@
   @include mobile {
     left: $spacing-lg;
     right: $spacing-lg;
-    bottom: $spacing-lg;
+    bottom: calc(#{$spacing-lg} + 64px + #{$spacing-md});
+    max-width: none;
     justify-content: center;
   }
 }

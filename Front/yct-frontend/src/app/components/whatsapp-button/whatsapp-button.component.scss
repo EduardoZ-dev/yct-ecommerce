@@ -3,7 +3,7 @@
 
 $wa-green: #25d366;
 $wa-green-dark: #128c7e;
-$wa-green-light: #dcf8c6;
+$wa-bg-bubble: #f0f2f5;
 
 .whatsapp-wrapper {
   position: fixed;
@@ -21,33 +21,49 @@ $wa-green-light: #dcf8c6;
   }
 }
 
-// ---- Botón flotante ----
+// ============================================================
+//  Botón flotante (FAB)
+// ============================================================
 .wa-button {
   position: relative;
-  width: 64px;
-  height: 64px;
+  width: 60px;
+  height: 60px;
   border-radius: 50%;
-  background: $wa-green;
+  background: linear-gradient(135deg, $wa-green 0%, #1ebe5b 100%);
   color: #fff;
   border: none;
   cursor: pointer;
-  box-shadow: 0 8px 24px rgba($wa-green, 0.45);
+  box-shadow:
+    0 6px 18px rgba($wa-green, 0.4),
+    0 0 0 0 rgba($wa-green, 0);
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+              box-shadow 0.25s ease,
+              background 0.25s ease;
+
+  // SVG queda perfectamente centrado
+  svg, app-icon { display: block; }
 
   &:hover {
-    background: $wa-green-dark;
-    transform: scale(1.08);
-    box-shadow: 0 12px 32px rgba($wa-green, 0.55);
+    transform: scale(1.06) translateY(-1px);
+    box-shadow:
+      0 10px 28px rgba($wa-green, 0.5),
+      0 0 0 6px rgba($wa-green, 0.12);
   }
 
-  &.open {
-    background: $accent;
-    transform: rotate(0deg);
+  &:active { transform: scale(0.97); }
 
-    &:hover { background: #ff6b35; }
+  &.open {
+    background: linear-gradient(135deg, $brand-orange 0%, $brand-orange-dark 100%);
+    box-shadow: 0 6px 18px rgba($brand-orange, 0.4);
+
+    &:hover {
+      box-shadow:
+        0 10px 28px rgba($brand-orange, 0.5),
+        0 0 0 6px rgba($brand-orange, 0.12);
+    }
   }
 
   @include mobile {
@@ -56,50 +72,60 @@ $wa-green-light: #dcf8c6;
   }
 }
 
-.wa-close-icon {
-  font-size: 1.6rem;
-  font-weight: 700;
-}
-
-// Pulso animado alrededor del botón
+// Pulso animado alrededor del botón (solo cuando está cerrado)
 .wa-pulse {
   position: absolute;
-  inset: 0;
+  inset: -3px;
   border-radius: 50%;
   background: $wa-green;
   z-index: -1;
-  animation: waPulse 2s ease-out infinite;
+  opacity: 0.55;
+  animation: waPulse 2.4s ease-out infinite;
 }
-
-.wa-button.open .wa-pulse { display: none; }
 
 @keyframes waPulse {
-  0% { transform: scale(1); opacity: 0.7; }
-  100% { transform: scale(1.6); opacity: 0; }
+  0% { transform: scale(0.95); opacity: 0.6; }
+  70% { transform: scale(1.5); opacity: 0; }
+  100% { transform: scale(1.5); opacity: 0; }
 }
 
-// ---- Tooltip inicial ----
+// ============================================================
+//  Tooltip inicial
+// ============================================================
 .wa-tooltip {
   background: $bg-surface;
   border: 1px solid $border-color;
-  padding: $spacing-sm $spacing-md;
+  padding: 10px 14px 10px 16px;
   border-radius: $radius-lg;
-  box-shadow: $shadow-lg;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
   display: flex;
-  align-items: center;
-  gap: $spacing-sm;
+  flex-direction: column;
+  gap: 1px;
   font-size: $font-size-sm;
   color: $text-primary;
-  font-weight: 500;
-  animation: waTooltipIn 0.4s ease-out, waTooltipBounce 2s ease-in-out 1s infinite;
   position: relative;
+  padding-right: 36px;
+  animation: waTooltipIn 0.4s ease-out, waTooltipBounce 2.4s ease-in-out 1.2s infinite;
+  border-left: 3px solid $wa-green;
+
+  strong {
+    color: $brand-green-dark;
+    font-weight: 700;
+    font-size: $font-size-sm;
+    line-height: 1.2;
+  }
+  span:not(.wa-tooltip-close) {
+    color: $text-secondary;
+    font-size: $font-size-xs;
+    line-height: 1.2;
+  }
 
   // Flecha apuntando al botón
   &::after {
     content: '';
     position: absolute;
-    bottom: -6px;
-    right: 24px;
+    bottom: -7px;
+    right: 22px;
     width: 12px;
     height: 12px;
     background: $bg-surface;
@@ -115,73 +141,98 @@ $wa-green-light: #dcf8c6;
 }
 
 @keyframes waTooltipIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes waTooltipBounce {
   0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-4px); }
+  50%      { transform: translateY(-3px); }
 }
 
 .wa-tooltip-close {
-  background: $border-color;
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: $bg-input;
   border: none;
-  width: 18px;
-  height: 18px;
+  width: 20px;
+  height: 20px;
   border-radius: 50%;
   cursor: pointer;
-  color: $text-secondary;
-  font-size: 0.65rem;
+  color: $text-muted;
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: all $transition-fast;
   flex-shrink: 0;
 
-  &:hover { background: $accent; color: #fff; }
+  &:hover { background: $danger-light; color: $danger; }
 }
 
-// ---- Menú expandible ----
+// ============================================================
+//  Menú expandible
+// ============================================================
 .wa-menu {
-  width: 320px;
+  width: 340px;
   background: $bg-surface;
   border-radius: $radius-xl;
-  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.18);
   overflow: hidden;
-  animation: waMenuIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
   border: 1px solid $border-color;
+  animation: waMenuIn 0.32s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transform-origin: bottom right;
 
   @include mobile {
     width: calc(100vw - #{$spacing-lg * 2});
-    max-width: 320px;
+    max-width: 340px;
   }
 }
 
 @keyframes waMenuIn {
-  from { opacity: 0; transform: translateY(20px) scale(0.9); }
-  to { opacity: 1; transform: translateY(0) scale(1); }
+  from { opacity: 0; transform: translateY(16px) scale(0.92); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
 }
 
+// ----- Header -----
 .wa-menu-header {
   display: flex;
   align-items: center;
   gap: $spacing-md;
-  padding: $spacing-md $spacing-lg;
+  padding: 14px 16px;
   background: linear-gradient(135deg, $wa-green-dark 0%, $wa-green 100%);
   color: #fff;
+  position: relative;
+
+  // Patrón sutil tipo "ondas" del fondo de WhatsApp
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(circle at 20% 30%, rgba(255,255,255,0.08) 1px, transparent 2px),
+                      radial-gradient(circle at 70% 70%, rgba(255,255,255,0.06) 1px, transparent 2px);
+    background-size: 24px 24px, 32px 32px;
+    pointer-events: none;
+  }
+
+  > * { position: relative; z-index: 1; }
 }
 
 .wa-menu-avatar {
-  width: 44px;
-  height: 44px;
+  width: 42px;
+  height: 42px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.18);
   display: flex;
   align-items: center;
   justify-content: center;
+  font-family: $font-family-heading;
   font-weight: 800;
   font-size: $font-size-sm;
-  border: 2px solid rgba(255, 255, 255, 0.4);
+  color: #fff;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  letter-spacing: 0.5px;
+  flex-shrink: 0;
 }
 
 .wa-menu-info {
@@ -189,10 +240,12 @@ $wa-green-light: #dcf8c6;
   display: flex;
   flex-direction: column;
   gap: 2px;
+  min-width: 0;
 
   strong {
     font-size: $font-size-base;
     font-weight: 600;
+    line-height: 1.1;
   }
 }
 
@@ -209,64 +262,73 @@ $wa-green-light: #dcf8c6;
   height: 8px;
   border-radius: 50%;
   background: #4ade80;
-  box-shadow: 0 0 0 2px rgba(74, 222, 128, 0.3);
-  animation: waDotPulse 1.5s ease-in-out infinite;
+  box-shadow: 0 0 0 2px rgba(74, 222, 128, 0.35);
+  animation: waDotPulse 1.6s ease-in-out infinite;
+  flex-shrink: 0;
+
+  &.small {
+    width: 6px;
+    height: 6px;
+    box-shadow: 0 0 0 2px rgba(74, 222, 128, 0.25);
+  }
 }
 
 @keyframes waDotPulse {
   0%, 100% { box-shadow: 0 0 0 2px rgba(74, 222, 128, 0.3); }
-  50% { box-shadow: 0 0 0 4px rgba(74, 222, 128, 0.5); }
+  50%      { box-shadow: 0 0 0 5px rgba(74, 222, 128, 0.55); }
 }
 
 .wa-close {
-  background: rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.18);
   border: none;
   color: #fff;
   width: 28px;
   height: 28px;
   border-radius: 50%;
   cursor: pointer;
-  font-size: $font-size-sm;
   display: flex;
   align-items: center;
   justify-content: center;
   transition: background $transition-fast;
+  flex-shrink: 0;
 
-  &:hover { background: rgba(255, 255, 255, 0.25); }
+  &:hover { background: rgba(255, 255, 255, 0.3); }
 }
 
+// ----- Saludo (estilo burbuja de chat) -----
 .wa-menu-greeting {
   padding: $spacing-md $spacing-lg;
-  background: #f0f2f5;
+  background: $wa-bg-bubble;
 
   p {
     margin: 0;
     font-size: $font-size-sm;
-    color: $text-secondary;
-    background: #fff;
-    padding: $spacing-sm $spacing-md;
+    color: $text-primary;
+    background: $bg-surface;
+    padding: 10px 14px;
     border-radius: $radius-lg;
     border-top-left-radius: 4px;
-    box-shadow: $shadow-sm;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.08);
     line-height: 1.4;
   }
 }
 
+// ----- Opciones rápidas -----
 .wa-menu-options {
-  padding: $spacing-md;
+  padding: $spacing-sm;
   display: flex;
   flex-direction: column;
-  gap: $spacing-xs;
+  gap: 2px;
 }
 
 .wa-option {
   display: flex;
   align-items: center;
   gap: $spacing-md;
-  padding: $spacing-md;
+  padding: 10px 12px;
   background: transparent;
   border: 1px solid transparent;
-  border-radius: $radius-lg;
+  border-radius: $radius-md;
   cursor: pointer;
   text-align: left;
   font-family: $font-family;
@@ -276,49 +338,62 @@ $wa-green-light: #dcf8c6;
 
   &:hover {
     background: rgba($wa-green, 0.08);
-    border-color: rgba($wa-green, 0.3);
+    border-color: rgba($wa-green, 0.25);
+
+    .wa-option-icon {
+      background: $wa-green;
+      color: #fff;
+      transform: scale(1.05);
+    }
 
     .wa-option-arrow {
       opacity: 1;
-      transform: translateX(0);
+      transform: translateX(2px);
     }
   }
 }
 
 .wa-option-icon {
-  font-size: 1.3rem;
   width: 36px;
   height: 36px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: $wa-green-light;
+  background: rgba($wa-green, 0.12);
+  color: $wa-green-dark;
   border-radius: 50%;
   flex-shrink: 0;
+  transition: all $transition-fast;
 }
 
 .wa-option-label {
   flex: 1;
   font-weight: 500;
+  color: $text-primary;
 }
 
 .wa-option-arrow {
   color: $wa-green;
-  font-weight: 700;
   opacity: 0;
-  transform: translateX(-8px);
+  transform: translateX(-4px);
   transition: all $transition-fast;
+  display: flex;
+  align-items: center;
 }
 
+// ----- Footer -----
 .wa-menu-footer {
-  padding: $spacing-sm $spacing-lg;
-  background: #f0f2f5;
+  padding: 10px $spacing-lg;
+  background: $wa-bg-bubble;
   text-align: center;
   border-top: 1px solid $border-color;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
 
-  span {
+  span:not(.wa-dot) {
     font-size: $font-size-xs;
     color: $text-muted;
-    font-style: italic;
   }
 }

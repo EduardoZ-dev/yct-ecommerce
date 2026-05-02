@@ -1,0 +1,134 @@
+<div class="track-page">
+  <div class="track-header">
+    <h1>Rastrea tu pedido</h1>
+    <p>Ingresa tu <strong>número consecutivo</strong>, <strong>número de pedido</strong> o el <strong>teléfono</strong> con el que compraste.</p>
+  </div>
+
+  <form class="track-form" (ngSubmit)="search()">
+    <div class="search-box">
+      <input type="text"
+             [(ngModel)]="searchTerm"
+             name="search"
+             placeholder="Ej. 12, YCT-260428-1234 o 310 452 5896"
+             autocomplete="off">
+      <button type="submit" [disabled]="loading()">
+        {{ loading() ? 'Buscando…' : 'Buscar' }}
+      </button>
+    </div>
+    @if (errorMsg()) {
+      <p class="error">{{ errorMsg() }}</p>
+    }
+  </form>
+
+  @if (searched() && !loading()) {
+    @if (results().length === 0) {
+      <div class="empty">
+        <h3>No encontramos pedidos</h3>
+        <p>Verifica el número que ingresaste. Si crees que hay un error, contáctanos por WhatsApp.</p>
+      </div>
+    } @else {
+      <div class="results">
+        @for (o of results(); track o.orderNumber) {
+          <article class="order-card">
+            <header class="order-card-header">
+              <div class="header-left">
+                <div class="consecutive-badge">
+                  <small>Pedido</small>
+                  <strong>#{{ o.consecutive }}</strong>
+                </div>
+                <div>
+                  <p class="order-num">{{ o.orderNumber }}</p>
+                  <p class="meta">
+                    {{ o.customerName }} · {{ o.orderDate | date:'dd MMM yyyy · HH:mm' }}
+                  </p>
+                </div>
+              </div>
+              <span class="status-pill" [class]="statusClass(o.status)">
+                {{ statusLabel(o.status) }}
+              </span>
+            </header>
+
+            @if (o.status !== 'Cancelled') {
+              <div class="status-track">
+                <div class="track-line">
+                  <div class="track-progress" [style.width.%]="trackStep(o) * 25"></div>
+                </div>
+                <div class="track-steps">
+                  <div class="step" [class.done]="trackStep(o) >= 0" [class.current]="trackStep(o) === 0">
+                    <span class="dot"></span>
+                    <small>Recibido</small>
+                  </div>
+                  <div class="step" [class.done]="trackStep(o) >= 1" [class.current]="trackStep(o) === 1">
+                    <span class="dot"></span>
+                    <small>Validado</small>
+                  </div>
+                  <div class="step" [class.done]="trackStep(o) >= 2" [class.current]="trackStep(o) === 2">
+                    <span class="dot"></span>
+                    <small>Confirmado</small>
+                  </div>
+                  <div class="step" [class.done]="trackStep(o) >= 3" [class.current]="trackStep(o) === 3">
+                    <span class="dot"></span>
+                    <small>En camino</small>
+                  </div>
+                  <div class="step" [class.done]="trackStep(o) >= 4" [class.current]="trackStep(o) === 4">
+                    <span class="dot"></span>
+                    <small>Entregado</small>
+                  </div>
+                </div>
+              </div>
+
+              @if (o.status === 'Shipped' && o.distributorName) {
+                <div class="distributor-banner">
+                  <strong>Tu pedido va en camino con {{ o.distributorName }}</strong>
+                  @if (o.distributorVehicle) { <span>{{ o.distributorVehicle }}</span> }
+                  @if (o.trackingNumber) {
+                    <span class="tracking-num">Seguimiento: <strong>{{ o.trackingNumber }}</strong></span>
+                  }
+                </div>
+              }
+
+              <div #mapContainer class="map-container"></div>
+            }
+
+            <div class="order-items">
+              @for (item of o.items; track item.productName) {
+                <div class="item-row">
+                  <span>{{ item.quantity }}× {{ item.productName }}</span>
+                  <strong>{{ item.subtotal | currency:'COP':'symbol-narrow':'1.0-0' }}</strong>
+                </div>
+              }
+            </div>
+
+            <footer class="order-card-footer">
+              @if (o.shippingAddress) {
+                <p class="address"><small>Dirección:</small> {{ o.shippingAddress }}</p>
+              }
+
+              <div class="payment-info">
+                <div class="pi-row">
+                  <small>Método de pago:</small>
+                  <strong>{{ paymentMethodLabel(o.paymentMethod) }}</strong>
+                </div>
+                <div class="pi-row">
+                  <small>Estado:</small>
+                  <strong class="ps-tag" [class.paid]="o.paymentStatus === 'Paid'" [class.unpaid]="o.paymentStatus === 'Unpaid'">
+                    {{ paymentStatusLabel(o.paymentStatus) }}
+                  </strong>
+                </div>
+              </div>
+
+              <div class="total-row">
+                <span>Total</span>
+                <strong>{{ o.total | currency:'COP':'symbol-narrow':'1.0-0' }}</strong>
+              </div>
+            </footer>
+          </article>
+        }
+      </div>
+    }
+  }
+
+  <p class="back-shop">
+    <a routerLink="/shop">← Volver al catálogo</a>
+  </p>
+</div>

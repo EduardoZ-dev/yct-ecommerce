@@ -4,11 +4,12 @@ import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { CategoryDto, ResponseBase } from '../../core/models';
 import { environment } from '../../../environments/environment';
+import { IconComponent } from '../../components/icon/icon.component';
 
 @Component({
   selector: 'app-categories',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, IconComponent],
   templateUrl: './categories.component.html',
   styleUrl: './categories.component.scss'
 })

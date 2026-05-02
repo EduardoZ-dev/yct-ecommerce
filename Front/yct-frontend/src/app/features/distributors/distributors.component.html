@@ -1,0 +1,126 @@
+<div class="admin-page">
+  <header class="page-header">
+    <div>
+      <h1>Distribuidores</h1>
+      <p class="subtitle">Vehículos y conductores que entregan los pedidos</p>
+    </div>
+    <button class="btn-add" (click)="openCreate()">
+      <app-icon name="plus" [size]="18"/> Nuevo distribuidor
+    </button>
+  </header>
+
+  @if (showForm()) {
+    <div class="form-card">
+      <div class="form-header">
+        <h2>{{ editingId() ? 'Editar distribuidor' : 'Nuevo distribuidor' }}</h2>
+        <button class="close-btn" (click)="cancel()" aria-label="Cerrar">
+          <app-icon name="close" [size]="18"/>
+        </button>
+      </div>
+
+      @if (error()) {
+        <div class="alert">{{ error() }}</div>
+      }
+
+      <div class="form-grid">
+        <div class="field span-2">
+          <label>Nombre del conductor / empresa</label>
+          <input type="text" [(ngModel)]="formName" placeholder="Ej: Juan Pérez">
+        </div>
+        <div class="field">
+          <label>Teléfono</label>
+          <input type="tel" [(ngModel)]="formPhone" placeholder="310 452 5896">
+        </div>
+        <div class="field">
+          <label>Tipo de vehículo</label>
+          <select [(ngModel)]="formVehicleType">
+            @for (v of vehicleTypes; track v) {
+              <option [value]="v">{{ v }}</option>
+            }
+          </select>
+        </div>
+        <div class="field">
+          <label>Placa</label>
+          <input type="text" [(ngModel)]="formVehiclePlate" placeholder="ABC-123">
+        </div>
+        @if (editingId()) {
+          <div class="field">
+            <label>Estado</label>
+            <label class="switch-row">
+              <input type="checkbox" [(ngModel)]="formIsActive">
+              <span class="switch"><span class="knob"></span></span>
+              <span>{{ formIsActive ? 'Activo' : 'Inactivo' }}</span>
+            </label>
+          </div>
+        }
+        <div class="field span-3">
+          <label>Notas (opcional)</label>
+          <input type="text" [(ngModel)]="formNotes" placeholder="Cobertura, horarios, observaciones…">
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button class="btn-secondary" (click)="cancel()">Cancelar</button>
+        <button class="btn-primary" (click)="save()">{{ editingId() ? 'Actualizar' : 'Crear' }}</button>
+      </div>
+    </div>
+  }
+
+  <div class="cards-grid">
+    @if (loading() && distributors().length === 0) {
+      <div class="loading-card">Cargando distribuidores…</div>
+    } @else if (distributors().length === 0) {
+      <div class="empty-state">
+        <app-icon name="users" [size]="48"/>
+        <h3>No hay distribuidores registrados</h3>
+        <p>Agrega los conductores y vehículos que entregan los pedidos.</p>
+        <button class="btn-add" (click)="openCreate()">
+          <app-icon name="plus" [size]="18"/> Crear el primero
+        </button>
+      </div>
+    } @else {
+      @for (d of distributors(); track d.id) {
+        <article class="dist-card" [class.inactive]="!d.isActive">
+          <div class="dist-header">
+            <div class="vehicle-tag" [class]="vehicleClass(d.vehicleType)">{{ d.vehicleType }}</div>
+            <span class="status" [class.active]="d.isActive">{{ d.isActive ? 'Activo' : 'Inactivo' }}</span>
+          </div>
+
+          <h3 class="dist-name">{{ d.name }}</h3>
+
+          @if (d.vehiclePlate) {
+            <p class="plate"><small>Placa</small> <strong>{{ d.vehiclePlate }}</strong></p>
+          }
+
+          @if (d.phone) {
+            <p class="phone">
+              <app-icon name="phone" [size]="14"/>
+              {{ d.phone }}
+            </p>
+          }
+
+          @if (d.notes) {
+            <p class="notes">{{ d.notes }}</p>
+          }
+
+          <div class="dist-foot">
+            <span class="orders-count">
+              <app-icon name="shopping-bag" [size]="14"/>
+              {{ d.ordersCount }} pedido{{ d.ordersCount === 1 ? '' : 's' }}
+            </span>
+            <div class="actions">
+              <button class="icon-btn edit" (click)="openEdit(d)" title="Editar">
+                <app-icon name="edit" [size]="15"/>
+              </button>
+              @if (d.isActive) {
+                <button class="icon-btn danger" (click)="delete(d)" title="Desactivar">
+                  <app-icon name="trash" [size]="15"/>
+                </button>
+              }
+            </div>
+          </div>
+        </article>
+      }
+    }
+  </div>
+</div>

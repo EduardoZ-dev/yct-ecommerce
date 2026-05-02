@@ -6,12 +6,13 @@ using YCT.Application.UseCases.Categories.Delete;
 using YCT.Application.UseCases.Categories.GetAll;
 using YCT.Application.UseCases.Categories.GetById;
 using YCT.Application.UseCases.Categories.Update;
+using YCT.Domain.Common;
 
 namespace YCT.API.Controllers.V1;
 
 [ApiController]
 [Route("api/[controller]")]
-[Authorize]
+[Authorize(Roles = Roles.AdminPanel)]
 public class CategoriesController : ControllerBase
 {
     private readonly IMediator _mediator;
@@ -54,6 +55,7 @@ public class CategoriesController : ControllerBase
     }
 
     [HttpDelete("{id}")]
+    [Authorize(Roles = Roles.CanDelete)]
     public async Task<IActionResult> Delete(int id)
     {
         var result = await _mediator.Send(new DeleteCategoryCommand(id));

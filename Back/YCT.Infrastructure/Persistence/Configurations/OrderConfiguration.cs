@@ -12,10 +12,19 @@ public class OrderConfiguration : IEntityTypeConfiguration<Order>
         builder.HasKey(o => o.Id);
         builder.Property(o => o.OrderNumber).IsRequired().HasMaxLength(50);
         builder.HasIndex(o => o.OrderNumber).IsUnique();
+        builder.Property(o => o.Consecutive).IsRequired();
+        builder.HasIndex(o => o.Consecutive).IsUnique();
         builder.Property(o => o.Total).HasColumnType("decimal(18,2)");
         builder.Property(o => o.Status).IsRequired().HasMaxLength(30);
+        builder.Property(o => o.PaymentMethod).IsRequired().HasMaxLength(30);
+        builder.Property(o => o.PaymentStatus).IsRequired().HasMaxLength(30);
         builder.Property(o => o.Notes).HasMaxLength(500);
         builder.Property(o => o.ShippingAddress).HasMaxLength(300);
+        builder.Property(o => o.ShippingCity).HasMaxLength(100);
+        builder.Property(o => o.ShippingLat).HasColumnType("decimal(10,7)");
+        builder.Property(o => o.ShippingLng).HasColumnType("decimal(10,7)");
+        builder.Property(o => o.TrackingNumber).HasMaxLength(80);
+        builder.Property(o => o.FeedbackComment).HasMaxLength(500);
 
         builder.HasOne(o => o.User)
             .WithMany(u => u.Orders)

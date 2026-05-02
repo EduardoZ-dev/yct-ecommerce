@@ -1,0 +1,449 @@
+@use 'variables' as *;
+@use 'mixins' as *;
+@use 'animations' as *;
+
+// ===== Page shell =====
+.admin-page {
+  animation: fadeIn 0.4s ease both;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: $spacing-md;
+  margin-bottom: $spacing-2xl;
+
+  h1 {
+    font-family: $font-family-heading;
+    font-size: 1.75rem;
+    color: $text-primary;
+    margin: 0 0 $spacing-xs 0;
+  }
+  .subtitle {
+    color: $text-muted;
+    font-size: $font-size-base;
+    margin: 0;
+  }
+}
+
+// ===== Buttons =====
+.btn-add {
+  background: linear-gradient(135deg, $brand-green, $brand-green-dark);
+  color: $text-on-primary;
+  border: none;
+  padding: 10px 20px;
+  border-radius: $radius-pill;
+  font-family: $font-family;
+  font-size: $font-size-base;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all $transition-fast;
+  box-shadow: 0 4px 12px rgba($brand-green, 0.25);
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba($brand-green, 0.35);
+  }
+}
+
+.btn-primary {
+  background: $brand-green;
+  color: $text-on-primary;
+  border: none;
+  padding: 10px 20px;
+  border-radius: $radius-md;
+  font-family: $font-family;
+  font-size: $font-size-base;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all $transition-fast;
+
+  &:hover { background: $brand-green-dark; }
+  &:disabled { opacity: 0.5; cursor: not-allowed; }
+}
+
+.btn-secondary {
+  background: $bg-input;
+  color: $text-secondary;
+  border: 1px solid $border-color;
+  padding: 10px 20px;
+  border-radius: $radius-md;
+  font-family: $font-family;
+  font-size: $font-size-base;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all $transition-fast;
+
+  &:hover { background: $border-color; }
+}
+
+// ===== Form card =====
+.form-card {
+  background: $bg-surface;
+  border: 1px solid $border-color;
+  border-radius: $radius-xl;
+  padding: $spacing-xl;
+  margin-bottom: $spacing-xl;
+  box-shadow: $shadow-sm;
+  animation: slideDown 0.25s ease;
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.form-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: $spacing-lg;
+
+  h2 {
+    font-family: $font-family-heading;
+    margin: 0;
+    color: $text-primary;
+    font-size: 1.2rem;
+  }
+}
+
+.close-btn {
+  background: $bg-input;
+  border: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  cursor: pointer;
+  color: $text-muted;
+  transition: all $transition-fast;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &:hover { background: $danger-light; color: $danger; }
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: $spacing-lg;
+
+  .span-2 { grid-column: span 2; }
+  .span-3 { grid-column: span 3; }
+
+  @include mobile {
+    grid-template-columns: 1fr;
+    .span-2, .span-3 { grid-column: span 1; }
+  }
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  label {
+    color: $text-secondary;
+    font-size: $font-size-sm;
+    font-weight: 500;
+  }
+
+  input, select, textarea {
+    padding: 10px 12px;
+    border: 1px solid $border-color;
+    border-radius: $radius-md;
+    background: $bg-surface;
+    color: $text-primary;
+    font-family: $font-family;
+    font-size: $font-size-base;
+    transition: all $transition-fast;
+
+    &:focus {
+      outline: none;
+      border-color: $brand-green;
+      box-shadow: 0 0 0 3px rgba($brand-green, 0.15);
+    }
+  }
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: $spacing-md;
+  margin-top: $spacing-xl;
+  padding-top: $spacing-lg;
+  border-top: 1px solid $border-color;
+}
+
+// ===== Table card =====
+.table-card {
+  background: $bg-surface;
+  border: 1px solid $border-color;
+  border-radius: $radius-xl;
+  overflow: hidden;
+}
+
+.table-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+
+  thead {
+    background: $bg-input;
+
+    th {
+      text-align: left;
+      padding: $spacing-md $spacing-lg;
+      color: $text-secondary;
+      font-size: $font-size-xs;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      white-space: nowrap;
+
+      &.th-actions { text-align: right; }
+    }
+  }
+
+  tbody {
+    tr {
+      border-top: 1px solid $border-color;
+      transition: background $transition-fast;
+
+      &:hover { background: $bg-hover; }
+    }
+
+    td {
+      padding: $spacing-md $spacing-lg;
+      color: $text-primary;
+      font-size: $font-size-base;
+      vertical-align: middle;
+    }
+  }
+}
+
+.cell-id {
+  color: $text-muted;
+  font-family: monospace;
+  font-size: $font-size-sm;
+}
+
+.cell-product {
+  display: flex;
+  align-items: center;
+  gap: $spacing-md;
+  min-width: 240px;
+
+  .thumb {
+    width: 40px;
+    height: 40px;
+    border-radius: $radius-md;
+    background: $bg-input;
+    @include flex-center;
+    overflow: hidden;
+    flex-shrink: 0;
+    color: $text-muted;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      padding: 4px;
+    }
+  }
+
+  strong {
+    color: $text-primary;
+    font-family: $font-family-heading;
+    font-size: $font-size-base;
+  }
+}
+
+.cell-price {
+  font-family: $font-family-heading;
+  color: $accent;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.cell-actions {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.icon-btn {
+  background: transparent;
+  border: 1px solid $border-color;
+  width: 34px;
+  height: 34px;
+  border-radius: $radius-md;
+  cursor: pointer;
+  margin-left: 4px;
+  transition: all $transition-fast;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: $text-muted;
+
+  &:hover { background: $bg-hover; color: $text-secondary; }
+
+  &.edit:hover { border-color: $brand-green; background: $primary-light; color: $brand-green-dark; }
+  &.danger:hover { border-color: $danger; background: $danger-light; color: $danger; }
+}
+
+.stock-pill {
+  display: inline-block;
+  background: $success-light;
+  color: $success;
+  padding: 4px 12px;
+  border-radius: $radius-pill;
+  font-weight: 600;
+  font-size: $font-size-sm;
+  min-width: 40px;
+  text-align: center;
+
+  &.low { background: $warning-light; color: $warning; }
+  &.out { background: $danger-light; color: $danger; }
+}
+
+.badge {
+  display: inline-block;
+  background: $danger-light;
+  color: $danger;
+  padding: 4px 12px;
+  border-radius: $radius-pill;
+  font-size: $font-size-xs;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+
+  &.active { background: $success-light; color: $success; }
+}
+
+.table-foot {
+  padding: $spacing-md $spacing-lg;
+  border-top: 1px solid $border-color;
+  background: $bg-input;
+  color: $text-muted;
+  font-size: $font-size-sm;
+}
+
+.loading, .empty {
+  text-align: center;
+  padding: $spacing-3xl;
+  color: $text-muted;
+
+  app-icon {
+    color: $text-muted;
+    opacity: 0.4;
+    margin-bottom: $spacing-md;
+  }
+  p { margin: 0; }
+}
+
+// =====================================================
+//  Mobile (≤ 768px) — convertir tablas a cards
+// =====================================================
+@media (max-width: 768px) {
+  .page-header {
+    h1 { font-size: 1.4rem; }
+    .subtitle { font-size: $font-size-sm; }
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+    .span-2, .span-3 { grid-column: span 1; }
+  }
+
+  .table-card {
+    border: none;
+    background: transparent;
+  }
+
+  .table-scroll { overflow: visible; }
+
+  table {
+    border: 0;
+    background: transparent;
+
+    thead {
+      // Visualmente ocultar en mobile pero accesible
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0,0,0,0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    tr {
+      display: block;
+      background: $bg-surface;
+      border: 1px solid $border-color !important;
+      border-radius: $radius-xl;
+      margin-bottom: $spacing-md;
+      padding: $spacing-md;
+      box-shadow: $shadow-sm;
+
+      &:hover { background: $bg-surface; }
+    }
+
+    td {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: $spacing-md;
+      padding: 8px 0 !important;
+      border-bottom: 1px solid $border-color;
+      text-align: right;
+
+      &:last-child { border-bottom: 0; }
+
+      &::before {
+        content: attr(data-label);
+        font-weight: 600;
+        color: $text-muted;
+        font-size: $font-size-xs;
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+        text-align: left;
+        flex-shrink: 0;
+      }
+    }
+  }
+
+  .cell-product {
+    min-width: 0;
+    flex-direction: row;
+    text-align: right;
+    justify-content: flex-end;
+
+    .thumb { width: 32px; height: 32px; }
+    strong { font-size: $font-size-sm; }
+  }
+
+  .cell-actions {
+    text-align: right;
+    justify-content: flex-end;
+  }
+
+  .table-foot {
+    background: transparent;
+    border: 0;
+    text-align: center;
+    padding-top: $spacing-md;
+  }
+}
+

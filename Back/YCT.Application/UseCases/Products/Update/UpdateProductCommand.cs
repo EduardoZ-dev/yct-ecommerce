@@ -12,4 +12,22 @@ public record UpdateProductCommand(
     int Stock,
     string? ImageUrl,
     bool IsActive,
-    int CategoryId) : IRequest<ResponseBase<ProductDto>>;
+    int CategoryId,
+    string? Brand = null,
+    string? Weight = null,
+    string? Ingredients = null,
+    string? StorageInstructions = null,
+    string? ExpirationInfo = null,
+    string? ServingSize = null,
+    decimal? Calories = null,
+    decimal? TotalFat = null,
+    decimal? SaturatedFat = null,
+    decimal? Cholesterol = null,
+    decimal? Sodium = null,
+    decimal? TotalCarbs = null,
+    decimal? Sugars = null,
+    decimal? Protein = null,
+    decimal? Calcium = null,
+    decimal? Iron = null,
+    decimal? VitaminD = null
+) : IRequest<ResponseBase<ProductDto>>;

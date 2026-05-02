@@ -1,13 +1,14 @@
 import { Component, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../core/auth/auth.service';
+import { IconComponent } from '../../components/icon/icon.component';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterModule, IconComponent],
   templateUrl: './login.component.html',
   styleUrl: './login.component.scss'
 })
@@ -15,6 +16,7 @@ export class LoginComponent {
   isRegister = signal(false);
   loading = signal(false);
   error = signal('');
+  showPassword = signal(false);
 
   username = '';
   password = '';
@@ -23,6 +25,10 @@ export class LoginComponent {
   phone = '';
 
   constructor(private authService: AuthService, private router: Router) {}
+
+  togglePassword(): void {
+    this.showPassword.update(v => !v);
+  }
 
   onSubmit(): void {
     this.error.set('');
@@ -55,7 +61,9 @@ export class LoginComponent {
         next: (res) => {
           this.loading.set(false);
           if (res.success) {
-            this.router.navigate(['/dashboard']);
+            const adminRoles = ['SuperAdmin', 'Admin', 'Employee'];
+            const dest = adminRoles.includes(res.data.role) ? '/admin' : '/shop';
+            this.router.navigate([dest]);
           } else {
             this.error.set(res.message);
           }
@@ -71,5 +79,7 @@ export class LoginComponent {
   toggleMode(): void {
     this.isRegister.update(v => !v);
     this.error.set('');
+    this.password = '';
+    this.showPassword.set(false);
   }
 }

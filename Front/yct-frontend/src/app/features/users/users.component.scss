@@ -1,0 +1,105 @@
+@use '../../../scss/admin' as *;
+@use '../../../scss/variables' as *;
+@use '../../../scss/mixins' as *;
+
+.alert {
+  background: $danger-light;
+  color: $danger;
+  border: 1px solid rgba($danger, 0.2);
+  border-radius: $radius-md;
+  padding: 10px 14px;
+  font-size: $font-size-sm;
+  font-weight: 500;
+  margin-bottom: $spacing-md;
+}
+
+.user-cell {
+  display: flex;
+  align-items: center;
+  gap: $spacing-md;
+}
+
+.avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  color: #fff;
+  font-family: $font-family-heading;
+  flex-shrink: 0;
+  background: $brand-green;
+
+  &.role-super { background: linear-gradient(135deg, #7B1FA2, $brand-orange); }
+  &.role-admin { background: linear-gradient(135deg, $brand-green, $brand-green-dark); }
+  &.role-employee { background: linear-gradient(135deg, $info, #1565C0); }
+  &.role-customer { background: $text-muted; }
+}
+
+.role-pill {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: $radius-pill;
+  font-size: $font-size-xs;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+
+  &.role-super { background: rgba(123, 31, 162, 0.12); color: #7B1FA2; }
+  &.role-admin { background: $primary-light; color: $brand-green-dark; }
+  &.role-employee { background: $info-light; color: $info; }
+  &.role-customer { background: $bg-input; color: $text-muted; }
+}
+
+// Toggle switch
+.switch {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  cursor: pointer;
+  height: 100%;
+
+  input { display: none; }
+}
+
+.switch-track {
+  width: 44px;
+  height: 24px;
+  background: $border-color;
+  border-radius: 12px;
+  position: relative;
+  transition: background $transition-fast;
+  flex-shrink: 0;
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 20px;
+    height: 20px;
+    background: #fff;
+    border-radius: 50%;
+    transition: transform $transition-fast;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  }
+}
+
+.switch input:checked + .switch-track {
+  background: $brand-green;
+  &::after { transform: translateX(20px); }
+}
+
+.switch-label {
+  color: $text-secondary;
+  font-size: $font-size-sm;
+  font-weight: 500;
+}
+
+input[disabled] {
+  background: $bg-input;
+  color: $text-muted;
+  cursor: not-allowed;
+}

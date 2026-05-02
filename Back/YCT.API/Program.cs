@@ -100,6 +100,12 @@ if (app.Environment.IsDevelopment())
 
 app.UseCors("AllowAngular");
 app.UseRateLimiter();
+
+// Servir archivos estáticos (uploads de productos)
+var uploadsRoot = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
+if (!Directory.Exists(uploadsRoot)) Directory.CreateDirectory(uploadsRoot);
+app.UseStaticFiles();
+
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();

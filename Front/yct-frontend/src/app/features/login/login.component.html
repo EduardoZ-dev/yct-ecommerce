@@ -1,53 +1,121 @@
-<div class="login-container">
-  <div class="login-card">
-    <div class="login-header">
-      <h1>YCT</h1>
-      <p>E-Commerce de Lácteos</p>
+<div class="auth-page">
+  <div class="auth-shell" [class.right-active]="isRegister()">
+
+    <!-- ======= Formulario SIGN IN (izquierda) ======= -->
+    <div class="form-container sign-in">
+      <form (ngSubmit)="onSubmit()" autocomplete="off">
+
+        <h2>Iniciar sesión</h2>
+        <p class="hint">Accede al panel administrativo</p>
+
+        @if (error() && !isRegister()) {
+          <div class="alert">{{ error() }}</div>
+        }
+
+        <div class="field">
+          <span class="field-icon"><app-icon name="user" [size]="18"/></span>
+          <input type="text" name="username" [(ngModel)]="username"
+                 required placeholder="Usuario" autocomplete="username">
+        </div>
+
+        <div class="field">
+          <span class="field-icon"><app-icon name="lock" [size]="18"/></span>
+          <input [type]="showPassword() ? 'text' : 'password'"
+                 name="password" [(ngModel)]="password"
+                 required placeholder="Contraseña" autocomplete="current-password">
+          <button type="button" class="eye-btn" (click)="togglePassword()" tabindex="-1"
+                  [attr.aria-label]="showPassword() ? 'Ocultar contraseña' : 'Mostrar contraseña'">
+            <app-icon [name]="showPassword() ? 'eye-off' : 'eye'" [size]="18"/>
+          </button>
+        </div>
+
+        <a class="forgot" tabindex="-1">¿Olvidaste tu contraseña?</a>
+
+        <button type="submit" class="primary-btn" [disabled]="loading()">
+          {{ loading() ? 'Verificando…' : 'Entrar' }}
+        </button>
+
+        <p class="mobile-toggle">
+          ¿No tienes cuenta? <a (click)="toggleMode()">Regístrate</a>
+        </p>
+      </form>
     </div>
 
-    <h2>{{ isRegister() ? 'Crear Cuenta' : 'Iniciar Sesión' }}</h2>
+    <!-- ======= Formulario SIGN UP (derecha) ======= -->
+    <div class="form-container sign-up">
+      <form (ngSubmit)="onSubmit()" autocomplete="off">
 
-    @if (error()) {
-      <div class="error-message">{{ error() }}</div>
-    }
+        <h2>Crear cuenta</h2>
+        <p class="hint">Únete a la familia YCT</p>
 
-    <form (ngSubmit)="onSubmit()">
-      @if (isRegister()) {
-        <div class="form-group">
-          <label>Nombre Completo</label>
-          <input type="text" [(ngModel)]="fullName" name="fullName" required placeholder="Tu nombre completo">
+        @if (error() && isRegister()) {
+          <div class="alert">{{ error() }}</div>
+        }
+
+        <div class="field">
+          <span class="field-icon"><app-icon name="id-card" [size]="18"/></span>
+          <input type="text" name="r-fullName" [(ngModel)]="fullName"
+                 required placeholder="Nombre completo">
         </div>
-      }
 
-      <div class="form-group">
-        <label>Usuario</label>
-        <input type="text" [(ngModel)]="username" name="username" required placeholder="Tu usuario">
+        <div class="field">
+          <span class="field-icon"><app-icon name="user" [size]="18"/></span>
+          <input type="text" name="r-username" [(ngModel)]="username"
+                 required placeholder="Usuario">
+        </div>
+
+        <div class="field">
+          <span class="field-icon"><app-icon name="mail" [size]="18"/></span>
+          <input type="email" name="r-email" [(ngModel)]="email"
+                 placeholder="Email (opcional)">
+        </div>
+
+        <div class="field">
+          <span class="field-icon"><app-icon name="lock" [size]="18"/></span>
+          <input [type]="showPassword() ? 'text' : 'password'"
+                 name="r-password" [(ngModel)]="password"
+                 required placeholder="Contraseña" autocomplete="new-password">
+          <button type="button" class="eye-btn" (click)="togglePassword()" tabindex="-1">
+            <app-icon [name]="showPassword() ? 'eye-off' : 'eye'" [size]="18"/>
+          </button>
+        </div>
+
+        <button type="submit" class="primary-btn" [disabled]="loading()">
+          {{ loading() ? 'Registrando…' : 'Registrarme' }}
+        </button>
+
+        <p class="mobile-toggle">
+          ¿Ya tienes cuenta? <a (click)="toggleMode()">Inicia sesión</a>
+        </p>
+      </form>
+    </div>
+
+    <!-- ======= Overlay (panel verde que se desliza) ======= -->
+    <div class="overlay-container">
+      <div class="overlay">
+        <div class="overlay-panel overlay-left">
+          <div class="brand-big">
+            <img src="assets/yct-logo.svg" alt="YCT" />
+            <h3>Distribuciones YCT</h3>
+          </div>
+          <h1>¡Bienvenido de nuevo!</h1>
+          <p>Si ya tienes una cuenta administrativa, inicia sesión para continuar gestionando la tienda.</p>
+          <button type="button" class="ghost-btn" (click)="toggleMode()">Iniciar sesión</button>
+        </div>
+
+        <div class="overlay-panel overlay-right">
+          <div class="brand-big">
+            <img src="assets/yct-logo.svg" alt="YCT" />
+            <h3>Distribuciones YCT</h3>
+          </div>
+          <h1>¡Hola!</h1>
+          <p>Crea una cuenta para acceder al panel administrativo y gestionar productos, categorías y pedidos.</p>
+          <button type="button" class="ghost-btn" (click)="toggleMode()">Crear cuenta</button>
+        </div>
       </div>
+    </div>
 
-      <div class="form-group">
-        <label>Contraseña</label>
-        <input type="password" [(ngModel)]="password" name="password" required placeholder="Tu contraseña">
-      </div>
-
-      @if (isRegister()) {
-        <div class="form-group">
-          <label>Email (opcional)</label>
-          <input type="email" [(ngModel)]="email" name="email" placeholder="correo@ejemplo.com">
-        </div>
-        <div class="form-group">
-          <label>Teléfono (opcional)</label>
-          <input type="tel" [(ngModel)]="phone" name="phone" placeholder="+1234567890">
-        </div>
-      }
-
-      <button type="submit" [disabled]="loading()" class="btn-primary">
-        {{ loading() ? 'Cargando...' : (isRegister() ? 'Registrarse' : 'Entrar') }}
-      </button>
-    </form>
-
-    <p class="toggle-link">
-      {{ isRegister() ? '¿Ya tienes cuenta?' : '¿No tienes cuenta?' }}
-      <a (click)="toggleMode()">{{ isRegister() ? 'Inicia Sesión' : 'Regístrate' }}</a>
-    </p>
   </div>
+
+  <a routerLink="/shop" class="back-link">← Volver a la tienda</a>
 </div>

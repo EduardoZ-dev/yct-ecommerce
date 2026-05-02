@@ -1,23 +1,35 @@
-import { Component, signal } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { IconComponent, IconName } from '../icon/icon.component';
+import { WhatsappService } from '../../core/services/whatsapp.service';
+
+interface QuickAction {
+  icon: IconName;
+  label: string;
+  text: string;
+}
 
 @Component({
   selector: 'app-whatsapp-button',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, IconComponent],
   templateUrl: './whatsapp-button.component.html',
   styleUrl: './whatsapp-button.component.scss'
 })
 export class WhatsappButtonComponent {
-  // Número en formato internacional sin + ni espacios
-  private readonly phoneNumber = '573104525896';
-  private readonly defaultMessage = 'Hola 👋, me gustaría conocer más sobre los productos de YCT Distribuciones';
+  private wa = inject(WhatsappService);
 
   showTooltip = signal(true);
   isOpen = signal(false);
 
+  quickMessages: QuickAction[] = [
+    { icon: 'shopping-bag', label: 'Hacer un pedido', text: 'Hola, me gustaría hacer un pedido.' },
+    { icon: 'truck',        label: 'Consultar mi pedido', text: 'Hola, quiero consultar el estado de mi pedido.' },
+    { icon: 'money',        label: 'Precios al por mayor', text: 'Hola, quisiera conocer precios al por mayor.' },
+    { icon: 'mail',         label: 'Otra consulta', text: 'Hola, tengo una consulta sobre sus productos.' }
+  ];
+
   constructor() {
-    // Oculta el tooltip después de unos segundos
     setTimeout(() => this.showTooltip.set(false), 6000);
   }
 
@@ -30,17 +42,8 @@ export class WhatsappButtonComponent {
     this.isOpen.set(false);
   }
 
-  openWhatsApp(customMessage?: string): void {
-    const msg = encodeURIComponent(customMessage ?? this.defaultMessage);
-    const url = `https://wa.me/${this.phoneNumber}?text=${msg}`;
-    window.open(url, '_blank', 'noopener,noreferrer');
+  send(text: string): void {
+    this.wa.openBusiness(text);
     this.closeMenu();
   }
-
-  quickMessages = [
-    { icon: '🛍️', label: 'Hacer un pedido', text: 'Hola, me gustaría hacer un pedido' },
-    { icon: '📦', label: 'Consultar mi pedido', text: 'Hola, quiero consultar el estado de mi pedido' },
-    { icon: '💰', label: 'Conocer precios', text: 'Hola, quisiera conocer precios al por mayor' },
-    { icon: '❓', label: 'Otra consulta', text: 'Hola, tengo una consulta sobre sus productos' }
-  ];
 }

@@ -6,13 +6,15 @@ using YCT.Application.UseCases.Products.Delete;
 using YCT.Application.UseCases.Products.GetAll;
 using YCT.Application.UseCases.Products.GetById;
 using YCT.Application.UseCases.Products.GetCatalog;
+using YCT.Application.UseCases.Products.Reorder;
 using YCT.Application.UseCases.Products.Update;
+using YCT.Domain.Common;
 
 namespace YCT.API.Controllers.V1;
 
 [ApiController]
 [Route("api/[controller]")]
-[Authorize]
+[Authorize(Roles = Roles.AdminPanel)]
 public class ProductsController : ControllerBase
 {
     private readonly IMediator _mediator;
@@ -63,9 +65,17 @@ public class ProductsController : ControllerBase
     }
 
     [HttpDelete("{id}")]
+    [Authorize(Roles = Roles.CanDelete)]
     public async Task<IActionResult> Delete(int id)
     {
         var result = await _mediator.Send(new DeleteProductCommand(id));
         return result.Success ? Ok(result) : NotFound(result);
+    }
+
+    [HttpPost("reorder")]
+    public async Task<IActionResult> Reorder([FromBody] ReorderProductsCommand command)
+    {
+        var result = await _mediator.Send(command);
+        return result.Success ? Ok(result) : BadRequest(result);
     }
 }

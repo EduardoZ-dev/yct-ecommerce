@@ -41,6 +41,15 @@ public class GenericRepository<T> : IGenericRepository<T> where T : class
         return await query.Where(predicate).ToListAsync();
     }
 
+    public Task<int> CountAsync() => _dbSet.CountAsync();
+
+    public Task<int> CountAsync(Expression<Func<T, bool>> predicate) => _dbSet.CountAsync(predicate);
+
+    public Task<decimal> SumDecimalAsync(Expression<Func<T, bool>> predicate, Expression<Func<T, decimal>> selector)
+        => _dbSet.Where(predicate).SumAsync(selector);
+
+    public IQueryable<T> Query() => _dbSet.AsQueryable();
+
     public async Task<T> AddAsync(T entity)
     {
         await _dbSet.AddAsync(entity);

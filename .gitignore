@@ -38,3 +38,7 @@ Thumbs.db
 # ---------- Env / Secrets locales ----------
 *.env
 *.env.local
+
+# ---------- Backups SQL ----------
+backups/
+*.bak

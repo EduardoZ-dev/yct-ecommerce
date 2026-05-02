@@ -10,11 +10,13 @@ public class CreateCategoryCommandHandler : IRequestHandler<CreateCategoryComman
 {
     private readonly IGenericRepository<Category> _repository;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IAuditLogger _audit;
 
-    public CreateCategoryCommandHandler(IGenericRepository<Category> repository, IUnitOfWork unitOfWork)
+    public CreateCategoryCommandHandler(IGenericRepository<Category> repository, IUnitOfWork unitOfWork, IAuditLogger audit)
     {
         _repository = repository;
         _unitOfWork = unitOfWork;
+        _audit = audit;
     }
 
     public async Task<ResponseBase<CategoryDto>> Handle(CreateCategoryCommand request, CancellationToken cancellationToken)
@@ -27,6 +29,11 @@ public class CreateCategoryCommandHandler : IRequestHandler<CreateCategoryComman
 
         await _repository.AddAsync(category);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        await _audit.LogAsync("Create", "Category", category.Id,
+            $"Categoría creada: {category.Name}",
+            new { category.Name, category.Description },
+            ct: cancellationToken);
 
         return ResponseBase<CategoryDto>.Ok(new CategoryDto
         {

@@ -1,58 +1,86 @@
-<div class="page">
-  <div class="page-header">
-    <h2>Categorías</h2>
-    <button class="btn-primary" (click)="openCreate()">+ Nueva Categoría</button>
-  </div>
+<div class="admin-page">
+  <header class="page-header">
+    <div>
+      <h1>Categorías</h1>
+      <p class="subtitle">Organiza el catálogo en categorías de productos</p>
+    </div>
+    <button class="btn-add" (click)="openCreate()">
+      <app-icon name="plus" [size]="18"/> Nueva categoría
+    </button>
+  </header>
 
   @if (showForm()) {
     <div class="form-card">
-      <h3>{{ editingId() ? 'Editar' : 'Nueva' }} Categoría</h3>
-      <div class="form-group">
-        <label>Nombre</label>
-        <input type="text" [(ngModel)]="formName" placeholder="Nombre de la categoría">
+      <div class="form-header">
+        <h2>{{ editingId() ? 'Editar categoría' : 'Nueva categoría' }}</h2>
+        <button class="close-btn" (click)="cancel()" aria-label="Cerrar">
+          <app-icon name="close" [size]="18"/>
+        </button>
       </div>
-      <div class="form-group">
-        <label>Descripción</label>
-        <input type="text" [(ngModel)]="formDescription" placeholder="Descripción (opcional)">
+
+      <div class="form-grid">
+        <div class="field span-3">
+          <label>Nombre</label>
+          <input type="text" [(ngModel)]="formName" placeholder="Ej: Quesos">
+        </div>
+        <div class="field span-3">
+          <label>Descripción</label>
+          <input type="text" [(ngModel)]="formDescription" placeholder="Breve descripción de la categoría">
+        </div>
       </div>
+
       <div class="form-actions">
-        <button class="btn-primary" (click)="save()">Guardar</button>
         <button class="btn-secondary" (click)="cancel()">Cancelar</button>
+        <button class="btn-primary" (click)="save()">{{ editingId() ? 'Actualizar' : 'Crear' }}</button>
       </div>
     </div>
   }
 
-  @if (loading()) {
-    <p class="loading">Cargando...</p>
-  } @else {
-    <div class="table-container">
-      <table>
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Nombre</th>
-            <th>Descripción</th>
-            <th>Estado</th>
-            <th>Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (cat of categories(); track cat.id) {
+  <div class="table-card">
+    @if (loading()) {
+      <div class="loading">Cargando categorías…</div>
+    } @else if (categories().length === 0) {
+      <div class="empty">
+        <app-icon name="folder" [size]="48"/>
+        <p>No hay categorías registradas</p>
+      </div>
+    } @else {
+      <div class="table-scroll">
+        <table>
+          <thead>
             <tr>
-              <td>{{ cat.id }}</td>
-              <td>{{ cat.name }}</td>
-              <td>{{ cat.description || '-' }}</td>
-              <td><span class="badge" [class.active]="cat.isActive">{{ cat.isActive ? 'Activo' : 'Inactivo' }}</span></td>
-              <td class="actions">
-                <button class="btn-icon" (click)="openEdit(cat)">✏️</button>
-                <button class="btn-icon danger" (click)="delete(cat.id)">🗑️</button>
-              </td>
+              <th>Nombre</th>
+              <th>Descripción</th>
+              <th>Estado</th>
+              <th class="th-actions">Acciones</th>
             </tr>
-          } @empty {
-            <tr><td colspan="5" class="empty">No hay categorías registradas</td></tr>
-          }
-        </tbody>
-      </table>
-    </div>
-  }
+          </thead>
+          <tbody>
+            @for (cat of categories(); track cat.id) {
+              <tr>
+                <td data-label="Nombre"><strong>{{ cat.name }}</strong></td>
+                <td data-label="Descripción">{{ cat.description || '—' }}</td>
+                <td data-label="Estado">
+                  <span class="badge" [class.active]="cat.isActive">
+                    {{ cat.isActive ? 'Activo' : 'Inactivo' }}
+                  </span>
+                </td>
+                <td class="cell-actions" data-label="Acciones">
+                  <button class="icon-btn edit" (click)="openEdit(cat)" title="Editar">
+                    <app-icon name="edit" [size]="16"/>
+                  </button>
+                  <button class="icon-btn danger" (click)="delete(cat.id)" title="Eliminar">
+                    <app-icon name="trash" [size]="16"/>
+                  </button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      <div class="table-foot">
+        <span>{{ categories().length }} categoría{{ categories().length === 1 ? '' : 's' }} en total</span>
+      </div>
+    }
+  </div>
 </div>

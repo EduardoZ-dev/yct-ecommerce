@@ -24,7 +24,33 @@ export interface UserDto {
   username: string;
   fullName: string;
   email?: string;
+  phone?: string;
   role: string;
+  isActive: boolean;
+  createdAt: string;
+}
+
+// Audit log
+export interface AuditLogDto {
+  id: number;
+  userId: number | null;
+  username: string;
+  userRole: string;
+  action: string;
+  entityType: string;
+  entityId: number | null;
+  summary: string;
+  details: string | null;
+  ipAddress: string | null;
+  success: boolean;
+  createdAt: string;
+}
+
+export interface AuditLogPageDto {
+  items: AuditLogDto[];
+  total: number;
+  page: number;
+  pageSize: number;
 }
 
 // Response
@@ -76,17 +102,50 @@ export interface ProductDto {
 }
 
 // Order
+export type PaymentMethod = 'OnDelivery' | 'Transfer' | 'Cash';
+export type PaymentStatus = 'Unpaid' | 'Paid' | 'Refunded';
+
 export interface OrderDto {
   id: number;
   orderNumber: string;
+  consecutive: number;
   orderDate: string;
   total: number;
   status: string;
+  paymentMethod: PaymentMethod;
+  paymentStatus: PaymentStatus;
+  paidAt?: string | null;
   notes?: string;
   shippingAddress?: string;
+  shippingCity?: string;
+  shippingLat?: number;
+  shippingLng?: number;
+  validatedAt?: string | null;
+  shippedAt?: string | null;
+  deliveredAt?: string | null;
+  distributorId?: number | null;
+  distributorName?: string | null;
+  distributorVehicle?: string | null;
+  distributorPhone?: string | null;
+  trackingNumber?: string | null;
+  customerRating?: number | null;
+  feedbackComment?: string | null;
   userId: number;
   userFullName: string;
+  userPhone?: string;
   details: OrderDetailDto[];
+}
+
+export interface DistributorDto {
+  id: number;
+  name: string;
+  phone?: string | null;
+  vehicleType: string;
+  vehiclePlate?: string | null;
+  notes?: string | null;
+  isActive: boolean;
+  createdAt: string;
+  ordersCount: number;
 }
 
 export interface OrderDetailDto {

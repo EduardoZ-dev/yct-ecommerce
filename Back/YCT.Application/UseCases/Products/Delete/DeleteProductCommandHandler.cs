@@ -9,11 +9,13 @@ public class DeleteProductCommandHandler : IRequestHandler<DeleteProductCommand,
 {
     private readonly IGenericRepository<Product> _repository;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IAuditLogger _audit;
 
-    public DeleteProductCommandHandler(IGenericRepository<Product> repository, IUnitOfWork unitOfWork)
+    public DeleteProductCommandHandler(IGenericRepository<Product> repository, IUnitOfWork unitOfWork, IAuditLogger audit)
     {
         _repository = repository;
         _unitOfWork = unitOfWork;
+        _audit = audit;
     }
 
     public async Task<ResponseBase<bool>> Handle(DeleteProductCommand request, CancellationToken cancellationToken)
@@ -22,8 +24,15 @@ public class DeleteProductCommandHandler : IRequestHandler<DeleteProductCommand,
         if (product == null)
             return ResponseBase<bool>.Fail("Producto no encontrado");
 
+        var snapshot = new { product.Name, product.Price, product.Stock };
+
         await _repository.DeleteAsync(product);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        await _audit.LogAsync("Delete", "Product", request.Id,
+            $"Producto eliminado: {snapshot.Name}",
+            snapshot,
+            ct: cancellationToken);
 
         return ResponseBase<bool>.Ok(true, "Producto eliminado exitosamente");
     }

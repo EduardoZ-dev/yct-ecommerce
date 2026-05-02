@@ -16,11 +16,13 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, ResponseBase<Lo
 {
     private readonly IGenericRepository<User> _userRepository;
     private readonly IConfiguration _configuration;
+    private readonly IAuditLogger _audit;
 
-    public LoginCommandHandler(IGenericRepository<User> userRepository, IConfiguration configuration)
+    public LoginCommandHandler(IGenericRepository<User> userRepository, IConfiguration configuration, IAuditLogger audit)
     {
         _userRepository = userRepository;
         _configuration = configuration;
+        _audit = audit;
     }
 
     public async Task<ResponseBase<LoginResponse>> Handle(LoginCommand request, CancellationToken cancellationToken)
@@ -29,13 +31,37 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, ResponseBase<Lo
         var user = users.FirstOrDefault();
 
         if (user == null)
+        {
+            await _audit.LogAsync("LoginFailed", "Auth", null,
+                $"Intento de login con usuario inexistente: {request.Username}",
+                new { request.Username, reason = "user_not_found" },
+                success: false,
+                overrideUsername: request.Username,
+                ct: cancellationToken);
             return ResponseBase<LoginResponse>.Fail("Usuario o contraseña incorrectos");
+        }
 
         var hash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(request.Password))).ToLower();
         if (user.PasswordHash != hash)
+        {
+            await _audit.LogAsync("LoginFailed", "Auth", user.Id,
+                $"Contraseña incorrecta para {user.Username}",
+                new { user.Username, reason = "invalid_password" },
+                success: false,
+                overrideUserId: user.Id,
+                overrideUsername: user.Username,
+                ct: cancellationToken);
             return ResponseBase<LoginResponse>.Fail("Usuario o contraseña incorrectos");
+        }
 
         var token = GenerateJwtToken(user);
+
+        await _audit.LogAsync("Login", "Auth", user.Id,
+            $"{user.Username} ({user.Role}) inició sesión",
+            new { user.Username, user.Role },
+            overrideUserId: user.Id,
+            overrideUsername: user.Username,
+            ct: cancellationToken);
 
         return ResponseBase<LoginResponse>.Ok(new LoginResponse
         {

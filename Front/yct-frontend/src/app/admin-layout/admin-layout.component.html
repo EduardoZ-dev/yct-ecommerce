@@ -1,0 +1,81 @@
+<div class="admin-shell"
+     [class.collapsed]="sidebarCollapsed()"
+     [class.mobile-open]="mobileMenuOpen()">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <a routerLink="/admin" class="sidebar-brand" (click)="closeMobileMenu()">
+        <img src="assets/yct-logo.svg" alt="YCT" />
+        <span class="brand-text">
+          <strong>YCT</strong>
+          <small>Panel Admin</small>
+        </span>
+      </a>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a *ngFor="let item of navItems()"
+         [routerLink]="item.path"
+         [routerLinkActiveOptions]="{ exact: item.exact }"
+         routerLinkActive="active"
+         (click)="closeMobileMenu()"
+         class="nav-item">
+        <span class="nav-icon"><app-icon [name]="item.icon" [size]="20"/></span>
+        <span class="nav-label">{{ item.label }}</span>
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <a routerLink="/shop" class="back-to-shop" (click)="closeMobileMenu()" title="Ver tienda pública">
+        <span class="nav-icon"><app-icon name="home" [size]="20"/></span>
+        <span class="nav-label">Ver tienda</span>
+      </a>
+    </div>
+  </aside>
+
+  <!-- Main area -->
+  <div class="main">
+    <header class="topbar">
+      <button class="toggle-btn" (click)="toggleSidebar()" aria-label="Menú">
+        <app-icon name="menu" [size]="22"/>
+      </button>
+
+      <div class="topbar-brand-mobile">
+        <img src="assets/yct-logo.svg" alt="YCT" />
+        <strong>YCT Admin</strong>
+      </div>
+
+      <div class="topbar-spacer"></div>
+
+      <div class="user-menu" (click)="$event.stopPropagation()">
+        <button class="user-btn" (click)="toggleUserMenu()">
+          <span class="user-avatar">{{ (auth.fullName() || 'A').charAt(0).toUpperCase() }}</span>
+          <div class="user-info">
+            <strong>{{ auth.fullName() || 'Admin' }}</strong>
+            <small>{{ auth.role() }}</small>
+          </div>
+          <span class="chevron" [class.open]="userMenuOpen()">
+            <app-icon name="chevron-down" [size]="16"/>
+          </span>
+        </button>
+        <div class="user-dropdown" *ngIf="userMenuOpen()">
+          <button class="dropdown-item" (click)="logout()">
+            <app-icon name="logout" [size]="16"/>
+            <span>Cerrar sesión</span>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <main class="content">
+      <router-outlet></router-outlet>
+    </main>
+  </div>
+
+  <!-- Backdrop para cerrar el dropdown -->
+  <div class="dropdown-backdrop" *ngIf="userMenuOpen()" (click)="userMenuOpen.set(false)"></div>
+
+  <!-- Backdrop para cerrar el menú móvil -->
+  <div class="mobile-backdrop" *ngIf="mobileMenuOpen()" (click)="closeMobileMenu()"></div>
+</div>
