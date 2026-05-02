@@ -8,7 +8,13 @@ REM  Uso:  restore-db.bat ruta\al\backup.bak
 REM        restore-db.bat                     (usa el mas reciente)
 REM ============================================================
 
-set "SQL_SERVER=JOSEDAZA"
+if "%YCT_SQL_SERVER%"=="" (
+  echo ERROR: define la variable de entorno YCT_SQL_SERVER con el nombre de tu instancia SQL.
+  echo   Ejemplo:  setx YCT_SQL_SERVER NOMBRE_DE_TU_PC
+  echo   Despues abre una nueva terminal y vuelve a ejecutar este script.
+  exit /b 1
+)
+set "SQL_SERVER=%YCT_SQL_SERVER%"
 set "DB_NAME=YctDb"
 set "BACKUP_DIR=%~dp0backups"
 

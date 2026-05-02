@@ -1,5 +1,16 @@
 # Backups de la base de datos YCT
 
+## Configuración (una sola vez)
+
+Define el nombre de tu instancia SQL Server en una variable de entorno:
+
+```
+setx YCT_SQL_SERVER NOMBRE_DE_TU_PC
+```
+
+Cierra y vuelve a abrir la terminal para que el cambio tenga efecto.
+Los scripts `backup-db.bat` y `restore-db.bat` la leen de ahí.
+
 ## Backup manual
 
 ```
