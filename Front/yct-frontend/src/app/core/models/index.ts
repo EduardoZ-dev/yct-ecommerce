@@ -17,6 +17,11 @@ export interface LoginResponse {
   username: string;
   fullName: string;
   role: string;
+  avatarUrl?: string;
+}
+
+export interface GoogleLoginRequest {
+  idToken: string;
 }
 
 export interface UserDto {

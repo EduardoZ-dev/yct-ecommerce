@@ -68,7 +68,8 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, ResponseBase<Lo
             Token = token,
             Username = user.Username,
             FullName = user.FullName,
-            Role = user.Role
+            Role = user.Role,
+            AvatarUrl = user.AvatarUrl
         });
     }
 

@@ -2,7 +2,7 @@ import { Injectable, signal, computed } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { Observable, tap } from 'rxjs';
-import { LoginRequest, LoginResponse, RegisterRequest, ResponseBase, UserDto } from '../models';
+import { GoogleLoginRequest, LoginRequest, LoginResponse, RegisterRequest, ResponseBase, UserDto } from '../models';
 import { environment } from '../../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
@@ -38,6 +38,21 @@ export class AuthService {
   register(request: RegisterRequest): Observable<ResponseBase<UserDto>> {
     return this.http.post<ResponseBase<UserDto>>(
       `${environment.apiUrl}/api/Auth/register`, request
+    );
+  }
+
+  googleLogin(idToken: string): Observable<ResponseBase<LoginResponse>> {
+    return this.http.post<ResponseBase<LoginResponse>>(
+      `${environment.apiUrl}/api/Auth/google`, { idToken } as GoogleLoginRequest
+    ).pipe(
+      tap(res => {
+        if (res.success) {
+          localStorage.setItem(this.TOKEN_KEY, res.data.token);
+          localStorage.setItem(this.USER_KEY, JSON.stringify(res.data));
+          this._isAuthenticated.set(true);
+          this._currentUser.set(res.data);
+        }
+      })
     );
   }
 

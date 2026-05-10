@@ -2,6 +2,7 @@ using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using YCT.Application.DTOs;
+using YCT.Application.UseCases.Auth.GoogleLogin;
 using YCT.Application.UseCases.Auth.Login;
 using YCT.Application.UseCases.Auth.Register;
 
@@ -32,5 +33,12 @@ public class AuthController : ControllerBase
         var result = await _mediator.Send(new RegisterCommand(
             request.Username, request.Password, request.FullName, request.Email, request.Phone));
         return result.Success ? Ok(result) : BadRequest(result);
+    }
+
+    [HttpPost("google")]
+    public async Task<IActionResult> Google([FromBody] GoogleLoginRequest request)
+    {
+        var result = await _mediator.Send(new GoogleLoginCommand(request.IdToken));
+        return result.Success ? Ok(result) : Unauthorized(result);
     }
 }

@@ -11,14 +11,13 @@ import { WhatsappService } from '../../core/services/whatsapp.service';
 const STATUSES = ['Pending', 'Confirmed', 'Shipped', 'Delivered', 'Cancelled'] as const;
 
 interface WizardStep {
-  key: 'received' | 'validated' | 'confirmed' | 'shipped' | 'delivered';
+  key: 'received' | 'confirmed' | 'shipped' | 'delivered';
   label: string;
   description: string;
 }
 
 const WIZARD_STEPS: WizardStep[] = [
   { key: 'received',  label: 'Recibido',   description: 'Pedido recibido del cliente.' },
-  { key: 'validated', label: 'Validado',   description: 'Datos y disponibilidad verificados.' },
   { key: 'confirmed', label: 'Confirmado', description: 'Confirmado y en preparación.' },
   { key: 'shipped',   label: 'Enviado',    description: 'En camino con el distribuidor.' },
   { key: 'delivered', label: 'Entregado',  description: 'Entregado al cliente.' }
@@ -42,6 +41,18 @@ export class OrdersComponent implements OnInit {
   filterPayment = signal<'all' | 'unpaid' | 'paid'>('all');
   searchTerm = signal('');
 
+  // ===== Filtros fecha + sort + paginación =====
+  dateFrom = signal<string>('');
+  dateTo = signal<string>('');
+  quickRange = signal<'all' | 'today' | '7d' | 'month'>('all');
+
+  sortBy = signal<'consecutive' | 'orderDate' | 'userFullName' | 'total' | 'status'>('consecutive');
+  sortDir = signal<'asc' | 'desc'>('desc');
+
+  page = signal(1);
+  pageSize = signal(25);
+  pageSizeOptions = [10, 25, 50, 100];
+
   // ===== Modal wizard =====
   modalOrder = signal<OrderDto | null>(null);
   wizardSubmitting = signal(false);
@@ -59,17 +70,68 @@ export class OrdersComponent implements OnInit {
     const status = this.filterStatus();
     const payment = this.filterPayment();
     const term = this.searchTerm().toLowerCase().trim();
+    const from = this.dateFrom();
+    const to = this.dateTo();
+    const fromTs = from ? new Date(from + 'T00:00:00').getTime() : null;
+    const toTs = to ? new Date(to + 'T23:59:59').getTime() : null;
 
     return this.orders().filter(o => {
       if (status !== 'all' && o.status !== status) return false;
       if (payment === 'unpaid' && o.paymentStatus !== 'Unpaid') return false;
       if (payment === 'paid' && o.paymentStatus !== 'Paid') return false;
+      if (fromTs || toTs) {
+        const ts = new Date(o.orderDate).getTime();
+        if (fromTs && ts < fromTs) return false;
+        if (toTs && ts > toTs) return false;
+      }
       if (term) {
         const hay = `${o.consecutive} ${o.orderNumber} ${o.userFullName} ${o.userPhone ?? ''}`.toLowerCase();
         if (!hay.includes(term)) return false;
       }
       return true;
     });
+  });
+
+  sortedOrders = computed(() => {
+    const list = [...this.filteredOrders()];
+    const by = this.sortBy();
+    const dir = this.sortDir() === 'asc' ? 1 : -1;
+    list.sort((a, b) => {
+      let av: any = a[by as keyof OrderDto];
+      let bv: any = b[by as keyof OrderDto];
+      if (by === 'orderDate') { av = new Date(av).getTime(); bv = new Date(bv).getTime(); }
+      if (typeof av === 'string') { av = av.toLowerCase(); bv = (bv ?? '').toLowerCase(); }
+      if (av == null) return 1;
+      if (bv == null) return -1;
+      if (av < bv) return -1 * dir;
+      if (av > bv) return  1 * dir;
+      return 0;
+    });
+    return list;
+  });
+
+  totalPages = computed(() => Math.max(1, Math.ceil(this.sortedOrders().length / this.pageSize())));
+
+  pagedOrders = computed(() => {
+    const list = this.sortedOrders();
+    const size = this.pageSize();
+    const p = Math.min(this.page(), this.totalPages());
+    const start = (p - 1) * size;
+    return list.slice(start, start + size);
+  });
+
+  pageNumbers = computed(() => {
+    const total = this.totalPages();
+    const cur = this.page();
+    const arr: (number | '…')[] = [];
+    const push = (n: number | '…') => arr.push(n);
+    if (total <= 7) { for (let i = 1; i <= total; i++) push(i); return arr; }
+    push(1);
+    if (cur > 3) push('…');
+    for (let i = Math.max(2, cur - 1); i <= Math.min(total - 1, cur + 1); i++) push(i);
+    if (cur < total - 2) push('…');
+    push(total);
+    return arr;
   });
 
   counts = computed(() => {
@@ -87,15 +149,14 @@ export class OrdersComponent implements OnInit {
 
   activeDistributors = computed(() => this.distributors().filter(d => d.isActive));
 
-  /** Índice del paso actual (0..4) basado en estado y timestamps. */
+  /** Índice del paso actual (0..3) basado en estado y timestamps. */
   currentStepIndex = computed(() => {
     const o = this.modalOrder();
     if (!o) return 0;
     if (o.status === 'Cancelled') return -1;
-    if (o.deliveredAt) return 4;
-    if (o.shippedAt) return 3;
-    if (o.status === 'Confirmed') return 2;
-    if (o.validatedAt) return 1;
+    if (o.deliveredAt) return 3;
+    if (o.shippedAt) return 2;
+    if (o.status === 'Confirmed') return 1;
     return 0;
   });
 
@@ -115,6 +176,7 @@ export class OrdersComponent implements OnInit {
           if (updated) this.modalOrder.set(updated);
         }
         this.loading.set(false);
+        if (this.page() > this.totalPages()) this.page.set(1);
       },
       error: () => this.loading.set(false)
     });
@@ -143,11 +205,6 @@ export class OrdersComponent implements OnInit {
   }
 
   // ===== Acciones del wizard =====
-  validate(): void {
-    const o = this.modalOrder(); if (!o) return;
-    this.runAction(`/${o.id}/validate`, {});
-  }
-
   confirm(): void {
     const o = this.modalOrder(); if (!o) return;
     this.runAction(`/${o.id}/confirm`, {});
@@ -371,8 +428,34 @@ export class OrdersComponent implements OnInit {
     });
   }
 
-  setStatusFilter(s: string): void { this.filterStatus.set(s); }
-  setPaymentFilter(p: 'all' | 'unpaid' | 'paid'): void { this.filterPayment.set(p); }
+  setStatusFilter(s: string): void { this.filterStatus.set(s); this.page.set(1); }
+  setPaymentFilter(p: 'all' | 'unpaid' | 'paid'): void { this.filterPayment.set(p); this.page.set(1); }
+
+  // ===== Date / Sort / Paginación =====
+  setQuickRange(key: 'all' | 'today' | '7d' | 'month'): void {
+    this.quickRange.set(key);
+    const now = new Date();
+    const fmt = (d: Date) => d.toISOString().slice(0, 10);
+    if (key === 'all') { this.dateFrom.set(''); this.dateTo.set(''); }
+    else if (key === 'today') { const t = fmt(now); this.dateFrom.set(t); this.dateTo.set(t); }
+    else if (key === '7d') { const d = new Date(now); d.setDate(d.getDate() - 6); this.dateFrom.set(fmt(d)); this.dateTo.set(fmt(now)); }
+    else if (key === 'month') { const d = new Date(now.getFullYear(), now.getMonth(), 1); this.dateFrom.set(fmt(d)); this.dateTo.set(fmt(now)); }
+    this.page.set(1);
+  }
+
+  onDateChange(): void { this.quickRange.set('all'); this.page.set(1); }
+
+  toggleSort(col: 'consecutive' | 'orderDate' | 'userFullName' | 'total' | 'status'): void {
+    if (this.sortBy() === col) this.sortDir.set(this.sortDir() === 'asc' ? 'desc' : 'asc');
+    else { this.sortBy.set(col); this.sortDir.set(col === 'orderDate' || col === 'consecutive' || col === 'total' ? 'desc' : 'asc'); }
+  }
+
+  setPage(n: number): void {
+    const total = this.totalPages();
+    this.page.set(Math.max(1, Math.min(n, total)));
+  }
+
+  setPageSize(s: number): void { this.pageSize.set(s); this.page.set(1); }
 
   // ===== Status =====
   statusLabel(status: string): string {

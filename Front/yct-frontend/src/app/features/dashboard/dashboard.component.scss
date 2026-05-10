@@ -92,9 +92,9 @@
   }
 
   &.revenue::before { background: $brand-orange; }
-  &.orders::before { background: $info; }
+  &.orders::before { background: $brand-teal; }
   &.products::before { background: $brand-green; }
-  &.categories::before { background: $purple; }
+  &.categories::before { background: $brand-earth; }
 
   &.clickable {
     cursor: pointer;
@@ -126,9 +126,9 @@
   color: $text-muted;
 
   .revenue & { color: $brand-orange; }
-  .orders & { color: $info; }
+  .orders & { color: $brand-teal; }
   .products & { color: $brand-green-dark; }
-  .categories & { color: $purple; }
+  .categories & { color: $brand-earth; }
 }
 
 .kpi-icon {
@@ -141,9 +141,9 @@
   color: $primary;
 
   .revenue & { color: $brand-orange; background: rgba($brand-orange, 0.1); }
-  .orders & { color: $info; background: $info-light; }
+  .orders & { color: $brand-teal; background: $brand-teal-light; }
   .products & { color: $brand-green; background: $primary-light; }
-  .categories & { color: $purple; background: $purple-light; }
+  .categories & { color: $brand-earth; background: $brand-earth-light; }
 }
 
 .kpi-content {

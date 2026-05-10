@@ -475,6 +475,32 @@ h2 {
 }
 
 // =====================================================
+//  Divider + Google button host
+// =====================================================
+.divider {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  margin: $spacing-md 0;
+  color: $text-muted;
+  font-size: 0.8rem;
+
+  &::before,
+  &::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: rgba($brand-green, 0.18);
+  }
+}
+
+.google-btn-host {
+  display: flex;
+  justify-content: center;
+  margin-bottom: $spacing-sm;
+}
+
+// =====================================================
 //  Responsive — móvil
 // =====================================================
 @include mobile {

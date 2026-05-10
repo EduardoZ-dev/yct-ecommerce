@@ -20,6 +20,64 @@
 // ===== Search =====
 .toolbar {
   margin-bottom: $spacing-md;
+  display: flex;
+  flex-wrap: wrap;
+  gap: $spacing-md;
+  align-items: center;
+
+  .search-box { flex: 1 1 280px; min-width: 0; }
+}
+
+// ===== Date filter =====
+.date-filter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+
+  .filter-label {
+    color: $text-muted;
+    font-size: $font-size-xs;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    margin-right: 4px;
+  }
+
+  button {
+    background: $bg-surface;
+    border: 1px solid $border-color;
+    border-radius: $radius-pill;
+    padding: 6px 12px;
+    font-size: $font-size-xs;
+    color: $text-secondary;
+    cursor: pointer;
+    transition: all $transition-fast;
+    font-family: $font-family;
+
+    &:hover { border-color: $primary; color: $primary; }
+    &.active {
+      background: $primary;
+      color: white;
+      border-color: $primary;
+      font-weight: 600;
+    }
+  }
+
+  .date-input {
+    background: $bg-surface;
+    border: 1px solid $border-color;
+    border-radius: $radius-md;
+    padding: 6px 8px;
+    font-size: $font-size-xs;
+    color: $text-primary;
+    font-family: $font-family;
+    cursor: pointer;
+
+    &:focus { outline: none; border-color: $primary; box-shadow: 0 0 0 2px rgba($primary, 0.1); }
+  }
+
+  .date-sep { color: $text-muted; font-size: $font-size-xs; }
 }
 
 .search-box {
@@ -159,7 +217,160 @@
   }
 }
 
-// ===== Order list =====
+// ===== Order table (desktop) =====
+.orders-table-wrap {
+  background: $bg-surface;
+  border: 1px solid $border-color;
+  border-radius: $radius-xl;
+  overflow: hidden;
+  margin-bottom: $spacing-md;
+}
+
+.orders-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: $font-size-sm;
+
+  thead {
+    background: $bg-input;
+    th {
+      text-align: left;
+      padding: 10px 12px;
+      font-size: $font-size-xs;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      color: $text-muted;
+      border-bottom: 1px solid $border-color;
+      white-space: nowrap;
+
+      &.sortable { cursor: pointer; user-select: none; transition: color $transition-fast; }
+      &.sortable:hover { color: $primary; }
+      &.num { text-align: right; }
+
+      .sort-ind {
+        margin-left: 4px;
+        opacity: 0.4;
+        font-size: 11px;
+        &.active { opacity: 1; color: $primary; }
+      }
+    }
+  }
+
+  tbody tr {
+    cursor: pointer;
+    transition: background $transition-fast;
+    border-bottom: 1px solid $border-color;
+
+    &:last-child { border-bottom: none; }
+    &:hover { background: $bg-hover; }
+    &.unpaid { background: rgba($warning, 0.04); }
+    &.unpaid:hover { background: rgba($warning, 0.08); }
+
+    td {
+      padding: 10px 12px;
+      vertical-align: middle;
+      color: $text-secondary;
+
+      &.num { text-align: right; }
+      &.row-action {
+        text-align: right;
+        color: $text-muted;
+        width: 30px;
+      }
+      .muted { color: $text-muted; font-size: $font-size-xs; }
+    }
+
+    &:hover td.row-action { color: $primary; }
+  }
+}
+
+// ===== Paginador =====
+.pager {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: $spacing-md;
+  padding: $spacing-md 0;
+  margin-bottom: $spacing-md;
+
+  .pager-info {
+    color: $text-muted;
+    font-size: $font-size-sm;
+    strong { color: $text-primary; }
+  }
+
+  .pager-size {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: $text-muted;
+    font-size: $font-size-sm;
+
+    label { font-weight: 500; }
+    select {
+      border: 1px solid $border-color;
+      background: $bg-surface;
+      border-radius: $radius-md;
+      padding: 4px 8px;
+      font-family: $font-family;
+      font-size: $font-size-sm;
+      color: $text-primary;
+      cursor: pointer;
+      &:focus { outline: none; border-color: $primary; }
+    }
+  }
+
+  .pager-nav {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+
+    button {
+      min-width: 32px;
+      height: 32px;
+      padding: 0 8px;
+      border: 1px solid $border-color;
+      background: $bg-surface;
+      color: $text-secondary;
+      border-radius: $radius-md;
+      cursor: pointer;
+      font-family: $font-family;
+      font-size: $font-size-sm;
+      transition: all $transition-fast;
+
+      &:hover:not(:disabled) { border-color: $primary; color: $primary; }
+      &:disabled { opacity: 0.4; cursor: not-allowed; }
+      &.active {
+        background: $primary;
+        border-color: $primary;
+        color: white;
+        font-weight: 600;
+      }
+    }
+    .ellipsis { color: $text-muted; padding: 0 4px; }
+  }
+}
+
+// ===== Order cards (mobile) =====
+.orders-cards {
+  display: none;
+  flex-direction: column;
+  gap: $spacing-md;
+  margin-bottom: $spacing-md;
+}
+
+@media (max-width: 768px) {
+  .orders-table-wrap { display: none; }
+  .orders-cards { display: flex; }
+  .pager {
+    .pager-info { flex: 1 0 100%; text-align: center; }
+    .pager-nav { justify-content: center; flex-wrap: wrap; }
+  }
+}
+
+// ===== Order card (mobile fallback) =====
 .orders-list {
   display: flex;
   flex-direction: column;

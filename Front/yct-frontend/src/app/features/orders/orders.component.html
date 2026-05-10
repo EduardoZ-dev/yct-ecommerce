@@ -13,19 +13,32 @@
     </button>
   </header>
 
-  <!-- Búsqueda -->
+  <!-- Búsqueda + fechas -->
   <div class="toolbar">
     <div class="search-box">
       <app-icon name="search" [size]="18"/>
       <input type="text"
              [ngModel]="searchTerm()"
-             (ngModelChange)="searchTerm.set($event)"
+             (ngModelChange)="searchTerm.set($event); page.set(1)"
              placeholder="Buscar por consecutivo, número, cliente o teléfono…">
       @if (searchTerm()) {
         <button class="clear-input" (click)="searchTerm.set('')" aria-label="Limpiar">
           <app-icon name="close" [size]="14"/>
         </button>
       }
+    </div>
+
+    <div class="date-filter">
+      <span class="filter-label">Fecha:</span>
+      <button [class.active]="quickRange() === 'all'"   (click)="setQuickRange('all')">Todas</button>
+      <button [class.active]="quickRange() === 'today'" (click)="setQuickRange('today')">Hoy</button>
+      <button [class.active]="quickRange() === '7d'"    (click)="setQuickRange('7d')">7 días</button>
+      <button [class.active]="quickRange() === 'month'" (click)="setQuickRange('month')">Mes</button>
+      <input type="date" class="date-input" [ngModel]="dateFrom()"
+             (ngModelChange)="dateFrom.set($event); onDateChange()" aria-label="Desde">
+      <span class="date-sep">→</span>
+      <input type="date" class="date-input" [ngModel]="dateTo()"
+             (ngModelChange)="dateTo.set($event); onDateChange()" aria-label="Hasta">
     </div>
   </div>
 
@@ -69,32 +82,85 @@
       <p>{{ orders().length === 0 ? 'Cuando un cliente confirme un pedido aparecerá aquí.' : 'Ajusta los filtros para ver más resultados.' }}</p>
     </div>
   } @else {
-    <div class="orders-list">
-      @for (o of filteredOrders(); track o.id) {
+    <!-- Tabla (desktop) -->
+    <div class="orders-table-wrap">
+      <table class="orders-table">
+        <thead>
+          <tr>
+            <th class="sortable" (click)="toggleSort('consecutive')">
+              # <span class="sort-ind" [class.active]="sortBy() === 'consecutive'">{{ sortBy() === 'consecutive' ? (sortDir() === 'asc' ? '↑' : '↓') : '↕' }}</span>
+            </th>
+            <th class="sortable" (click)="toggleSort('orderDate')">
+              Fecha <span class="sort-ind" [class.active]="sortBy() === 'orderDate'">{{ sortBy() === 'orderDate' ? (sortDir() === 'asc' ? '↑' : '↓') : '↕' }}</span>
+            </th>
+            <th class="sortable" (click)="toggleSort('userFullName')">
+              Cliente <span class="sort-ind" [class.active]="sortBy() === 'userFullName'">{{ sortBy() === 'userFullName' ? (sortDir() === 'asc' ? '↑' : '↓') : '↕' }}</span>
+            </th>
+            <th>Tel</th>
+            <th class="sortable num" (click)="toggleSort('total')">
+              Total <span class="sort-ind" [class.active]="sortBy() === 'total'">{{ sortBy() === 'total' ? (sortDir() === 'asc' ? '↑' : '↓') : '↕' }}</span>
+            </th>
+            <th>Pago</th>
+            <th class="sortable" (click)="toggleSort('status')">
+              Estado <span class="sort-ind" [class.active]="sortBy() === 'status'">{{ sortBy() === 'status' ? (sortDir() === 'asc' ? '↑' : '↓') : '↕' }}</span>
+            </th>
+            <th aria-label="Acciones"></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (o of pagedOrders(); track o.id) {
+            <tr [class.unpaid]="o.paymentStatus === 'Unpaid' && o.status !== 'Cancelled'"
+                (click)="openModal(o)">
+              <td><strong>#{{ o.consecutive }}</strong><br><small class="muted">{{ o.orderNumber }}</small></td>
+              <td>{{ o.orderDate | date:'dd MMM yy' }}<br><small class="muted">{{ o.orderDate | date:'HH:mm' }}</small></td>
+              <td><strong>{{ o.userFullName }}</strong></td>
+              <td>
+                @if (o.userPhone) { <span class="muted">{{ o.userPhone }}</span> }
+                @else { <span class="muted">—</span> }
+              </td>
+              <td class="num"><strong>{{ o.total | currency:'COP':'symbol-narrow':'1.0-0' }}</strong></td>
+              <td>
+                <span class="payment-method-tag" [class]="'pm-' + o.paymentMethod.toLowerCase()">
+                  {{ paymentMethodShort(o.paymentMethod) }}
+                </span>
+                <span class="payment-status-tag"
+                      [class.paid]="o.paymentStatus === 'Paid'"
+                      [class.unpaid]="o.paymentStatus === 'Unpaid'">
+                  @if (o.paymentStatus === 'Paid') { <app-icon name="check" [size]="10"/> Pagado }
+                  @else { Sin pagar }
+                </span>
+              </td>
+              <td>
+                <span class="status-pill" [class]="statusClass(o.status)" [title]="statusDescription(o.status)">
+                  {{ statusLabel(o.status) }}
+                </span>
+              </td>
+              <td class="row-action"><app-icon name="arrow-right" [size]="16"/></td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Cards (mobile) -->
+    <div class="orders-cards">
+      @for (o of pagedOrders(); track o.id) {
         <article class="order-card"
                  [class.unpaid]="o.paymentStatus === 'Unpaid' && o.status !== 'Cancelled'"
                  (click)="openModal(o)">
-
           <header class="order-header">
             <div class="consecutive">
               <small>Pedido</small>
               <strong>#{{ o.consecutive }}</strong>
             </div>
-
             <div class="customer-info">
               <strong class="customer-name">{{ o.userFullName }}</strong>
               <span class="customer-phone">
-                @if (o.userPhone) {
-                  <app-icon name="phone" [size]="12"/> {{ o.userPhone }}
-                } @else {
-                  Sin teléfono
-                }
+                @if (o.userPhone) { <app-icon name="phone" [size]="12"/> {{ o.userPhone }} }
+                @else { Sin teléfono }
               </span>
-              <span class="order-date">
-                {{ o.orderDate | date:'dd MMM · HH:mm' }} · {{ o.orderNumber }}
-              </span>
+              <span class="order-date">{{ o.orderDate | date:'dd MMM · HH:mm' }} · {{ o.orderNumber }}</span>
             </div>
-
             <div class="order-amount">
               <strong class="total">{{ o.total | currency:'COP':'symbol-narrow':'1.0-0' }}</strong>
               <div class="payment-line">
@@ -104,31 +170,48 @@
                 <span class="payment-status-tag"
                       [class.paid]="o.paymentStatus === 'Paid'"
                       [class.unpaid]="o.paymentStatus === 'Unpaid'">
-                  @if (o.paymentStatus === 'Paid') {
-                    <app-icon name="check" [size]="12"/> Pagado
-                  } @else {
-                    Sin pagar
-                  }
+                  @if (o.paymentStatus === 'Paid') { <app-icon name="check" [size]="12"/> Pagado }
+                  @else { Sin pagar }
                 </span>
               </div>
             </div>
-
             <div class="status-area">
-              <span class="status-pill" [class]="statusClass(o.status)" [title]="statusDescription(o.status)">
-                {{ statusLabel(o.status) }}
-              </span>
-              <span class="open-hint" aria-label="Abrir detalle">
-                <app-icon name="arrow-right" [size]="16"/>
-              </span>
+              <span class="status-pill" [class]="statusClass(o.status)">{{ statusLabel(o.status) }}</span>
+              <span class="open-hint"><app-icon name="arrow-right" [size]="16"/></span>
             </div>
           </header>
         </article>
       }
     </div>
+
+    <!-- Paginador -->
+    <div class="pager">
+      <div class="pager-info">
+        Mostrando <strong>{{ pagedOrders().length }}</strong> de <strong>{{ filteredOrders().length }}</strong>
+      </div>
+      <div class="pager-size">
+        <label>Por página:</label>
+        <select [ngModel]="pageSize()" (ngModelChange)="setPageSize(+$event)">
+          @for (n of pageSizeOptions; track n) { <option [ngValue]="n">{{ n }}</option> }
+        </select>
+      </div>
+      <div class="pager-nav">
+        <button (click)="setPage(1)" [disabled]="page() === 1" aria-label="Primera">«</button>
+        <button (click)="setPage(page() - 1)" [disabled]="page() === 1" aria-label="Anterior">‹</button>
+        @for (p of pageNumbers(); track $index) {
+          @if (p === '…') { <span class="ellipsis">…</span> }
+          @else {
+            <button [class.active]="p === page()" (click)="setPage(+p)">{{ p }}</button>
+          }
+        }
+        <button (click)="setPage(page() + 1)" [disabled]="page() === totalPages()" aria-label="Siguiente">›</button>
+        <button (click)="setPage(totalPages())" [disabled]="page() === totalPages()" aria-label="Última">»</button>
+      </div>
+    </div>
   }
 </div>
 
-<!-- ====== Modal Wizard 5 pasos ====== -->
+<!-- ====== Modal Wizard 4 pasos ====== -->
 @if (modalOrder(); as o) {
   <div class="wizard-backdrop" (click)="closeModal()">
     <div class="wizard-modal" (click)="$event.stopPropagation()">
@@ -254,26 +337,7 @@
         @if (currentStepIndex() === 0 && o.status !== 'Cancelled') {
           <section class="stage-card">
             <h3>1. Pedido recibido</h3>
-            <p>Verifica los datos del cliente y la disponibilidad de los productos antes de validar.</p>
-            <div class="stage-actions">
-              <button class="btn-danger-soft" (click)="cancel()" [disabled]="wizardSubmitting()">
-                Cancelar pedido
-              </button>
-              <button class="btn-primary" (click)="validate()" [disabled]="wizardSubmitting()">
-                Validar pedido <app-icon name="arrow-right" [size]="14"/>
-              </button>
-            </div>
-          </section>
-        }
-
-        <!-- Etapa 2 — Validado -->
-        @if (currentStepIndex() === 1 && o.status !== 'Cancelled') {
-          <section class="stage-card">
-            <h3>2. Pedido validado</h3>
-            <p>Datos verificados. Confirma para reservar y empezar a preparar el pedido.</p>
-            @if (o.validatedAt) {
-              <p class="ts"><app-icon name="clock" [size]="12"/> Validado el {{ o.validatedAt | date:'dd MMM · HH:mm' }}</p>
-            }
+            <p>Verifica los datos del cliente y la disponibilidad de los productos. Al confirmar, el pedido pasa a preparación.</p>
             <div class="stage-actions">
               <button class="btn-danger-soft" (click)="cancel()" [disabled]="wizardSubmitting()">
                 Cancelar pedido
@@ -285,10 +349,10 @@
           </section>
         }
 
-        <!-- Etapa 3 — Confirmado: asignar distribuidor + enviar -->
-        @if (currentStepIndex() === 2 && o.status !== 'Cancelled') {
+        <!-- Etapa 2 — Confirmado: asignar distribuidor + enviar -->
+        @if (currentStepIndex() === 1 && o.status !== 'Cancelled') {
           <section class="stage-card">
-            <h3>3. Listo para envío</h3>
+            <h3>2. Listo para envío</h3>
             <p>Selecciona el distribuidor que llevará el pedido y, opcionalmente, agrega un número de seguimiento.</p>
 
             <div class="ship-form">
@@ -336,10 +400,10 @@
           </section>
         }
 
-        <!-- Etapa 4 — Enviado: info distribuidor + entregar -->
-        @if (currentStepIndex() === 3 && o.status !== 'Cancelled') {
+        <!-- Etapa 3 — Enviado: info distribuidor + entregar -->
+        @if (currentStepIndex() === 2 && o.status !== 'Cancelled') {
           <section class="stage-card">
-            <h3>4. En camino</h3>
+            <h3>3. En camino</h3>
 
             @if (o.distributorName) {
               <div class="dist-info">
@@ -398,8 +462,8 @@
           </section>
         }
 
-        <!-- Etapa 5 — Entregado: feedback final visible -->
-        @if (currentStepIndex() === 4) {
+        <!-- Etapa 4 — Entregado: feedback final visible -->
+        @if (currentStepIndex() === 3) {
           <section class="stage-card delivered">
             <h3><app-icon name="check-circle" [size]="20"/> Pedido entregado</h3>
             @if (o.deliveredAt) {
