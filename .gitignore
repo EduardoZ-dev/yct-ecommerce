@@ -19,21 +19,19 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# ---------- Python (image-processing) ----------
-.venv/
-venv/
-__pycache__/
-*.pyc
-
 # ---------- OS / Editors ----------
 .DS_Store
 Thumbs.db
 *.swp
 *.swo
 
-# ---------- Claude ----------
-.claude/settings.local.json
-.claude/scheduled_tasks.lock
+# ---------- Claude (nunca commit) ----------
+.claude/
+CLAUDE.md
+**/CLAUDE.md
+
+# ---------- Demo público (no incluir en repo principal) ----------
+Front/yct-acopio-demo/
 
 # ---------- Env / Secrets locales ----------
 *.env

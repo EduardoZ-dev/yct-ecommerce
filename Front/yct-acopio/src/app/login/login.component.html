@@ -1,0 +1,52 @@
+<div class="login-screen">
+  <div class="login-card">
+    <div class="brand">
+      <div class="logo">
+        <app-icon name="truck" [size]="36"/>
+      </div>
+      <h1>YCT Acopio</h1>
+      <p>Recolección de leche</p>
+    </div>
+
+    @if (error()) { <div class="alert">{{ error() }}</div> }
+
+    <form (ngSubmit)="submit()">
+      <label class="field">
+        <span>Usuario</span>
+        <div class="input-wrap">
+          <app-icon name="user" [size]="18"/>
+          <input type="text" [(ngModel)]="username" name="username" placeholder="usuario" autocomplete="username">
+        </div>
+      </label>
+
+      <label class="field">
+        <span>Contraseña</span>
+        <div class="input-wrap">
+          <app-icon name="lock" [size]="18"/>
+          <input [type]="showPassword() ? 'text' : 'password'" [(ngModel)]="password" name="password" placeholder="••••••••" autocomplete="current-password">
+          <button type="button" class="eye-btn" (click)="showPassword.set(!showPassword())" tabindex="-1">
+            <app-icon [name]="showPassword() ? 'eye-off' : 'eye'" [size]="18"/>
+          </button>
+        </div>
+      </label>
+
+      <label class="remember-row">
+        <input type="checkbox" [checked]="remember()" (change)="toggleRemember()">
+        <span class="check-box"><app-icon name="check" [size]="14"/></span>
+        <span class="check-label">Recuérdame en este equipo</span>
+      </label>
+
+      <button type="submit" class="btn-primary submit-btn" [disabled]="loading()">
+        @if (loading()) { Ingresando… } @else { Iniciar sesión }
+      </button>
+    </form>
+
+    <div class="divider"><span>o</span></div>
+
+    <div class="google-wrap">
+      <div #googleBtn class="google-btn-host"></div>
+    </div>
+
+    <p class="hint">Usa las mismas credenciales del sistema YCT.</p>
+  </div>
+</div>

@@ -1,0 +1,296 @@
+<div class="page form-page">
+  <header class="page-head">
+    <div>
+      <a routerLink="/planillas" class="back-link"><app-icon name="arrow-right" [size]="16"/> Volver a planillas</a>
+      <h1>{{ editingId() ? 'Editar planilla' : 'Nueva planilla' }}</h1>
+    </div>
+    <div class="action-bar">
+      <button class="btn-secondary brand-excel" (click)="exportExcel()" [disabled]="loading()">
+        <app-icon name="excel" [size]="16"/> Excel
+      </button>
+      <button class="btn-secondary brand-pdf" (click)="exportPdf()" [disabled]="loading()">
+        <app-icon name="pdf" [size]="16"/> PDF
+      </button>
+      <button class="btn-secondary brand-whatsapp" (click)="openWhatsapp()" [disabled]="loading()">
+        <app-icon name="whatsapp" [size]="16"/> WhatsApp
+      </button>
+      <button class="btn-secondary brand-email" (click)="openEmail()" [disabled]="loading() || !editingId()">
+        <app-icon name="mail" [size]="16"/> Email
+      </button>
+      <button class="btn-primary" (click)="save()" [disabled]="saving() || loading()">
+        @if (saving()) { Guardando… } @else { Guardar }
+      </button>
+    </div>
+  </header>
+
+  @if (loading()) {
+    <div class="empty">Cargando…</div>
+  } @else {
+
+  <div class="sheet">
+    <div class="sheet-stamp">
+      <div class="brand">
+        <div class="brand-logo"><app-icon name="truck" [size]="28"/></div>
+        <div class="brand-text">
+          <strong>YCT</strong>
+          <span class="brand-sub">DISTRIBUCIONES</span>
+          <span class="tag">Derivados Lácteos</span>
+        </div>
+      </div>
+      <div class="brand-info">
+        <p><strong>NIT 900.955.788-8</strong> · Régimen Común</p>
+        <p>Cra. 5 No. 5A-36 San Diego · Cesar</p>
+        <p>Cel. 310 362 5290 · distribucionesyctsas&#64;gmail.com</p>
+      </div>
+    </div>
+
+    <div class="sheet-head">
+      <div class="field">
+        <label>Ruta</label>
+        <app-select-picker
+          [value]="camionId"
+          [options]="camionOptions()"
+          title="Selecciona camión"
+          placeholder="Selecciona camión"
+          (valueChange)="setCamionId($event)"/>
+      </div>
+      <div class="field">
+        <label>Código transportador</label>
+        <input type="text" [(ngModel)]="codigo" placeholder="Ej. DONFENG">
+      </div>
+
+      <div class="field">
+        <label>Fecha</label>
+        <app-date-picker
+          [value]="fecha"
+          title="Fecha de la planilla"
+          (valueChange)="setFecha($event)"/>
+      </div>
+      <div class="field">
+        <label>Conductor</label>
+        <app-select-picker
+          [value]="conductorId"
+          [options]="conductorOptions()"
+          title="Selecciona conductor"
+          placeholder="Selecciona conductor"
+          (valueChange)="setConductorId($event)"/>
+      </div>
+
+      <div class="field">
+        <label>Hora llegada</label>
+        <app-time-picker
+          [value]="horaLlegadaPlanta"
+          title="Hora de llegada"
+          (valueChange)="setHoraLlegada($event)"/>
+      </div>
+      <div class="field">
+        <label>Asistente</label>
+        <app-select-picker
+          [value]="asistenteId"
+          [options]="asistenteOptions()"
+          title="Selecciona asistente"
+          placeholder="Sin asistente"
+          (valueChange)="setAsistenteId($event)"/>
+      </div>
+
+      <div class="field full">
+        <label>Hora descargue</label>
+        <app-time-picker
+          [value]="horaDescargue"
+          title="Hora de descargue"
+          (valueChange)="setHoraDescargue($event)"/>
+      </div>
+    </div>
+
+    <div class="sheet-table-wrap">
+      <table class="sheet-table">
+        <thead>
+          <tr>
+            <th class="num-col">#</th>
+            <th>Fecha</th>
+            <th>No. Proveedor</th>
+            <th class="num">Cantinas (40 L)</th>
+            <th class="num">Saldo Lts</th>
+            <th class="num">Total Litros</th>
+            <th aria-label="Quitar"></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (r of rows(); track $index; let i = $index) {
+            <tr>
+              <td class="num-col">{{ i + 1 }}</td>
+              <td class="fecha-cell">
+                <app-date-picker
+                  [value]="r.fecha"
+                  variant="row"
+                  format="short"
+                  title="Fecha recogida"
+                  placeholder="Fecha"
+                  (valueChange)="setRowFecha(i)($event)"/>
+              </td>
+              <td class="prov-cell">
+                <app-select-picker
+                  [value]="r.granjeroId"
+                  [options]="granjeroOptions()"
+                  variant="row"
+                  title="Selecciona granjero"
+                  placeholder="Granjero"
+                  (valueChange)="setRowGranjero(i)($event)"/>
+              </td>
+              <td class="stepper-cell">
+                <div class="stepper">
+                  <button type="button" class="step-btn" (click)="incCantina(i, -1)" aria-label="Menos"><app-icon name="minus" [size]="14"/></button>
+                  <button type="button" class="step-input"
+                          (click)="openNumPad('Cantinas (×40 L)', r.cantinas, false, undefined, setRowCantinas(i), $event)">
+                    {{ r.cantinas }}
+                  </button>
+                  <button type="button" class="step-btn" (click)="incCantina(i, 1)" aria-label="Más"><app-icon name="plus" [size]="14"/></button>
+                </div>
+              </td>
+              <td class="stepper-cell">
+                <div class="stepper">
+                  <button type="button" class="step-btn" (click)="incSaldo(i, -1)" aria-label="Menos"><app-icon name="minus" [size]="14"/></button>
+                  <button type="button" class="step-input"
+                          (click)="openNumPad('Saldo (litros)', r.saldoLitros, true, 39.99, setRowSaldo(i), $event)">
+                    {{ r.saldoLitros }}
+                  </button>
+                  <button type="button" class="step-btn" (click)="incSaldo(i, 1)" aria-label="Más"><app-icon name="plus" [size]="14"/></button>
+                </div>
+              </td>
+              <td class="num total-cell">{{ calcRow(r) | number:'1.0-2' }} L</td>
+              <td class="remove-cell">
+                <button class="x-btn" (click)="removeRow(i)" title="Quitar"><app-icon name="close" [size]="14"/></button>
+              </td>
+            </tr>
+          }
+        </tbody>
+        <tfoot>
+          <tr>
+            <td colspan="3" class="add-cell">
+              <button class="add-row-btn" (click)="addRow()">
+                <app-icon name="plus" [size]="14"/> Agregar fila
+              </button>
+            </td>
+            <td class="num"><strong>{{ totalCantinas() }}</strong></td>
+            <td></td>
+            <td class="num totals"><strong>{{ totalLitros() | number:'1.0-2' }} L</strong></td>
+            <td></td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+
+    <div class="sheet-foot">
+      <div class="obs">
+        <label>Observaciones</label>
+        <textarea [(ngModel)]="observaciones" rows="2" placeholder="Notas, novedades, incidentes del día…"></textarea>
+      </div>
+
+      <div class="totals-box">
+        <div class="row"><span>Total cantinas</span><strong>{{ totalCantinas() }}</strong></div>
+        <div class="row"><span>Total recogidas</span><strong>{{ rows().length }}</strong></div>
+        <div class="row total"><span>TOTAL LITROS</span><strong>{{ totalLitros() | number:'1.0-2' }} L</strong></div>
+      </div>
+    </div>
+  </div>
+
+  }
+</div>
+
+<!-- Modal WhatsApp -->
+@if (showWa()) {
+  <div class="modal-backdrop" (click)="showWa.set(false)">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <header class="modal-head">
+        <h2>Enviar planilla por WhatsApp</h2>
+        <button class="close" (click)="showWa.set(false)"><app-icon name="close" [size]="18"/></button>
+      </header>
+      <div class="form">
+        <label class="field full">
+          <span>Número destinatario (Colombia)</span>
+          <input type="tel" [(ngModel)]="waPhone" placeholder="310 452 5896">
+        </label>
+        <p class="muted full">Se abrirá WhatsApp Web/app con el resumen pre-cargado. El PDF puedes adjuntarlo manualmente.</p>
+      </div>
+      <div class="modal-actions">
+        <button class="btn-secondary" (click)="showWa.set(false)">Cancelar</button>
+        <button class="btn-primary" (click)="sendWhatsapp()">Abrir WhatsApp</button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Modal Numpad -->
+@if (numPadOpen(); as np) {
+  <div class="picker-backdrop" (click)="numPadCancel()">
+    <div class="picker-modal numpad-modal" (click)="$event.stopPropagation()">
+      <header class="picker-head">
+        <div>
+          <small>Ingresa valor</small>
+          <h3>{{ np.title }}</h3>
+        </div>
+        <button class="close-btn" (click)="numPadCancel()" aria-label="Cerrar">
+          <app-icon name="close" [size]="20"/>
+        </button>
+      </header>
+
+      <div class="numpad-display">
+        <span class="numpad-value">{{ np.value || '0' }}</span>
+        <button class="numpad-back" (click)="numPadBack()" [disabled]="!np.value" title="Borrar">⌫</button>
+      </div>
+
+      <div class="numpad-grid">
+        <button (click)="numPadAppend('7')">7</button>
+        <button (click)="numPadAppend('8')">8</button>
+        <button (click)="numPadAppend('9')">9</button>
+        <button (click)="numPadAppend('4')">4</button>
+        <button (click)="numPadAppend('5')">5</button>
+        <button (click)="numPadAppend('6')">6</button>
+        <button (click)="numPadAppend('1')">1</button>
+        <button (click)="numPadAppend('2')">2</button>
+        <button (click)="numPadAppend('3')">3</button>
+        @if (np.isDecimal) {
+          <button (click)="numPadAppend('.')">.</button>
+        } @else {
+          <button class="numpad-aux" (click)="numPadClear()">C</button>
+        }
+        <button (click)="numPadAppend('0')">0</button>
+        @if (np.isDecimal) {
+          <button class="numpad-aux" (click)="numPadClear()">C</button>
+        } @else {
+          <button class="numpad-aux" disabled>&nbsp;</button>
+        }
+      </div>
+
+      <footer class="picker-foot">
+        <button class="btn-secondary" (click)="numPadCancel()">Cancelar</button>
+        <button class="btn-primary" (click)="numPadConfirm()">Confirmar</button>
+      </footer>
+    </div>
+  </div>
+}
+
+<!-- Modal Email -->
+@if (showEmail()) {
+  <div class="modal-backdrop" (click)="showEmail.set(false)">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <header class="modal-head">
+        <h2>Enviar planilla por correo</h2>
+        <button class="close" (click)="showEmail.set(false)"><app-icon name="close" [size]="18"/></button>
+      </header>
+      <div class="form">
+        <label class="field full">
+          <span>Correo destinatario</span>
+          <input type="email" [(ngModel)]="emailTo" placeholder="gerencia@yct.com.co">
+        </label>
+        <p class="muted full">Se enviará el PDF de la planilla como adjunto.</p>
+      </div>
+      <div class="modal-actions">
+        <button class="btn-secondary" (click)="showEmail.set(false)" [disabled]="sending()">Cancelar</button>
+        <button class="btn-primary" (click)="sendEmail()" [disabled]="sending()">
+          @if (sending()) { Enviando… } @else { Enviar }
+        </button>
+      </div>
+    </div>
+  </div>
+}

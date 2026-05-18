@@ -23,6 +23,7 @@ public static class DependencyInjection
         services.AddHttpContextAccessor();
         services.AddScoped<ICurrentUser, CurrentUserService>();
         services.AddScoped<IAuditLogger, AuditLogger>();
+        services.AddScoped<IEmailSender, SmtpEmailSender>();
 
         return services;
     }
