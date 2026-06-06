@@ -34,7 +34,8 @@ INSERT INTO acopio.Conductores (Id, NombreCompleto, Cedula, Telefono, CamionPref
 (1, N'Carlos Ramírez',    N'1067123456', N'3015551122', 1, NULL, 1, GETDATE(), NULL),
 (2, N'José Manuel Pérez', N'1067234567', N'3015552233', 2, NULL, 1, GETDATE(), NULL),
 (3, N'Andrés Suárez',     N'1067345678', N'3015553344', 3, NULL, 1, GETDATE(), NULL),
-(4, N'Luis Martínez',     N'1067456789', N'3015554455', 4, NULL, 1, GETDATE(), NULL);
+(4, N'Luis Martínez',     N'1067456789', N'3015554455', 4, NULL, 1, GETDATE(), NULL),
+(5, N'Eduardo Zequeira',  N'1010121831', N'3015555566', 1, NULL, 1, GETDATE(), NULL);
 SET IDENTITY_INSERT acopio.Conductores OFF;
 GO
 

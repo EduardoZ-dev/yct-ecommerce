@@ -28,6 +28,7 @@ public class ConductoresController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize(Roles = Roles.CanManageUsers)]
     public async Task<IActionResult> Create([FromBody] SaveConductorCommand command)
     {
         var result = await _mediator.Send(command with { Id = null });
@@ -35,6 +36,7 @@ public class ConductoresController : ControllerBase
     }
 
     [HttpPut("{id}")]
+    [Authorize(Roles = Roles.CanManageUsers)]
     public async Task<IActionResult> Update(int id, [FromBody] SaveConductorCommand command)
     {
         var result = await _mediator.Send(command with { Id = id });

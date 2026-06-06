@@ -24,6 +24,7 @@ public class AppDbContext : DbContext
     public DbSet<Granjero> Granjeros => Set<Granjero>();
     public DbSet<Ruta> Rutas => Set<Ruta>();
     public DbSet<Recogida> Recogidas => Set<Recogida>();
+    public DbSet<Notification> Notifications => Set<Notification>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

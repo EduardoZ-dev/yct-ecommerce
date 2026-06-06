@@ -126,6 +126,14 @@ public class SavePlanillaCommandHandler : IRequestHandler<SavePlanillaCommand, R
 
         ruta.TotalLitrosChofer = totalLitros;
         ruta.UpdatedAt = DateTime.UtcNow;
+
+        // Auto-transición: si hay items y no está conciliada/anulada, pasa a EsperandoDescargue
+        if (request.Items.Count > 0 && ruta.Status != "Conciliada" && ruta.Status != "Anulada"
+            && ruta.Status != "PendienteAutorizacion")
+        {
+            ruta.Status = "EsperandoDescargue";
+        }
+
         await _rutaRepository.UpdateAsync(ruta);
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);

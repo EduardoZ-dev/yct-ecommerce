@@ -57,4 +57,32 @@ public class SendPlanillaEmailRequest
     public string To { get; set; } = string.Empty;
     public string? Subject { get; set; }
     public string? Body { get; set; }
+    public string? PdfBase64 { get; set; }
+    public string? PdfFileName { get; set; }
+}
+
+/// <summary>Operario planta valida total litros descargados.</summary>
+public class ValidatePlantaRequest
+{
+    public decimal TotalLitrosPlanta { get; set; }
+    public TimeSpan? HoraDescargue { get; set; }
+    public string? Observaciones { get; set; }
+}
+
+/// <summary>Admin autoriza/anula planilla con faltante.</summary>
+public class AuthorizeShortageRequest
+{
+    public bool Approve { get; set; }
+    public string? Motivo { get; set; }
+}
+
+public class NotificationDto
+{
+    public int Id { get; set; }
+    public string Type { get; set; } = string.Empty;
+    public string Title { get; set; } = string.Empty;
+    public string Message { get; set; } = string.Empty;
+    public int? PlanillaId { get; set; }
+    public bool IsRead { get; set; }
+    public DateTime CreatedAt { get; set; }
 }

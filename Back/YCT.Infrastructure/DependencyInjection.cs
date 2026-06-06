@@ -24,6 +24,10 @@ public static class DependencyInjection
         services.AddScoped<ICurrentUser, CurrentUserService>();
         services.AddScoped<IAuditLogger, AuditLogger>();
         services.AddScoped<IEmailSender, SmtpEmailSender>();
+        services.AddDataProtection();
+        services.AddSingleton<IEmailActionTokenService, EmailActionTokenService>();
+
+        services.AddHostedService<DailyReportService>();
 
         return services;
     }

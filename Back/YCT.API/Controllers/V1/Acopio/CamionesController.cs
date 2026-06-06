@@ -28,6 +28,7 @@ public class CamionesController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize(Roles = Roles.CanManageUsers)]
     public async Task<IActionResult> Create([FromBody] SaveCamionCommand command)
     {
         var result = await _mediator.Send(command with { Id = null });
@@ -35,6 +36,7 @@ public class CamionesController : ControllerBase
     }
 
     [HttpPut("{id}")]
+    [Authorize(Roles = Roles.CanManageUsers)]
     public async Task<IActionResult> Update(int id, [FromBody] SaveCamionCommand command)
     {
         var result = await _mediator.Send(command with { Id = id });

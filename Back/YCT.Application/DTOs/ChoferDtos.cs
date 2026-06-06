@@ -1,0 +1,23 @@
+namespace YCT.Application.DTOs;
+
+public class ChoferEnvioRequest
+{
+    public string Uuid { get; set; } = string.Empty;        // ClientUuid planilla
+    public DateTime Fecha { get; set; }
+    public int CamionId { get; set; }
+    public int ConductorId { get; set; }
+    public int? AsistenteId { get; set; }
+    public TimeSpan? HoraSalida { get; set; }
+    public List<ChoferRecogidaItem> Recogidas { get; set; } = new();
+}
+
+public class ChoferRecogidaItem
+{
+    public string Uuid { get; set; } = string.Empty;
+    public int GranjeroId { get; set; }
+    public int Cantinas { get; set; }
+    public decimal SaldoLitros { get; set; }
+    public string CapturadoAt { get; set; } = string.Empty;
+    public double? GpsLat { get; set; }
+    public double? GpsLng { get; set; }
+}

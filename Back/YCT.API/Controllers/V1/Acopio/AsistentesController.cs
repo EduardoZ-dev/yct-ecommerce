@@ -28,6 +28,7 @@ public class AsistentesController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize(Roles = Roles.CanManageUsers)]
     public async Task<IActionResult> Create([FromBody] SaveAsistenteCommand command)
     {
         var result = await _mediator.Send(command with { Id = null });
@@ -35,6 +36,7 @@ public class AsistentesController : ControllerBase
     }
 
     [HttpPut("{id}")]
+    [Authorize(Roles = Roles.CanManageUsers)]
     public async Task<IActionResult> Update(int id, [FromBody] SaveAsistenteCommand command)
     {
         var result = await _mediator.Send(command with { Id = id });
