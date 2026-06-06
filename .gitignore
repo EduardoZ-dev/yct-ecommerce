@@ -40,3 +40,7 @@ Front/yct-acopio-demo/
 # ---------- Backups SQL ----------
 backups/
 *.bak
+
+# ---------- Apps Acopio (repos independientes) ----------
+/Front/yct-acopio/
+/Front/yct-acopio-chofer/
