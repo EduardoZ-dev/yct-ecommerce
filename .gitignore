@@ -45,3 +45,7 @@ backups/
 /Front/yct-acopio/
 /Front/yct-acopio-chofer/
 /Front/yct-tracking/
+
+# Recursos locales (no subir: data operativa)
+/YCT Resources/
+/deploy/.env

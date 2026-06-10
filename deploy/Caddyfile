@@ -1,0 +1,7 @@
+# Caddy: TLS automático (Let's Encrypt) y proxy inverso al API.
+# El subdominio del API se resuelve con la variable DOMAIN del .env.
+
+api.{$DOMAIN} {
+    encode gzip
+    reverse_proxy api:8080
+}

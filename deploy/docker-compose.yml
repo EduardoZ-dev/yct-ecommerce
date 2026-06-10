@@ -1,0 +1,66 @@
+# Despliegue YCT: API .NET 9 + SQL Server Express + Caddy (HTTPS automático).
+# Sirve a los frontends acopio / chofer / tienda (estáticos en Cloudflare Pages).
+# Uso: copiar .env.example a .env, completar, y `docker compose up -d --build`.
+
+services:
+  db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: ${MSSQL_SA_PASSWORD}
+      MSSQL_PID: Express          # Edición gratuita (hasta 10 GB por base)
+    volumes:
+      - mssqldata:/var/opt/mssql
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P \"$$MSSQL_SA_PASSWORD\" -Q 'SELECT 1' || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build:
+      context: ../Back
+      dockerfile: Dockerfile
+    environment:
+      ConnectionStrings__DefaultConnection: "Server=db;Database=YctDb;User Id=sa;Password=${MSSQL_SA_PASSWORD};TrustServerCertificate=True;Encrypt=False"
+      Jwt__Key: ${JWT_KEY}
+      Jwt__Issuer: ${JWT_ISSUER}
+      Jwt__Audience: ${JWT_AUDIENCE}
+      # Orígenes permitidos (CORS) — uno por índice
+      Cors__AllowedOrigins__0: ${ACOPIO_ORIGIN}
+      Cors__AllowedOrigins__1: ${CHOFER_ORIGIN}
+      Cors__AllowedOrigins__2: ${TIENDA_ORIGIN}
+      # SMTP (notificaciones acopio) — ajusta las claves a tu appsettings
+      Smtp__Host: ${SMTP_HOST}
+      Smtp__Port: ${SMTP_PORT}
+      Smtp__User: ${SMTP_USER}
+      Smtp__Password: ${SMTP_PASSWORD}
+      Smtp__From: ${SMTP_FROM}
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - apiuploads:/app/wwwroot   # imágenes de productos (e-commerce)
+    restart: unless-stopped
+
+  caddy:
+    image: caddy:2
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      DOMAIN: ${DOMAIN}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - api
+    restart: unless-stopped
+
+volumes:
+  mssqldata:
+  apiuploads:
+  caddy_data:
+  caddy_config:
