@@ -49,3 +49,7 @@ backups/
 # Recursos locales (no subir: data operativa)
 /YCT Resources/
 /deploy/.env
+
+# Secretos backend (no subir)
+Back/YCT.API/appsettings.Development.json
+Back/YCT.API/appsettings.Production.json
