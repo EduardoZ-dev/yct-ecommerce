@@ -1,0 +1,40 @@
+# ---- .NET build output ----
+[Bb]in/
+[Oo]bj/
+[Oo]ut/
+[Ll]og/
+[Ll]ogs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+.vs/
+
+# ---- Secrets / config local (NUNCA subir) ----
+appsettings.Development.json
+appsettings.Local.json
+appsettings.Production.json
+appsettings.*.local.json
+.env
+.env.*
+!.env.example
+secrets.json
+*.pfx
+*.key
+*.pem
+
+# ---- Deploy ----
+deploy/.env
+
+# ---- IDE / SO ----
+.idea/
+.vscode/*
+!.vscode/settings.json
+!.vscode/launch.json
+.DS_Store
+Thumbs.db
+
+# ---- Test / coverage ----
+[Tt]est[Rr]esult*/
+coverage/
+*.coverage
