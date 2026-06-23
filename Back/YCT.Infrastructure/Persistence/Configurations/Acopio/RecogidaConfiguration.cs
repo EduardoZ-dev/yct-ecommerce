@@ -28,6 +28,11 @@ public class RecogidaConfiguration : IEntityTypeConfiguration<Recogida>
             .HasForeignKey(r => r.GranjeroId)
             .OnDelete(DeleteBehavior.Restrict);
 
+        builder.HasOne(r => r.GranjeroCodigo)
+            .WithMany()
+            .HasForeignKey(r => r.GranjeroCodigoId)
+            .OnDelete(DeleteBehavior.SetNull);
+
         builder.HasOne(r => r.OperarioPlantaUser)
             .WithMany()
             .HasForeignKey(r => r.OperarioPlantaUserId)

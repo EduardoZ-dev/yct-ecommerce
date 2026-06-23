@@ -26,17 +26,20 @@ public class ChoferController : ControllerBase
     private readonly IGenericRepository<Ruta> _rutaRepo;
     private readonly IGenericRepository<Camion> _camionRepo;
     private readonly IGenericRepository<Granjero> _granjeroRepo;
+    private readonly IGenericRepository<GranjeroCodigo> _codigoRepo;
 
     public ChoferController(
         IMediator mediator,
         IGenericRepository<Ruta> rutaRepo,
         IGenericRepository<Camion> camionRepo,
-        IGenericRepository<Granjero> granjeroRepo)
+        IGenericRepository<Granjero> granjeroRepo,
+        IGenericRepository<GranjeroCodigo> codigoRepo)
     {
         _mediator = mediator;
         _rutaRepo = rutaRepo;
         _camionRepo = camionRepo;
         _granjeroRepo = granjeroRepo;
+        _codigoRepo = codigoRepo;
     }
 
     /// <summary>Login del conductor: cédula + PIN → token JWT.</summary>
@@ -49,13 +52,26 @@ public class ChoferController : ControllerBase
         return result.Success ? Ok(result) : Unauthorized(result);
     }
 
-    /// <summary>Lista de granjeros activos (para la captura en la app del chofer).</summary>
+    /// <summary>Lista de granjeros activos con sus códigos/fincas (para la captura en la app del chofer).</summary>
     [HttpGet("granjeros")]
     public async Task<IActionResult> Granjeros()
     {
+        var codigos = (await _codigoRepo.FindAsync(c => c.IsActive))
+            .GroupBy(c => c.GranjeroId)
+            .ToDictionary(g => g.Key, g => g.OrderBy(c => c.Codigo).ToList());
+
         var granjeros = (await _granjeroRepo.FindAsync(g => g.IsActive))
             .OrderBy(g => g.Numero)
-            .Select(g => new { id = g.Id, numero = g.Numero, nombreCompleto = g.NombreCompleto, finca = g.Finca })
+            .Select(g => new
+            {
+                id = g.Id,
+                numero = g.Numero,
+                nombreCompleto = g.NombreCompleto,
+                finca = g.Finca,
+                codigos = (codigos.TryGetValue(g.Id, out var cs) ? cs : new List<GranjeroCodigo>())
+                    .Select(c => new { id = c.Id, codigo = c.Codigo, finca = c.Finca })
+                    .ToList()
+            })
             .ToList();
         return Ok(ResponseBase<object>.Ok(granjeros));
     }
@@ -110,6 +126,7 @@ public class ChoferController : ControllerBase
             {
                 Id = null,
                 GranjeroId = r.GranjeroId,
+                GranjeroCodigoId = r.GranjeroCodigoId,
                 Fecha = fecha,
                 Cantinas = r.Cantinas,
                 SaldoLitros = r.SaldoLitros

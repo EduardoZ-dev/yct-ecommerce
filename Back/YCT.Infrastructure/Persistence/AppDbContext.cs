@@ -22,6 +22,7 @@ public class AppDbContext : DbContext
     public DbSet<Conductor> Conductores => Set<Conductor>();
     public DbSet<Asistente> Asistentes => Set<Asistente>();
     public DbSet<Granjero> Granjeros => Set<Granjero>();
+    public DbSet<GranjeroCodigo> GranjeroCodigos => Set<GranjeroCodigo>();
     public DbSet<Ruta> Rutas => Set<Ruta>();
     public DbSet<Recogida> Recogidas => Set<Recogida>();
     public DbSet<Notification> Notifications => Set<Notification>();

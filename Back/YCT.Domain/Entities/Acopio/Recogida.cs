@@ -14,6 +14,10 @@ public class Recogida : BaseEntity
     public int GranjeroId { get; set; }
     public Granjero Granjero { get; set; } = null!;
 
+    /// <summary>Código específico del granjero (finca/tanque) al que se le recogió. Null en planillas creadas a mano.</summary>
+    public int? GranjeroCodigoId { get; set; }
+    public GranjeroCodigo? GranjeroCodigo { get; set; }
+
     public DateTime Fecha { get; set; }
 
     // ===== Entrada 1: chofer en finca =====

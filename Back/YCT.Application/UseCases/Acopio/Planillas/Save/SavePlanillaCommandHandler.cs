@@ -113,6 +113,7 @@ public class SavePlanillaCommandHandler : IRequestHandler<SavePlanillaCommand, R
             {
                 RutaId = ruta.Id,
                 GranjeroId = item.GranjeroId,
+                GranjeroCodigoId = item.GranjeroCodigoId,
                 Fecha = item.Fecha.Date == DateTime.MinValue ? ruta.Fecha : item.Fecha.Date,
                 CantinasChofer = item.Cantinas,
                 SaldoChofer = item.SaldoLitros,

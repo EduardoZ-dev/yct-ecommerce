@@ -47,6 +47,7 @@ public class SavePlanillaItemRequest
 {
     public long? Id { get; set; }
     public int GranjeroId { get; set; }
+    public int? GranjeroCodigoId { get; set; }
     public DateTime Fecha { get; set; }
     public int Cantinas { get; set; }
     public decimal SaldoLitros { get; set; }

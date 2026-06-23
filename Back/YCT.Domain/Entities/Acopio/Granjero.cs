@@ -22,5 +22,8 @@ public class Granjero : BaseEntity
     public string? Notas { get; set; }
     public bool IsActive { get; set; } = true;
 
+    /// <summary>Códigos/sub-números del proveedor (uno por finca/tanque). La recogida se hace por código.</summary>
+    public ICollection<GranjeroCodigo> Codigos { get; set; } = new List<GranjeroCodigo>();
+
     public ICollection<Recogida> Recogidas { get; set; } = new List<Recogida>();
 }

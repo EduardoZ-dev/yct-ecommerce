@@ -15,6 +15,7 @@ public class ChoferRecogidaItem
 {
     public string Uuid { get; set; } = string.Empty;
     public int GranjeroId { get; set; }
+    public int? GranjeroCodigoId { get; set; }
     public int Cantinas { get; set; }
     public decimal SaldoLitros { get; set; }
     public string CapturadoAt { get; set; } = string.Empty;
