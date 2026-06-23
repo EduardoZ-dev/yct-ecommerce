@@ -3,8 +3,10 @@ using System.Threading.RateLimiting;
 using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using YCT.Infrastructure;
+using YCT.Infrastructure.Persistence;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -92,6 +94,28 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddOpenApi();
 
 var app = builder.Build();
+
+// Aplicar migraciones pendientes al iniciar (crea/actualiza el esquema).
+// Reintenta porque la base de datos puede tardar en estar lista al levantar el stack.
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    var startupLogger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+    for (var intento = 1; intento <= 12; intento++)
+    {
+        try
+        {
+            db.Database.Migrate();
+            startupLogger.LogInformation("Migraciones aplicadas correctamente.");
+            break;
+        }
+        catch (Exception ex) when (intento < 12)
+        {
+            startupLogger.LogWarning("Base de datos no lista (intento {Intento}/12): {Mensaje}. Reintentando en 5s...", intento, ex.Message);
+            Thread.Sleep(5000);
+        }
+    }
+}
 
 if (app.Environment.IsDevelopment())
 {

@@ -25,7 +25,6 @@ public class ProductsController : ControllerBase
     }
 
     [HttpGet("catalog")]
-    [AllowAnonymous]
     public async Task<IActionResult> GetCatalog()
     {
         var result = await _mediator.Send(new GetCatalogQuery());
@@ -40,7 +39,6 @@ public class ProductsController : ControllerBase
     }
 
     [HttpGet("{id}")]
-    [AllowAnonymous]
     public async Task<IActionResult> GetById(int id)
     {
         var result = await _mediator.Send(new GetProductByIdQuery(id));

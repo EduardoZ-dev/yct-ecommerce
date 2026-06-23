@@ -23,7 +23,6 @@ public class CategoriesController : ControllerBase
     }
 
     [HttpGet]
-    [AllowAnonymous]
     public async Task<IActionResult> GetAll()
     {
         var result = await _mediator.Send(new GetAllCategoriesQuery());

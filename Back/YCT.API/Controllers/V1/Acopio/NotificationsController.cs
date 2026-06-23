@@ -42,7 +42,6 @@ public class NotificationsController : ControllerBase
     }
 
     [HttpPost("test-email")]
-    [AllowAnonymous]
     public async Task<IActionResult> TestEmail(
         [FromServices] IEmailSender emailSender,
         [FromQuery] string to = "yairevarduardozeq@gmail.com")

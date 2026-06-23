@@ -11,6 +11,8 @@ public class Conductor : BaseEntity
     public string NombreCompleto { get; set; } = string.Empty;
     public string? Cedula { get; set; }
     public string? Telefono { get; set; }
+    /// <summary>Hash del PIN para login en la app móvil (SHA-256 hex). Null = sin acceso a la app.</summary>
+    public string? PinHash { get; set; }
     /// <summary>Camión que normalmente conduce (referencia, no obligatoria por día).</summary>
     public int? CamionPreferidoId { get; set; }
     public Camion? CamionPreferido { get; set; }

@@ -1,3 +1,5 @@
+using System.Security.Cryptography;
+using System.Text;
 using MediatR;
 using YCT.Application.Common;
 using YCT.Application.DTOs;
@@ -51,6 +53,8 @@ public class SaveConductorCommandHandler : IRequestHandler<SaveConductorCommand,
                 UserId = request.UserId,
                 IsActive = request.IsActive
             };
+            if (request.Pin != null)
+                entity.PinHash = string.IsNullOrWhiteSpace(request.Pin) ? null : HashPin(request.Pin);
             await _repository.AddAsync(entity);
         }
         else
@@ -65,6 +69,8 @@ public class SaveConductorCommandHandler : IRequestHandler<SaveConductorCommand,
             existing.CamionPreferidoId = request.CamionPreferidoId;
             existing.UserId = request.UserId;
             existing.IsActive = request.IsActive;
+            if (request.Pin != null)
+                existing.PinHash = string.IsNullOrWhiteSpace(request.Pin) ? null : HashPin(request.Pin);
             existing.UpdatedAt = DateTime.UtcNow;
             await _repository.UpdateAsync(existing);
             entity = existing;
@@ -98,4 +104,7 @@ public class SaveConductorCommandHandler : IRequestHandler<SaveConductorCommand,
             UpdatedAt = entity.UpdatedAt
         }, isNew ? "Conductor creado" : "Conductor actualizado");
     }
+
+    private static string HashPin(string pin) =>
+        Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(pin.Trim()))).ToLowerInvariant();
 }

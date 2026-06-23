@@ -11,4 +11,6 @@ public record SaveConductorCommand(
     string? Telefono,
     int? CamionPreferidoId,
     int? UserId,
-    bool IsActive) : IRequest<ResponseBase<ConductorDto>>;
+    bool IsActive,
+    /// <summary>PIN en texto plano para login en la app móvil. Null = no cambiar. Vacío = quitar acceso.</summary>
+    string? Pin = null) : IRequest<ResponseBase<ConductorDto>>;

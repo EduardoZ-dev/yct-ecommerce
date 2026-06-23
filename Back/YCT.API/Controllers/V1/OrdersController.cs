@@ -108,7 +108,6 @@ public class OrdersController : ControllerBase
 
     /// <summary>Permite que un cliente sin cuenta cree un pedido (checkout público).</summary>
     [HttpPost("guest")]
-    [AllowAnonymous]
     public async Task<IActionResult> CreateGuest([FromBody] CreateGuestOrderCommand command)
     {
         var result = await _mediator.Send(command);
@@ -117,7 +116,6 @@ public class OrdersController : ControllerBase
 
     /// <summary>Permite consultar el estado de un pedido por número de orden o teléfono.</summary>
     [HttpGet("track")]
-    [AllowAnonymous]
     public async Task<IActionResult> Track([FromQuery] string search)
     {
         var result = await _mediator.Send(new TrackOrderQuery(search));

@@ -1,0 +1,10 @@
+**/bin/
+**/obj/
+**/.vs/
+**/.git/
+**/.github/
+**/node_modules/
+**/*.user
+deploy/
+appsettings.Development.json
+appsettings.Development.example.json
