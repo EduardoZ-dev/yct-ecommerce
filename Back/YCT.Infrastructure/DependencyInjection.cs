@@ -24,6 +24,7 @@ public static class DependencyInjection
         services.AddScoped<ICurrentUser, CurrentUserService>();
         services.AddScoped<IAuditLogger, AuditLogger>();
         services.AddScoped<IEmailSender, SmtpEmailSender>();
+        services.AddHttpClient<IWhatsAppNotifier, WhatsAppCloudNotifier>();
         services.AddDataProtection();
         services.AddSingleton<IEmailActionTokenService, EmailActionTokenService>();
 

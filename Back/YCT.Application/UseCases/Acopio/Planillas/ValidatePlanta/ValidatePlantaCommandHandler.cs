@@ -18,6 +18,9 @@ public class ValidatePlantaCommandHandler : IRequestHandler<ValidatePlantaComman
     private readonly IEmailSender _emailSender;
     private readonly IEmailActionTokenService _tokens;
     private readonly IConfiguration _config;
+    private readonly IWhatsAppNotifier _whatsApp;
+    private readonly IGenericRepository<Conductor> _conductorRepository;
+    private readonly IGenericRepository<Camion> _camionRepository;
 
     public ValidatePlantaCommandHandler(
         IGenericRepository<Ruta> rutaRepository,
@@ -27,7 +30,10 @@ public class ValidatePlantaCommandHandler : IRequestHandler<ValidatePlantaComman
         IMediator mediator,
         IEmailSender emailSender,
         IEmailActionTokenService tokens,
-        IConfiguration config)
+        IConfiguration config,
+        IWhatsAppNotifier whatsApp,
+        IGenericRepository<Conductor> conductorRepository,
+        IGenericRepository<Camion> camionRepository)
     {
         _rutaRepository = rutaRepository;
         _notificationRepository = notificationRepository;
@@ -37,6 +43,9 @@ public class ValidatePlantaCommandHandler : IRequestHandler<ValidatePlantaComman
         _emailSender = emailSender;
         _tokens = tokens;
         _config = config;
+        _whatsApp = whatsApp;
+        _conductorRepository = conductorRepository;
+        _camionRepository = camionRepository;
     }
 
     public async Task<ResponseBase<PlanillaDto>> Handle(ValidatePlantaCommand request, CancellationToken cancellationToken)
@@ -108,6 +117,26 @@ public class ValidatePlantaCommandHandler : IRequestHandler<ValidatePlantaComman
             await _emailSender.SendAsync("yairevarduardozeq@gmail.com", subject, html, null);
         }
         catch { /* email error no debe romper validación */ }
+
+        // WhatsApp a los contactos (best-effort, no bloquea)
+        try
+        {
+            var conductor = await _conductorRepository.GetByIdAsync(ruta.ConductorId);
+            var camion = await _camionRepository.GetByIdAsync(ruta.CamionId);
+            var adminBase = _config["AppUrls:Admin"] ?? "http://localhost:4300";
+            await _whatsApp.SendDescargueAsync(new WhatsAppDescargueModel(
+                Resultado: shortage ? "CON FALTANTE" : "OK",
+                Codigo: ruta.Codigo,
+                Fecha: ruta.Fecha,
+                Conductor: conductor?.NombreCompleto ?? $"#{ruta.ConductorId}",
+                Camion: camion?.Nombre ?? $"#{ruta.CamionId}",
+                LitrosChofer: ruta.TotalLitrosChofer,
+                LitrosPlanta: request.TotalLitrosPlanta,
+                Diferencia: diferencia,
+                Estado: ruta.Status,
+                HistorialUrl: $"{adminBase}/descargues"), cancellationToken);
+        }
+        catch { /* whatsapp error no debe romper validación */ }
 
         var result = await _mediator.Send(new GetPlanillaByIdQuery(ruta.Id), cancellationToken);
         return ResponseBase<PlanillaDto>.Ok(result.Data!,

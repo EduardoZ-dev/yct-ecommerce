@@ -19,6 +19,8 @@ public class PlanillaHeaderDto
     public TimeSpan? HoraLlegadaPlanta { get; set; }
     public TimeSpan? HoraDescargue { get; set; }
     public decimal TotalLitros { get; set; }
+    public decimal? TotalLitrosPlanta { get; set; }
+    public decimal? DiferenciaTotal { get; set; }
     public int TotalCantinas { get; set; }
     public int TotalRecogidas { get; set; }
     public string Status { get; set; } = "EnProgreso";
