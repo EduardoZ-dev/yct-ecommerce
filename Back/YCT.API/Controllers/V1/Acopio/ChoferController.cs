@@ -25,15 +25,18 @@ public class ChoferController : ControllerBase
     private readonly IMediator _mediator;
     private readonly IGenericRepository<Ruta> _rutaRepo;
     private readonly IGenericRepository<Camion> _camionRepo;
+    private readonly IGenericRepository<Granjero> _granjeroRepo;
 
     public ChoferController(
         IMediator mediator,
         IGenericRepository<Ruta> rutaRepo,
-        IGenericRepository<Camion> camionRepo)
+        IGenericRepository<Camion> camionRepo,
+        IGenericRepository<Granjero> granjeroRepo)
     {
         _mediator = mediator;
         _rutaRepo = rutaRepo;
         _camionRepo = camionRepo;
+        _granjeroRepo = granjeroRepo;
     }
 
     /// <summary>Login del conductor: cédula + PIN → token JWT.</summary>
@@ -44,6 +47,17 @@ public class ChoferController : ControllerBase
     {
         var result = await _mediator.Send(cmd);
         return result.Success ? Ok(result) : Unauthorized(result);
+    }
+
+    /// <summary>Lista de granjeros activos (para la captura en la app del chofer).</summary>
+    [HttpGet("granjeros")]
+    public async Task<IActionResult> Granjeros()
+    {
+        var granjeros = (await _granjeroRepo.FindAsync(g => g.IsActive))
+            .OrderBy(g => g.Numero)
+            .Select(g => new { id = g.Id, numero = g.Numero, nombreCompleto = g.NombreCompleto, finca = g.Finca })
+            .ToList();
+        return Ok(ResponseBase<object>.Ok(granjeros));
     }
 
     /// <summary>Recibe la planilla enviada por el chofer desde la app móvil.</summary>
