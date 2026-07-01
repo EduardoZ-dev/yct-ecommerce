@@ -58,4 +58,17 @@ public class GranjeroDto
     public bool IsActive { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime? UpdatedAt { get; set; }
+
+    /// <summary>Códigos/fincas del proveedor con la cantidad de tinas de YCT en cada una.</summary>
+    public List<GranjeroCodigoDto> Codigos { get; set; } = new();
+    /// <summary>Suma de tinas propiedad de YCT en todas las fincas del proveedor.</summary>
+    public int TinasYctTotal { get; set; }
+}
+
+public class GranjeroCodigoDto
+{
+    public int Id { get; set; }
+    public string Codigo { get; set; } = string.Empty;
+    public string? Finca { get; set; }
+    public int TinasYct { get; set; }
 }

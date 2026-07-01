@@ -17,5 +17,11 @@ public class GranjeroCodigo : BaseEntity
     /// <summary>Finca/predio al que corresponde este código.</summary>
     public string? Finca { get; set; }
 
+    /// <summary>
+    /// Cantidad de tinas (cantinas) propiedad de YCT en esta finca. 0 = no tenemos ninguna
+    /// tina nuestra ahí; un número = esas tinas son de YCT. Dato tomado del Excel de rutas.
+    /// </summary>
+    public int TinasYct { get; set; }
+
     public bool IsActive { get; set; } = true;
 }

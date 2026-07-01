@@ -13,6 +13,7 @@ public class GranjeroCodigoConfiguration : IEntityTypeConfiguration<GranjeroCodi
 
         builder.Property(c => c.Codigo).IsRequired().HasMaxLength(20);
         builder.Property(c => c.Finca).HasMaxLength(150);
+        builder.Property(c => c.TinasYct).HasDefaultValue(0);
 
         builder.HasOne(c => c.Granjero)
             .WithMany(g => g.Codigos)

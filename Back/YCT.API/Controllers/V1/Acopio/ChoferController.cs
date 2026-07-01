@@ -70,7 +70,7 @@ public class ChoferController : ControllerBase
                 nombreCompleto = g.NombreCompleto,
                 finca = g.Finca,
                 codigos = (codigos.TryGetValue(g.Id, out var cs) ? cs : new List<GranjeroCodigo>())
-                    .Select(c => new { id = c.Id, codigo = c.Codigo, finca = c.Finca })
+                    .Select(c => new { id = c.Id, codigo = c.Codigo, finca = c.Finca, tinasYct = c.TinasYct })
                     .ToList()
             })
             .ToList();
