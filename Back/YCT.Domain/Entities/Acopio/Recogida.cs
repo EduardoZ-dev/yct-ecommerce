@@ -38,6 +38,14 @@ public class Recogida : BaseEntity
     /// <summary>Sabor: Normal | Raro/malo.</summary>
     public string? EstadoSabor { get; set; }
 
+    // ===== Recorrido: dónde y en qué orden se recogió =====
+    /// <summary>Orden de visita dentro de la ruta (1, 2, 3...).</summary>
+    public int Orden { get; set; }
+    /// <summary>Momento en que el chofer capturó la recogida en la finca (hora local del dispositivo).</summary>
+    public DateTime? CapturadoAt { get; set; }
+    public double? GpsLat { get; set; }
+    public double? GpsLng { get; set; }
+
     // ===== Entrada 2: planta al descargar (opcional, se llena después) =====
     public int? CantinasPlanta { get; set; }
     public decimal? SaldoPlanta { get; set; }

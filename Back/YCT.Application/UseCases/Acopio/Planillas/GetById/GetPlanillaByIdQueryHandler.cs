@@ -33,7 +33,8 @@ public class GetPlanillaByIdQueryHandler : IRequestHandler<GetPlanillaByIdQuery,
         var totalCantinas = recogidas.Sum(r => r.CantinasChofer);
 
         var items = recogidas
-            .OrderBy(r => r.Id)
+            .OrderBy(r => r.Orden == 0 ? int.MaxValue : r.Orden)
+            .ThenBy(r => r.Id)
             .Select(r => new PlanillaItemDto
             {
                 Id = r.Id,
@@ -43,7 +44,16 @@ public class GetPlanillaByIdQueryHandler : IRequestHandler<GetPlanillaByIdQuery,
                 Fecha = r.Fecha,
                 Cantinas = r.CantinasChofer,
                 SaldoLitros = r.SaldoChofer,
-                TotalLitros = r.LitrosChofer
+                TotalLitros = r.LitrosChofer,
+                LitrosRegaladosChofer = r.LitrosRegaladosChofer,
+                Observacion = r.Observacion,
+                EstadoVista = r.EstadoVista,
+                EstadoOlor = r.EstadoOlor,
+                EstadoSabor = r.EstadoSabor,
+                Orden = r.Orden,
+                CapturadoAt = r.CapturadoAt,
+                GpsLat = r.GpsLat,
+                GpsLng = r.GpsLng
             }).ToList();
 
         var dto = new PlanillaDto

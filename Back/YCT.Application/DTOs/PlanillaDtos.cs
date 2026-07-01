@@ -43,6 +43,16 @@ public class PlanillaItemDto
     public int Cantinas { get; set; }
     public decimal SaldoLitros { get; set; }
     public decimal TotalLitros { get; set; }
+    // Estado, sobrante y recorrido
+    public decimal LitrosRegaladosChofer { get; set; }
+    public string? Observacion { get; set; }
+    public string? EstadoVista { get; set; }
+    public string? EstadoOlor { get; set; }
+    public string? EstadoSabor { get; set; }
+    public int Orden { get; set; }
+    public DateTime? CapturadoAt { get; set; }
+    public double? GpsLat { get; set; }
+    public double? GpsLng { get; set; }
 }
 
 public class SavePlanillaItemRequest
@@ -58,6 +68,10 @@ public class SavePlanillaItemRequest
     public string? EstadoVista { get; set; }
     public string? EstadoOlor { get; set; }
     public string? EstadoSabor { get; set; }
+    public int Orden { get; set; }
+    public DateTime? CapturadoAt { get; set; }
+    public double? GpsLat { get; set; }
+    public double? GpsLng { get; set; }
 }
 
 public class SendPlanillaEmailRequest

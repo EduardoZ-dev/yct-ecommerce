@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Security.Claims;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -122,7 +123,7 @@ public class ChoferController : ControllerBase
             null, // HoraLlegada → la registra el operario planta
             null, // HoraDescargue → idem
             $"[Enviado por chofer · UUID {req.Uuid}]",
-            req.Recogidas.Select(r => new SavePlanillaItemRequest
+            req.Recogidas.Select((r, i) => new SavePlanillaItemRequest
             {
                 Id = null,
                 GranjeroId = r.GranjeroId,
@@ -134,7 +135,12 @@ public class ChoferController : ControllerBase
                 Observacion = r.Observacion,
                 EstadoVista = r.EstadoVista,
                 EstadoOlor = r.EstadoOlor,
-                EstadoSabor = r.EstadoSabor
+                EstadoSabor = r.EstadoSabor,
+                Orden = i + 1,
+                CapturadoAt = DateTime.TryParse(r.CapturadoAt, CultureInfo.InvariantCulture,
+                    DateTimeStyles.None, out var cap) ? cap : null,
+                GpsLat = r.GpsLat,
+                GpsLng = r.GpsLng
             }).ToList()
         );
 

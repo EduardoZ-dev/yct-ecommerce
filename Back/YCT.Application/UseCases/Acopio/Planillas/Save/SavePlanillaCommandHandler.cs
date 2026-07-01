@@ -123,6 +123,10 @@ public class SavePlanillaCommandHandler : IRequestHandler<SavePlanillaCommand, R
                 EstadoVista = item.EstadoVista,
                 EstadoOlor = item.EstadoOlor,
                 EstadoSabor = item.EstadoSabor,
+                Orden = item.Orden,
+                CapturadoAt = item.CapturadoAt,
+                GpsLat = item.GpsLat,
+                GpsLng = item.GpsLng,
                 RecogidoAt = DateTime.UtcNow
             };
             await _recogidaRepository.AddAsync(recogida);
