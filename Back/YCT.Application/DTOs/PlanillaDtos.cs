@@ -53,6 +53,11 @@ public class SavePlanillaItemRequest
     public DateTime Fecha { get; set; }
     public int Cantinas { get; set; }
     public decimal SaldoLitros { get; set; }
+    public decimal LitrosRegaladosChofer { get; set; }
+    public string? Observacion { get; set; }
+    public string? EstadoVista { get; set; }
+    public string? EstadoOlor { get; set; }
+    public string? EstadoSabor { get; set; }
 }
 
 public class SendPlanillaEmailRequest

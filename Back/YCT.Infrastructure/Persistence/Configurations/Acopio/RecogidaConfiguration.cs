@@ -13,6 +13,11 @@ public class RecogidaConfiguration : IEntityTypeConfiguration<Recogida>
 
         builder.Property(r => r.SaldoChofer).HasColumnType("decimal(6,2)");
         builder.Property(r => r.LitrosChofer).HasColumnType("decimal(10,2)");
+        builder.Property(r => r.LitrosRegaladosChofer).HasColumnType("decimal(8,2)");
+        builder.Property(r => r.Observacion).HasMaxLength(500);
+        builder.Property(r => r.EstadoVista).HasMaxLength(30);
+        builder.Property(r => r.EstadoOlor).HasMaxLength(30);
+        builder.Property(r => r.EstadoSabor).HasMaxLength(30);
         builder.Property(r => r.SaldoPlanta).HasColumnType("decimal(6,2)");
         builder.Property(r => r.LitrosPlanta).HasColumnType("decimal(10,2)");
         builder.Property(r => r.DiferenciaLitros).HasColumnType("decimal(10,2)");

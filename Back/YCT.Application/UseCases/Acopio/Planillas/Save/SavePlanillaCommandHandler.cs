@@ -118,6 +118,11 @@ public class SavePlanillaCommandHandler : IRequestHandler<SavePlanillaCommand, R
                 CantinasChofer = item.Cantinas,
                 SaldoChofer = item.SaldoLitros,
                 LitrosChofer = litros,
+                LitrosRegaladosChofer = item.LitrosRegaladosChofer,
+                Observacion = item.Observacion,
+                EstadoVista = item.EstadoVista,
+                EstadoOlor = item.EstadoOlor,
+                EstadoSabor = item.EstadoSabor,
                 RecogidoAt = DateTime.UtcNow
             };
             await _recogidaRepository.AddAsync(recogida);

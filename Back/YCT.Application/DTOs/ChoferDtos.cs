@@ -18,6 +18,11 @@ public class ChoferRecogidaItem
     public int? GranjeroCodigoId { get; set; }
     public int Cantinas { get; set; }
     public decimal SaldoLitros { get; set; }
+    public decimal LitrosRegaladosChofer { get; set; }
+    public string? Observacion { get; set; }
+    public string? EstadoVista { get; set; }
+    public string? EstadoOlor { get; set; }
+    public string? EstadoSabor { get; set; }
     public string CapturadoAt { get; set; } = string.Empty;
     public double? GpsLat { get; set; }
     public double? GpsLng { get; set; }

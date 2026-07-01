@@ -129,7 +129,12 @@ public class ChoferController : ControllerBase
                 GranjeroCodigoId = r.GranjeroCodigoId,
                 Fecha = fecha,
                 Cantinas = r.Cantinas,
-                SaldoLitros = r.SaldoLitros
+                SaldoLitros = r.SaldoLitros,
+                LitrosRegaladosChofer = r.LitrosRegaladosChofer,
+                Observacion = r.Observacion,
+                EstadoVista = r.EstadoVista,
+                EstadoOlor = r.EstadoOlor,
+                EstadoSabor = r.EstadoSabor
             }).ToList()
         );
 

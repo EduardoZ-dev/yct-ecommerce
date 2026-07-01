@@ -26,6 +26,18 @@ public class Recogida : BaseEntity
     /// <summary>Calculado por el handler: CantinasChofer * 40 + SaldoChofer.</summary>
     public decimal LitrosChofer { get; set; }
 
+    /// <summary>Litros que el granjero le regala al chofer (NO son de YCT, no cuentan en el total).</summary>
+    public decimal LitrosRegaladosChofer { get; set; }
+
+    // ===== Estado organoléptico con que el chofer recibe la leche =====
+    public string? Observacion { get; set; }
+    /// <summary>Vista/color: Normal | Mas clara | Mas oscura | Mal aspecto.</summary>
+    public string? EstadoVista { get; set; }
+    /// <summary>Olor: Normal | Sin olor | Olor fuerte.</summary>
+    public string? EstadoOlor { get; set; }
+    /// <summary>Sabor: Normal | Raro/malo.</summary>
+    public string? EstadoSabor { get; set; }
+
     // ===== Entrada 2: planta al descargar (opcional, se llena después) =====
     public int? CantinasPlanta { get; set; }
     public decimal? SaldoPlanta { get; set; }
