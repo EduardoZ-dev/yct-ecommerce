@@ -12,8 +12,10 @@ public static class Roles
     public const string Customer = "Customer";
     /// <summary>Conductor de camión recolector — solo accede a la app móvil del chofer.</summary>
     public const string Conductor = "Conductor";
+    /// <summary>Encargado de recibir/validar la leche en planta — solo accede a la app de recepción (validación a ciegas).</summary>
+    public const string Recepcion = "Recepcion";
 
-    public static readonly string[] All = { SuperAdmin, Admin, Employee, Customer, Conductor };
+    public static readonly string[] All = { SuperAdmin, Admin, Employee, Customer, Conductor, Recepcion };
 
     /// <summary>Roles que tienen acceso al panel administrativo</summary>
     public const string AdminPanel = SuperAdmin + "," + Admin + "," + Employee;
@@ -31,6 +33,7 @@ public static class Roles
         Employee => 2,
         Customer => 1,
         Conductor => 1,
+        Recepcion => 1,
         _ => 0
     };
 
