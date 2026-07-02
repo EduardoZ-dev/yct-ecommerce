@@ -5,3 +5,13 @@ api.{$DOMAIN} {
     encode gzip
     reverse_proxy api:8080
 }
+
+# Panel de acopio (Angular): archivos estáticos con fallback SPA.
+# Los archivos vienen de deploy/web/acopio (build subido al repo),
+# montado en el contenedor como /srv/acopio.
+acopio.{$DOMAIN} {
+    encode gzip
+    root * /srv/acopio
+    try_files {path} /index.html
+    file_server
+}

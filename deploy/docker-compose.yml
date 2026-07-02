@@ -53,6 +53,7 @@ services:
       DOMAIN: ${DOMAIN}
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./web/acopio:/srv/acopio:ro   # panel de acopio (Angular estático)
       - caddy_data:/data
       - caddy_config:/config
     depends_on:
