@@ -29,6 +29,10 @@ public class Ruta : BaseEntity
     public decimal TotalLitrosChofer { get; set; }
     /// <summary>Total litros realmente descargados en planta (validación).</summary>
     public decimal? TotalLitrosPlanta { get; set; }
+    /// <summary>Tinas contadas en planta (recepción). Total planta = Tinas × 40 + sueltos.</summary>
+    public int? CantinasPlanta { get; set; }
+    /// <summary>Litros sueltos contados en planta (recepción), aparte de las tinas.</summary>
+    public decimal? LitrosSueltosPlanta { get; set; }
     /// <summary>Diferencia entre lo planta y lo chofer (negativo = faltó).</summary>
     public decimal? DiferenciaTotal { get; set; }
 

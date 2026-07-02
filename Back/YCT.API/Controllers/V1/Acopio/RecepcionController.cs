@@ -28,19 +28,25 @@ public class RecepcionController : ControllerBase
     private readonly IGenericRepository<Camion> _camionRepo;
     private readonly IGenericRepository<Conductor> _conductorRepo;
     private readonly IGenericRepository<Recogida> _recogidaRepo;
+    private readonly IGenericRepository<Granjero> _granjeroRepo;
+    private readonly IGenericRepository<GranjeroCodigo> _codigoRepo;
 
     public RecepcionController(
         IMediator mediator,
         IGenericRepository<Ruta> rutaRepo,
         IGenericRepository<Camion> camionRepo,
         IGenericRepository<Conductor> conductorRepo,
-        IGenericRepository<Recogida> recogidaRepo)
+        IGenericRepository<Recogida> recogidaRepo,
+        IGenericRepository<Granjero> granjeroRepo,
+        IGenericRepository<GranjeroCodigo> codigoRepo)
     {
         _mediator = mediator;
         _rutaRepo = rutaRepo;
         _camionRepo = camionRepo;
         _conductorRepo = conductorRepo;
         _recogidaRepo = recogidaRepo;
+        _granjeroRepo = granjeroRepo;
+        _codigoRepo = codigoRepo;
     }
 
     /// <summary>Login de la tablet de recepción: usuario + clave → token JWT (rol Recepcion).</summary>
@@ -71,20 +77,55 @@ public class RecepcionController : ControllerBase
 
         var camiones = (await _camionRepo.GetAllAsync()).ToDictionary(c => c.Id, c => c.Nombre);
         var conductores = (await _conductorRepo.GetAllAsync()).ToDictionary(c => c.Id, c => c.NombreCompleto);
+        var granjeros = (await _granjeroRepo.GetAllAsync()).ToDictionary(g => g.Id, g => g.NombreCompleto);
+        var codigos = (await _codigoRepo.GetAllAsync()).ToDictionary(c => c.Id, c => c);
         var rutaIds = rutas.Select(r => r.Id).ToHashSet();
-        var fincasPorRuta = (await _recogidaRepo.FindAsync(r => rutaIds.Contains(r.RutaId)))
+        var recogidasPorRuta = (await _recogidaRepo.FindAsync(r => rutaIds.Contains(r.RutaId)))
             .GroupBy(r => r.RutaId)
-            .ToDictionary(g => g.Key, g => g.Count());
+            .ToDictionary(g => g.Key, g => g.ToList());
 
-        var dtos = rutas.Select(r => new RecepcionPendienteDto
+        static string? EstadosNoNormales(Recogida r)
         {
-            Id = r.Id,
-            Codigo = r.Codigo,
-            Fecha = r.Fecha,
-            CamionNombre = camiones.TryGetValue(r.CamionId, out var cn) ? cn : $"#{r.CamionId}",
-            ConductorNombre = conductores.TryGetValue(r.ConductorId, out var kn) ? kn : $"#{r.ConductorId}",
-            NumFincas = fincasPorRuta.TryGetValue(r.Id, out var nf) ? nf : 0,
-            EnviadoAt = r.UpdatedAt ?? r.CreatedAt
+            var malos = new[] { r.EstadoVista, r.EstadoOlor, r.EstadoSabor }
+                .Where(e => !string.IsNullOrWhiteSpace(e) && e != "Normal")
+                .ToList();
+            return malos.Count > 0 ? string.Join(" · ", malos) : null;
+        }
+
+        var dtos = rutas.Select(r =>
+        {
+            var recs = recogidasPorRuta.TryGetValue(r.Id, out var rr) ? rr : new List<Recogida>();
+            var novedades = recs
+                .Select(rec =>
+                {
+                    var estado = EstadosNoNormales(rec);
+                    var obs = string.IsNullOrWhiteSpace(rec.Observacion) ? null : rec.Observacion!.Trim();
+                    if (estado == null && obs == null) return (RecepcionNovedadDto?)null; // sin novedad
+                    var codigo = rec.GranjeroCodigoId.HasValue && codigos.TryGetValue(rec.GranjeroCodigoId.Value, out var c) ? c : null;
+                    return new RecepcionNovedadDto
+                    {
+                        Codigo = codigo?.Codigo ?? string.Empty,
+                        Granjero = granjeros.TryGetValue(rec.GranjeroId, out var gn) ? gn : $"#{rec.GranjeroId}",
+                        Finca = codigo?.Finca,
+                        Estado = estado,
+                        Observacion = obs
+                    };
+                })
+                .Where(n => n != null)
+                .Select(n => n!)
+                .ToList();
+
+            return new RecepcionPendienteDto
+            {
+                Id = r.Id,
+                Codigo = r.Codigo,
+                Fecha = r.Fecha,
+                CamionNombre = camiones.TryGetValue(r.CamionId, out var cn) ? cn : $"#{r.CamionId}",
+                ConductorNombre = conductores.TryGetValue(r.ConductorId, out var kn) ? kn : $"#{r.ConductorId}",
+                NumFincas = recs.Count,
+                EnviadoAt = r.UpdatedAt ?? r.CreatedAt,
+                NovedadesLeche = novedades
+            };
         }).ToList();
 
         return Ok(ResponseBase<List<RecepcionPendienteDto>>.Ok(dtos));
@@ -102,6 +143,8 @@ public class RecepcionController : ControllerBase
         {
             Id = req.PlanillaId,
             TotalLitrosPlanta = req.LitrosPlanta,
+            CantinasPlanta = req.CantinasPlanta,
+            LitrosSueltosPlanta = req.LitrosSueltosPlanta,
             HoraDescargue = DateTime.Now.TimeOfDay,
             Observaciones = req.Observacion
         });

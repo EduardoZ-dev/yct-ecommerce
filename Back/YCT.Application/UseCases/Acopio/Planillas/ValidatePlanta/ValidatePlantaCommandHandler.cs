@@ -65,6 +65,8 @@ public class ValidatePlantaCommandHandler : IRequestHandler<ValidatePlantaComman
         var diferencia = request.TotalLitrosPlanta - ruta.TotalLitrosChofer;
 
         ruta.TotalLitrosPlanta = request.TotalLitrosPlanta;
+        ruta.CantinasPlanta = request.CantinasPlanta;
+        ruta.LitrosSueltosPlanta = request.LitrosSueltosPlanta;
         ruta.DiferenciaTotal = diferencia;
         if (request.HoraDescargue.HasValue) ruta.HoraDescargue = request.HoraDescargue;
         if (!string.IsNullOrWhiteSpace(request.Observaciones))
