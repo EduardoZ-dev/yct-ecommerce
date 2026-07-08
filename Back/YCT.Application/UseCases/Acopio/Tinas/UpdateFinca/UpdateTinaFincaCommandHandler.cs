@@ -34,8 +34,10 @@ public class UpdateTinaFincaCommandHandler : IRequestHandler<UpdateTinaFincaComm
             return ResponseBase<bool>.Fail("Finca (código) no encontrada");
 
         var anterior = codigo.TinasYct;
-        if (anterior == request.Cantidad && string.IsNullOrWhiteSpace(request.Observacion))
-            return ResponseBase<bool>.Ok(true, "Sin cambios");
+        // En fincas exigimos que el número cambie (evita entradas "3 → 3" en el
+        // historial). Las notas sin cambio de cantidad solo aplican a la planta.
+        if (anterior == request.Cantidad)
+            return ResponseBase<bool>.Fail("La cantidad es la misma. Cambia el número para guardar el ajuste.");
 
         codigo.TinasYct = request.Cantidad;
         codigo.UpdatedAt = DateTime.UtcNow;
