@@ -92,28 +92,50 @@ public class ChoferController : ControllerBase
         if (camion == null) return BadRequest(ResponseBase<object>.Fail("Camión no encontrado"));
 
         var fecha = req.Fecha.Date;
-        // Buscar ruta del día NO finalizada (Conciliada/Anulada/PendienteAutorizacion → crear nueva)
-        var existing = (await _rutaRepo.FindAsync(r =>
-            r.Fecha == fecha && r.CamionId == req.CamionId && r.ConductorId == conductorId
-            && r.Status != "Conciliada" && r.Status != "Anulada" && r.Status != "PendienteAutorizacion"))
-            .FirstOrDefault();
 
+        // ===== Determinar sobre qué ruta guardar =====
+        int? rutaId = null;
         string codigo;
-        if (existing != null)
+
+        // 1) Idempotencia por UUID del chofer: si este mismo envío ya se recibió antes
+        //    (reintento por conexión lenta / respuesta perdida), se reconoce la MISMA
+        //    ruta en vez de crear un duplicado (-2, -3). Así la tablet recibe éxito y
+        //    deja de mostrar "pendiente".
+        var porUuid = string.IsNullOrWhiteSpace(req.Uuid) ? null
+            : (await _rutaRepo.FindAsync(r => r.ChoferUuid == req.Uuid)).FirstOrDefault();
+        if (porUuid != null)
         {
-            codigo = existing.Codigo;
+            // Si ya fue procesada en planta (finalizada), no se re-guarda para no pisar
+            // lo que hizo el receptor: solo se confirma como recibida.
+            if (porUuid.Status is "Conciliada" or "Anulada" or "PendienteAutorizacion")
+                return Ok(ResponseBase<object>.Ok(new { porUuid.Id, porUuid.Codigo }, "Planilla ya recibida"));
+            rutaId = porUuid.Id;
+            codigo = porUuid.Codigo;
         }
         else
         {
-            // Si ya hay rutas del día (finalizadas), generar código con sufijo incremental
-            var rutasDelDia = (await _rutaRepo.FindAsync(r =>
-                r.Fecha == fecha && r.CamionId == req.CamionId && r.ConductorId == conductorId)).ToList();
-            var baseCodigo = $"{camion.Nombre}-{fecha:ddMM}";
-            codigo = rutasDelDia.Count == 0 ? baseCodigo : $"{baseCodigo}-{rutasDelDia.Count + 1}";
+            // 2) Ruta del día NO finalizada (mismo día/camión/conductor) → se actualiza.
+            var existing = (await _rutaRepo.FindAsync(r =>
+                r.Fecha == fecha && r.CamionId == req.CamionId && r.ConductorId == conductorId
+                && r.Status != "Conciliada" && r.Status != "Anulada" && r.Status != "PendienteAutorizacion"))
+                .FirstOrDefault();
+            if (existing != null)
+            {
+                rutaId = existing.Id;
+                codigo = existing.Codigo;
+            }
+            else
+            {
+                // Si ya hay rutas del día (finalizadas), generar código con sufijo incremental
+                var rutasDelDia = (await _rutaRepo.FindAsync(r =>
+                    r.Fecha == fecha && r.CamionId == req.CamionId && r.ConductorId == conductorId)).ToList();
+                var baseCodigo = $"{camion.Nombre}-{fecha:ddMM}";
+                codigo = rutasDelDia.Count == 0 ? baseCodigo : $"{baseCodigo}-{rutasDelDia.Count + 1}";
+            }
         }
 
         var saveCmd = new SavePlanillaCommand(
-            existing?.Id,
+            rutaId,
             codigo,
             fecha,
             req.CamionId,
@@ -141,7 +163,8 @@ public class ChoferController : ControllerBase
                     DateTimeStyles.None, out var cap) ? cap : null,
                 GpsLat = r.GpsLat,
                 GpsLng = r.GpsLng
-            }).ToList()
+            }).ToList(),
+            req.Uuid
         );
 
         var result = await _mediator.Send(saveCmd);

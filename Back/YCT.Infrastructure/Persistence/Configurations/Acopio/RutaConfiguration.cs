@@ -13,8 +13,10 @@ public class RutaConfiguration : IEntityTypeConfiguration<Ruta>
         builder.Property(r => r.Codigo).IsRequired().HasMaxLength(50);
         builder.Property(r => r.Status).IsRequired().HasMaxLength(30);
         builder.Property(r => r.Observaciones).HasMaxLength(500);
+        builder.Property(r => r.ChoferUuid).HasMaxLength(64);
         builder.Property(r => r.TotalLitrosChofer).HasColumnType("decimal(10,2)");
         builder.Property(r => r.TotalLitrosPlanta).HasColumnType("decimal(10,2)");
+        builder.Property(r => r.LitrosSueltosPlanta).HasColumnType("decimal(10,2)");
         builder.Property(r => r.DiferenciaTotal).HasColumnType("decimal(10,2)");
 
         builder.HasOne(r => r.Camion)
@@ -40,5 +42,6 @@ public class RutaConfiguration : IEntityTypeConfiguration<Ruta>
         builder.HasIndex(r => r.Fecha);
         builder.HasIndex(r => new { r.CamionId, r.Fecha });
         builder.HasIndex(r => new { r.ConductorId, r.Fecha });
+        builder.HasIndex(r => r.ChoferUuid);
     }
 }

@@ -40,5 +40,12 @@ public class Ruta : BaseEntity
     public string Status { get; set; } = "EnProgreso";
     public string? Observaciones { get; set; }
 
+    /// <summary>
+    /// UUID de la planilla generado en la app del chofer. Hace el envío idempotente:
+    /// si llega el mismo UUID (reintento por conexión lenta), se reconoce/actualiza la
+    /// misma ruta en vez de crear un duplicado (evita rutas -2, -3 y el "pendiente" pegado).
+    /// </summary>
+    public string? ChoferUuid { get; set; }
+
     public ICollection<Recogida> Recogidas { get; set; } = new List<Recogida>();
 }

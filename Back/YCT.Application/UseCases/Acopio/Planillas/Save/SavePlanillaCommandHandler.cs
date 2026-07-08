@@ -76,6 +76,7 @@ public class SavePlanillaCommandHandler : IRequestHandler<SavePlanillaCommand, R
                 HoraLlegadaPlanta = request.HoraLlegadaPlanta,
                 HoraDescargue = request.HoraDescargue,
                 Observaciones = request.Observaciones?.Trim(),
+                ChoferUuid = request.ChoferUuid,
                 Status = "EnProgreso"
             };
             await _rutaRepository.AddAsync(ruta);
@@ -95,6 +96,7 @@ public class SavePlanillaCommandHandler : IRequestHandler<SavePlanillaCommand, R
             existing.HoraLlegadaPlanta = request.HoraLlegadaPlanta;
             existing.HoraDescargue = request.HoraDescargue;
             existing.Observaciones = request.Observaciones?.Trim();
+            if (!string.IsNullOrWhiteSpace(request.ChoferUuid)) existing.ChoferUuid = request.ChoferUuid;
             existing.UpdatedAt = DateTime.UtcNow;
             await _rutaRepository.UpdateAsync(existing);
             ruta = existing;

@@ -15,5 +15,6 @@ public record SavePlanillaCommand(
     TimeSpan? HoraLlegadaPlanta,
     TimeSpan? HoraDescargue,
     string? Observaciones,
-    List<SavePlanillaItemRequest> Items
+    List<SavePlanillaItemRequest> Items,
+    string? ChoferUuid = null
 ) : IRequest<ResponseBase<PlanillaDto>>;
