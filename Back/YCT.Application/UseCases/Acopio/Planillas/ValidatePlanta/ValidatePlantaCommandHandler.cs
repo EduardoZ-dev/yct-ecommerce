@@ -244,7 +244,7 @@ public class ValidatePlantaCommandHandler : IRequestHandler<ValidatePlantaComman
             $"      {bodyHtml}" +
             $"    </div>" +
             $"    <div style='padding:14px 28px;background:{bgSoft};font-size:11px;color:#5a6a4e;border-top:1px solid #e5ecdc;'>" +
-            $"      Notificación automática · YCT Acopio · {DateTime.Now:dd/MM/yyyy HH:mm}" +
+            $"      Notificación automática · YCT Acopio · {YCT.Domain.Common.ColombiaTime.Now:dd/MM/yyyy HH:mm}" +
             $"    </div>" +
             $"  </div>" +
             $"</div>";

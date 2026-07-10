@@ -49,7 +49,7 @@ public class NotificationsController : ControllerBase
         var ok = await emailSender.SendAsync(
             to,
             "Test SMTP · YCT Acopio",
-            "<h2>Prueba SMTP</h2><p>Si lees esto, el SMTP de YCT funciona correctamente.</p><p><b>Hora:</b> " + DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") + "</p>",
+            "<h2>Prueba SMTP</h2><p>Si lees esto, el SMTP de YCT funciona correctamente.</p><p><b>Hora:</b> " + ColombiaTime.Now.ToString("yyyy-MM-dd HH:mm:ss") + "</p>",
             null);
         return ok
             ? Ok(new { success = true, message = $"Email enviado a {to}" })

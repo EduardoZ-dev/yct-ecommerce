@@ -27,7 +27,7 @@ public class DailyReportService : BackgroundService
     {
         while (!stoppingToken.IsCancellationRequested)
         {
-            var now = DateTime.Now;
+            var now = YCT.Domain.Common.ColombiaTime.Now;
             var next = now.Date.AddHours(RunHour);
             if (next <= now) next = next.AddDays(1);
             var delay = next - now;

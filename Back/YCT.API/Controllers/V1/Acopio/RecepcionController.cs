@@ -66,7 +66,7 @@ public class RecepcionController : ControllerBase
     [HttpGet("pendientes")]
     public async Task<IActionResult> Pendientes()
     {
-        var hoy = DateTime.Now.Date;
+        var hoy = ColombiaTime.Today;
         var rutas = (await _rutaRepo.FindAsync(r =>
                 r.Status == "EsperandoDescargue" && r.Fecha >= hoy && r.Fecha < hoy.AddDays(1)))
             .OrderBy(r => r.UpdatedAt ?? r.CreatedAt)
@@ -123,7 +123,7 @@ public class RecepcionController : ControllerBase
                 CamionNombre = camiones.TryGetValue(r.CamionId, out var cn) ? cn : $"#{r.CamionId}",
                 ConductorNombre = conductores.TryGetValue(r.ConductorId, out var kn) ? kn : $"#{r.ConductorId}",
                 NumFincas = recs.Count,
-                EnviadoAt = r.UpdatedAt ?? r.CreatedAt,
+                EnviadoAt = ColombiaTime.FromUtc(r.UpdatedAt ?? r.CreatedAt),
                 NovedadesLeche = novedades
             };
         }).ToList();
@@ -145,7 +145,7 @@ public class RecepcionController : ControllerBase
             TotalLitrosPlanta = req.LitrosPlanta,
             CantinasPlanta = req.CantinasPlanta,
             LitrosSueltosPlanta = req.LitrosSueltosPlanta,
-            HoraDescargue = DateTime.Now.TimeOfDay,
+            HoraDescargue = ColombiaTime.Now.TimeOfDay,
             Observaciones = req.Observacion
         });
 
