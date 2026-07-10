@@ -114,24 +114,16 @@ public class ChoferController : ControllerBase
         }
         else
         {
-            // 2) Ruta del día NO finalizada (mismo día/camión/conductor) → se actualiza.
-            var existing = (await _rutaRepo.FindAsync(r =>
-                r.Fecha == fecha && r.CamionId == req.CamionId && r.ConductorId == conductorId
-                && r.Status != "Conciliada" && r.Status != "Anulada" && r.Status != "PendienteAutorizacion"))
-                .FirstOrDefault();
-            if (existing != null)
-            {
-                rutaId = existing.Id;
-                codigo = existing.Codigo;
-            }
-            else
-            {
-                // Si ya hay rutas del día (finalizadas), generar código con sufijo incremental
-                var rutasDelDia = (await _rutaRepo.FindAsync(r =>
-                    r.Fecha == fecha && r.CamionId == req.CamionId && r.ConductorId == conductorId)).ToList();
-                var baseCodigo = $"{camion.Nombre}-{fecha:ddMM}";
-                codigo = rutasDelDia.Count == 0 ? baseCodigo : $"{baseCodigo}-{rutasDelDia.Count + 1}";
-            }
+            // 2) UUID nuevo = planilla distinta → SIEMPRE una ruta NUEVA (con sufijo si
+            //    ya hay rutas del día). NUNCA se sobrescribe otra ruta del día: hacerlo
+            //    borraba sus recogidas (ej. una segunda ruta del chofer pisaba la primera
+            //    de 8 granjas y solo quedaban las 2 nuevas). Los reenvíos del mismo envío
+            //    ya se manejan arriba por UUID, así que aquí nunca hay que "actualizar".
+            var rutasDelDia = (await _rutaRepo.FindAsync(r =>
+                r.Fecha == fecha && r.CamionId == req.CamionId && r.ConductorId == conductorId)).ToList();
+            var baseCodigo = $"{camion.Nombre}-{fecha:ddMM}";
+            codigo = rutasDelDia.Count == 0 ? baseCodigo : $"{baseCodigo}-{rutasDelDia.Count + 1}";
+            // rutaId queda null → se crea una ruta nueva, preservando las anteriores.
         }
 
         var saveCmd = new SavePlanillaCommand(
