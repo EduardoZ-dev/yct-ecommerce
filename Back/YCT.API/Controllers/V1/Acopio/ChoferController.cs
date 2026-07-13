@@ -30,6 +30,7 @@ public class ChoferController : ControllerBase
     private readonly IGenericRepository<GranjeroCodigo> _codigoRepo;
     private readonly IGenericRepository<RutaNovedad> _novedadRepo;
     private readonly IGenericRepository<Conductor> _conductorRepo;
+    private readonly IGenericRepository<Notification> _notificationRepo;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IWhatsAppNotifier _whatsapp;
     private readonly ILogger<ChoferController> _logger;
@@ -42,6 +43,7 @@ public class ChoferController : ControllerBase
         IGenericRepository<GranjeroCodigo> codigoRepo,
         IGenericRepository<RutaNovedad> novedadRepo,
         IGenericRepository<Conductor> conductorRepo,
+        IGenericRepository<Notification> notificationRepo,
         IUnitOfWork unitOfWork,
         IWhatsAppNotifier whatsapp,
         ILogger<ChoferController> logger)
@@ -54,6 +56,7 @@ public class ChoferController : ControllerBase
         _codigoRepo = codigoRepo;
         _novedadRepo = novedadRepo;
         _conductorRepo = conductorRepo;
+        _notificationRepo = notificationRepo;
         _whatsapp = whatsapp;
         _logger = logger;
     }
@@ -230,7 +233,31 @@ public class ChoferController : ControllerBase
             GpsLng = req.GpsLng,
         };
         await _novedadRepo.AddAsync(novedad);
-        // AddAsync solo la mete al change tracker: sin esto NO se guarda nada (la tabla
+
+        // Aviso en la campana del panel de acopio. Es el canal que SIEMPRE funciona
+        // (WhatsApp depende de las credenciales de Meta), así que la oficina se entera
+        // del imprevisto en vivo aunque el bot esté apagado.
+        var conductorNombre = (await _conductorRepo.GetByIdAsync(conductorId))?.NombreCompleto ?? $"#{conductorId}";
+        var fincaNombre = req.GranjeroCodigoId.HasValue
+            ? (await _codigoRepo.GetByIdAsync(req.GranjeroCodigoId.Value))?.Finca
+            : null;
+        var detalle = new List<string>();
+        if (!string.IsNullOrWhiteSpace(fincaNombre)) detalle.Add($"Finca: {fincaNombre}");
+        if (!string.IsNullOrWhiteSpace(req.Descripcion)) detalle.Add(req.Descripcion!.Trim());
+
+        var mensaje = $"{conductorNombre} reportó: {req.Tipo}."
+                      + (detalle.Count > 0 ? " " + string.Join(" · ", detalle) : string.Empty);
+        await _notificationRepo.AddAsync(new Notification
+        {
+            Type = "NovedadRuta",
+            Title = $"❗ Novedad en ruta · {req.Tipo}",
+            Message = mensaje[..Math.Min(mensaje.Length, 500)],
+            UserId = null,          // broadcast a los admins
+            PlanillaId = ruta?.Id,  // null si la planilla aún no llegó
+            IsRead = false
+        });
+
+        // AddAsync solo mete al change tracker: sin esto NO se guarda nada (la tabla
         // quedaba vacía, se devolvía 200 con Id=0 y, como la idempotencia busca una fila
         // que no existía, cada reintento mandaba OTRO WhatsApp).
         await _unitOfWork.SaveChangesAsync();

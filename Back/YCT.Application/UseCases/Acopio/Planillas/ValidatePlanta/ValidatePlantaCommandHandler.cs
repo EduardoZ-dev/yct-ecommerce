@@ -55,11 +55,30 @@ public class ValidatePlantaCommandHandler : IRequestHandler<ValidatePlantaComman
         if (string.IsNullOrWhiteSpace(request.Observaciones) || request.Observaciones.Trim().Length < 5)
             return ResponseBase<PlanillaDto>.Fail("Las observaciones son obligatorias (mínimo 5 caracteres)");
 
+        // Ruta.Observaciones es de 500 y aquí se CONCATENA a lo que ya traía. Sin tope, una
+        // observación larga desbordaba la columna al guardar y dejaba la planilla imposible
+        // de validar (500 permanente).
+        const int MaxObs = 500;
+        var obsPlanta = request.Observaciones.Trim();
+        if (obsPlanta.Length > 300)
+            return ResponseBase<PlanillaDto>.Fail("La observación es muy larga (máximo 300 caracteres)");
+
         var ruta = await _rutaRepository.GetByIdAsync(request.Id);
         if (ruta == null) return ResponseBase<PlanillaDto>.Fail("Planilla no encontrada");
 
-        if (ruta.Status == "Conciliada" || ruta.Status == "Anulada")
-            return ResponseBase<PlanillaDto>.Fail($"Planilla en estado {ruta.Status}, no se puede revalidar");
+        if (ruta.Status == "Anulada")
+            return ResponseBase<PlanillaDto>.Fail("La planilla está anulada, no se puede validar");
+
+        // IDEMPOTENCIA: si ya fue validada, se CONFIRMA sin repetir nada.
+        // Antes, "PendienteAutorizacion" (faltante) pasaba el guard: si la respuesta se perdía
+        // y la tablet reenviaba —o el receptor tocaba dos veces— se duplicaban la notificación,
+        // el correo y el WhatsApp, y se volvía a concatenar la observación hasta desbordar la
+        // columna. Y "Conciliada" devolvía un 400 que dejaba a la tablet reintentando.
+        if (ruta.Status is "Conciliada" or "PendienteAutorizacion")
+        {
+            var yaValidada = await _mediator.Send(new GetPlanillaByIdQuery(ruta.Id), cancellationToken);
+            return ResponseBase<PlanillaDto>.Ok(yaValidada.Data!, "La planilla ya estaba validada");
+        }
 
         // Cálculo diferencia: planta - chofer
         var diferencia = request.TotalLitrosPlanta - ruta.TotalLitrosChofer;
@@ -69,10 +88,10 @@ public class ValidatePlantaCommandHandler : IRequestHandler<ValidatePlantaComman
         ruta.LitrosSueltosPlanta = request.LitrosSueltosPlanta;
         ruta.DiferenciaTotal = diferencia;
         if (request.HoraDescargue.HasValue) ruta.HoraDescargue = request.HoraDescargue;
-        if (!string.IsNullOrWhiteSpace(request.Observaciones))
-            ruta.Observaciones = string.IsNullOrWhiteSpace(ruta.Observaciones)
-                ? request.Observaciones
-                : $"{ruta.Observaciones}\n[Planta] {request.Observaciones}";
+        var obsFinal = string.IsNullOrWhiteSpace(ruta.Observaciones)
+            ? obsPlanta
+            : $"{ruta.Observaciones}\n[Planta] {obsPlanta}";
+        ruta.Observaciones = obsFinal[..Math.Min(obsFinal.Length, MaxObs)]; // nunca desborda
 
         // Regla negocio YCT: nunca debe faltar leche, siempre sobrar.
         // Si diferencia < 0 (faltó) → PendienteAutorizacion + notificación
