@@ -31,6 +31,19 @@ public class PlanillaHeaderDto
 public class PlanillaDto : PlanillaHeaderDto
 {
     public List<PlanillaItemDto> Items { get; set; } = new();
+
+    /// <summary>Imprevistos que el chofer reportó durante la ruta (para tenerlos en cuenta al validar).</summary>
+    public List<PlanillaNovedadDto> Novedades { get; set; } = new();
+}
+
+/// <summary>Novedad reportada por el chofer en ruta (llanta averiada, trancón, finca sin ordeño…).</summary>
+public class PlanillaNovedadDto
+{
+    public string Categoria { get; set; } = string.Empty;   // Camion | Via | Finca | Otro
+    public string Tipo { get; set; } = string.Empty;
+    public string? Descripcion { get; set; }
+    public string? Finca { get; set; }                      // solo novedades de finca
+    public DateTime ReportadoAt { get; set; }
 }
 
 public class PlanillaItemDto

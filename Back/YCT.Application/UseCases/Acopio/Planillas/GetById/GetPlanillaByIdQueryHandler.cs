@@ -11,15 +11,18 @@ public class GetPlanillaByIdQueryHandler : IRequestHandler<GetPlanillaByIdQuery,
     private readonly IGenericRepository<Ruta> _repository;
     private readonly IGenericRepository<Recogida> _recogidaRepository;
     private readonly IGenericRepository<Granjero> _granjeroRepository;
+    private readonly IGenericRepository<RutaNovedad> _novedadRepository;
 
     public GetPlanillaByIdQueryHandler(
         IGenericRepository<Ruta> repository,
         IGenericRepository<Recogida> recogidaRepository,
-        IGenericRepository<Granjero> granjeroRepository)
+        IGenericRepository<Granjero> granjeroRepository,
+        IGenericRepository<RutaNovedad> novedadRepository)
     {
         _repository = repository;
         _recogidaRepository = recogidaRepository;
         _granjeroRepository = granjeroRepository;
+        _novedadRepository = novedadRepository;
     }
 
     public async Task<ResponseBase<PlanillaDto>> Handle(GetPlanillaByIdQuery request, CancellationToken cancellationToken)
@@ -56,6 +59,22 @@ public class GetPlanillaByIdQueryHandler : IRequestHandler<GetPlanillaByIdQuery,
                 GpsLng = r.GpsLng
             }).ToList();
 
+        // Novedades del chofer. Se ligan por RutaId, pero una que aún no se haya ligado
+        // (llegó antes que la planilla) se rescata por el UUID para no perderla de vista.
+        var novedades = (await _novedadRepository.FindAsync(
+                n => n.RutaId == ruta.Id ||
+                     (n.RutaId == null && ruta.ChoferUuid != null && n.PlanillaUuid == ruta.ChoferUuid),
+                n => n.GranjeroCodigo!))
+            .OrderBy(n => n.ReportadoAt)
+            .Select(n => new PlanillaNovedadDto
+            {
+                Categoria = n.Categoria,
+                Tipo = n.Tipo,
+                Descripcion = n.Descripcion,
+                Finca = n.GranjeroCodigo?.Finca,
+                ReportadoAt = n.ReportadoAt
+            }).ToList();
+
         var dto = new PlanillaDto
         {
             Id = ruta.Id,
@@ -76,7 +95,8 @@ public class GetPlanillaByIdQueryHandler : IRequestHandler<GetPlanillaByIdQuery,
             Status = ruta.Status,
             Observaciones = ruta.Observaciones,
             CreatedAt = ruta.CreatedAt,
-            Items = items
+            Items = items,
+            Novedades = novedades
         };
 
         return ResponseBase<PlanillaDto>.Ok(dto);
