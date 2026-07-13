@@ -25,6 +25,7 @@ public class AppDbContext : DbContext
     public DbSet<GranjeroCodigo> GranjeroCodigos => Set<GranjeroCodigo>();
     public DbSet<Ruta> Rutas => Set<Ruta>();
     public DbSet<Recogida> Recogidas => Set<Recogida>();
+    public DbSet<RutaNovedad> RutaNovedades => Set<RutaNovedad>();
     public DbSet<TinaMovimiento> TinaMovimientos => Set<TinaMovimiento>();
     public DbSet<TinaPlanta> TinaPlanta => Set<TinaPlanta>();
     public DbSet<Notification> Notifications => Set<Notification>();

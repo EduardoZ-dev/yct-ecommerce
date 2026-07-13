@@ -32,24 +32,8 @@ public class WhatsAppCloudNotifier : IWhatsAppNotifier
         _logger = logger;
     }
 
-    public async Task SendDescargueAsync(WhatsAppDescargueModel m, CancellationToken cancellationToken = default)
+    public Task SendDescargueAsync(WhatsAppDescargueModel m, CancellationToken cancellationToken = default)
     {
-        if (!_config.GetValue("WhatsApp:Enabled", false))
-            return; // desactivado hasta tener credenciales de Meta
-
-        var token = _config["WhatsApp:Token"];
-        var phoneNumberId = _config["WhatsApp:PhoneNumberId"];
-        var template = _config["WhatsApp:Template"] ?? "reporte_descargue";
-        var lang = _config["WhatsApp:Lang"] ?? "es";
-        var graph = _config["WhatsApp:GraphVersion"] ?? "v21.0";
-        var recipients = _config.GetSection("WhatsApp:Recipients").Get<string[]>() ?? Array.Empty<string>();
-
-        if (string.IsNullOrWhiteSpace(token) || string.IsNullOrWhiteSpace(phoneNumberId) || recipients.Length == 0)
-        {
-            _logger.LogWarning("WhatsApp habilitado pero falta Token/PhoneNumberId/Recipients. No se envía.");
-            return;
-        }
-
         // Parámetros de la plantilla (deben coincidir con el orden {{1}}..{{10}} aprobado en Meta).
         string C(decimal v) => v.ToString("0.##", CultureInfo.InvariantCulture);
         var parametros = new[]
@@ -65,6 +49,49 @@ public class WhatsAppCloudNotifier : IWhatsAppNotifier
             m.Estado,
             m.HistorialUrl,
         };
+
+        var template = _config["WhatsApp:Template"] ?? "reporte_descargue";
+        return EnviarPlantillaAsync(template, parametros, cancellationToken);
+    }
+
+    public Task SendNovedadAsync(WhatsAppNovedadModel m, CancellationToken cancellationToken = default)
+    {
+        // Orden {{1}}..{{7}} de la plantilla de novedades aprobada en Meta.
+        var parametros = new[]
+        {
+            m.Tipo,
+            m.Categoria,
+            m.Conductor,
+            m.Camion,
+            m.ReportadoAt.ToString("dd/MM/yyyy HH:mm"),
+            string.IsNullOrWhiteSpace(m.Detalle) ? "-" : m.Detalle,
+            string.IsNullOrWhiteSpace(m.Finca) ? "-" : m.Finca,
+        };
+
+        var template = _config["WhatsApp:TemplateNovedad"] ?? "novedad_ruta";
+        return EnviarPlantillaAsync(template, parametros, cancellationToken);
+    }
+
+    /// <summary>
+    /// Envío común a todos los destinatarios. Best-effort: si no está configurado o falla,
+    /// solo queda en el log — un aviso nunca puede tumbar el flujo de negocio.
+    /// </summary>
+    private async Task EnviarPlantillaAsync(string template, string[] parametros, CancellationToken cancellationToken)
+    {
+        if (!_config.GetValue("WhatsApp:Enabled", false))
+            return; // desactivado hasta tener credenciales de Meta
+
+        var token = _config["WhatsApp:Token"];
+        var phoneNumberId = _config["WhatsApp:PhoneNumberId"];
+        var lang = _config["WhatsApp:Lang"] ?? "es";
+        var graph = _config["WhatsApp:GraphVersion"] ?? "v21.0";
+        var recipients = _config.GetSection("WhatsApp:Recipients").Get<string[]>() ?? Array.Empty<string>();
+
+        if (string.IsNullOrWhiteSpace(token) || string.IsNullOrWhiteSpace(phoneNumberId) || recipients.Length == 0)
+        {
+            _logger.LogWarning("WhatsApp habilitado pero falta Token/PhoneNumberId/Recipients. No se envía.");
+            return;
+        }
 
         var url = $"https://graph.facebook.com/{graph}/{phoneNumberId}/messages";
 

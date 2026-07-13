@@ -28,19 +28,31 @@ public class ChoferController : ControllerBase
     private readonly IGenericRepository<Camion> _camionRepo;
     private readonly IGenericRepository<Granjero> _granjeroRepo;
     private readonly IGenericRepository<GranjeroCodigo> _codigoRepo;
+    private readonly IGenericRepository<RutaNovedad> _novedadRepo;
+    private readonly IGenericRepository<Conductor> _conductorRepo;
+    private readonly IWhatsAppNotifier _whatsapp;
+    private readonly ILogger<ChoferController> _logger;
 
     public ChoferController(
         IMediator mediator,
         IGenericRepository<Ruta> rutaRepo,
         IGenericRepository<Camion> camionRepo,
         IGenericRepository<Granjero> granjeroRepo,
-        IGenericRepository<GranjeroCodigo> codigoRepo)
+        IGenericRepository<GranjeroCodigo> codigoRepo,
+        IGenericRepository<RutaNovedad> novedadRepo,
+        IGenericRepository<Conductor> conductorRepo,
+        IWhatsAppNotifier whatsapp,
+        ILogger<ChoferController> logger)
     {
         _mediator = mediator;
         _rutaRepo = rutaRepo;
         _camionRepo = camionRepo;
         _granjeroRepo = granjeroRepo;
         _codigoRepo = codigoRepo;
+        _novedadRepo = novedadRepo;
+        _conductorRepo = conductorRepo;
+        _whatsapp = whatsapp;
+        _logger = logger;
     }
 
     /// <summary>Login del conductor: cédula + PIN → token JWT.</summary>
@@ -160,6 +172,105 @@ public class ChoferController : ControllerBase
         );
 
         var result = await _mediator.Send(saveCmd);
-        return result.Success ? Ok(result) : BadRequest(result);
+        if (!result.Success) return BadRequest(result);
+
+        // La ruta ya existe: ligar las novedades que el chofer reportó DURANTE el recorrido
+        // (llegaron antes que la planilla, por eso venían sueltas atadas solo por UUID).
+        await LigarNovedadesAsync(req.Uuid);
+
+        return Ok(result);
+    }
+
+    /// <summary>
+    /// Novedad reportada por el chofer en plena ruta. Se registra apenas ocurre (la ruta
+    /// aún no existe en el servidor) y avisa por WhatsApp. Idempotente por UUID: la tablet
+    /// reenvía hasta confirmar, y un reenvío no puede crear duplicados.
+    /// </summary>
+    [HttpPost("novedades")]
+    public async Task<IActionResult> ReportarNovedad([FromBody] ChoferNovedadRequest req)
+    {
+        if (string.IsNullOrWhiteSpace(req.Uuid))
+            return BadRequest(ResponseBase<object>.Fail("Falta el identificador de la novedad"));
+        if (string.IsNullOrWhiteSpace(req.Tipo))
+            return BadRequest(ResponseBase<object>.Fail("Falta el tipo de novedad"));
+        // "Otro" sin explicación no sirve para nada a quien la lee en la sede.
+        if (req.Tipo.Equals("Otro", StringComparison.OrdinalIgnoreCase) && string.IsNullOrWhiteSpace(req.Descripcion))
+            return BadRequest(ResponseBase<object>.Fail("La novedad 'Otro' necesita una descripción"));
+
+        var conductorId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+
+        // Idempotencia: si ya la teníamos, se confirma sin duplicar ni volver a avisar.
+        var existente = (await _novedadRepo.FindAsync(n => n.Uuid == req.Uuid)).FirstOrDefault();
+        if (existente != null)
+            return Ok(ResponseBase<object>.Ok(new { existente.Id }, "Novedad ya recibida"));
+
+        var reportadoAt = DateTime.TryParse(req.ReportadoAt, CultureInfo.InvariantCulture,
+            DateTimeStyles.None, out var r) ? r : ColombiaTime.Now;
+
+        // Si la ruta ya existe (el chofer envió la planilla antes), se liga de una.
+        var ruta = string.IsNullOrWhiteSpace(req.PlanillaUuid) ? null
+            : (await _rutaRepo.FindAsync(x => x.ChoferUuid == req.PlanillaUuid)).FirstOrDefault();
+
+        var novedad = new RutaNovedad
+        {
+            Uuid = req.Uuid,
+            PlanillaUuid = req.PlanillaUuid ?? string.Empty,
+            RutaId = ruta?.Id,
+            ConductorId = conductorId,
+            CamionId = req.CamionId,
+            Categoria = req.Categoria,
+            Tipo = req.Tipo,
+            Descripcion = req.Descripcion,
+            GranjeroCodigoId = req.GranjeroCodigoId,
+            ReportadoAt = reportadoAt,
+            GpsLat = req.GpsLat,
+            GpsLng = req.GpsLng,
+        };
+        await _novedadRepo.AddAsync(novedad);
+
+        await AvisarNovedadAsync(novedad);
+
+        return Ok(ResponseBase<object>.Ok(new { novedad.Id }, "Novedad registrada"));
+    }
+
+    /// <summary>Ata a la ruta recién creada las novedades que llegaron antes que la planilla.</summary>
+    private async Task LigarNovedadesAsync(string? planillaUuid)
+    {
+        if (string.IsNullOrWhiteSpace(planillaUuid)) return;
+        var ruta = (await _rutaRepo.FindAsync(r => r.ChoferUuid == planillaUuid)).FirstOrDefault();
+        if (ruta == null) return;
+
+        var sueltas = (await _novedadRepo.FindAsync(n => n.PlanillaUuid == planillaUuid && n.RutaId == null)).ToList();
+        foreach (var n in sueltas)
+        {
+            n.RutaId = ruta.Id;
+            await _novedadRepo.UpdateAsync(n);
+        }
+    }
+
+    /// <summary>Aviso por WhatsApp. Best-effort: si falla, la novedad YA quedó registrada.</summary>
+    private async Task AvisarNovedadAsync(RutaNovedad n)
+    {
+        try
+        {
+            var conductor = await _conductorRepo.GetByIdAsync(n.ConductorId);
+            var camion = await _camionRepo.GetByIdAsync(n.CamionId);
+            var finca = n.GranjeroCodigoId.HasValue
+                ? (await _codigoRepo.GetByIdAsync(n.GranjeroCodigoId.Value))?.Finca
+                : null;
+
+            await _whatsapp.SendNovedadAsync(new WhatsAppNovedadModel(
+                n.Tipo,
+                n.Categoria,
+                conductor?.NombreCompleto ?? $"#{n.ConductorId}",
+                camion?.Nombre ?? $"#{n.CamionId}",
+                n.ReportadoAt,
+                n.Descripcion ?? "-",
+                finca ?? "-"));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "No se pudo avisar la novedad {Uuid} por WhatsApp (queda registrada igual)", n.Uuid);
+        }
     }
 }
