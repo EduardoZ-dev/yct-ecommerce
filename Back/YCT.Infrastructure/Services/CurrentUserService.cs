@@ -38,8 +38,14 @@ public class CurrentUserService : ICurrentUser
             if (ctx == null) return null;
             // Respeta forwarded headers si existen
             var fwd = ctx.Request.Headers["X-Forwarded-For"].FirstOrDefault();
-            if (!string.IsNullOrWhiteSpace(fwd)) return fwd.Split(',').First().Trim();
-            return ctx.Connection.RemoteIpAddress?.ToString();
+            var ip = !string.IsNullOrWhiteSpace(fwd)
+                ? fwd.Split(',').First().Trim()
+                : ctx.Connection.RemoteIpAddress?.ToString();
+            // Se TRUNCA a 45 (el largo de AuditLog.IpAddress). Un X-Forwarded-For largo
+            // reventaba el SaveChanges de la auditoría DESPUÉS de commitear el dato de
+            // negocio: 500 con el dato ya guardado → la tablet reintentaba para siempre.
+            // Es el mismo mecanismo del bug de la FK de UserId, por otra columna.
+            return string.IsNullOrWhiteSpace(ip) ? null : ip[..Math.Min(ip.Length, 45)];
         }
     }
 

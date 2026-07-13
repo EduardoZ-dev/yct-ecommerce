@@ -14,6 +14,8 @@ public class SavePlanillaCommandHandler : IRequestHandler<SavePlanillaCommand, R
     private readonly IGenericRepository<Camion> _camionRepository;
     private readonly IGenericRepository<Conductor> _conductorRepository;
     private readonly IGenericRepository<Granjero> _granjeroRepository;
+    private readonly IGenericRepository<GranjeroCodigo> _codigoRepository;
+    private readonly IGenericRepository<Asistente> _asistenteRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IAuditLogger _audit;
     private readonly IMediator _mediator;
@@ -24,6 +26,8 @@ public class SavePlanillaCommandHandler : IRequestHandler<SavePlanillaCommand, R
         IGenericRepository<Camion> camionRepository,
         IGenericRepository<Conductor> conductorRepository,
         IGenericRepository<Granjero> granjeroRepository,
+        IGenericRepository<GranjeroCodigo> codigoRepository,
+        IGenericRepository<Asistente> asistenteRepository,
         IUnitOfWork unitOfWork,
         IAuditLogger audit,
         IMediator mediator)
@@ -33,6 +37,8 @@ public class SavePlanillaCommandHandler : IRequestHandler<SavePlanillaCommand, R
         _camionRepository = camionRepository;
         _conductorRepository = conductorRepository;
         _granjeroRepository = granjeroRepository;
+        _codigoRepository = codigoRepository;
+        _asistenteRepository = asistenteRepository;
         _unitOfWork = unitOfWork;
         _audit = audit;
         _mediator = mediator;
@@ -50,14 +56,43 @@ public class SavePlanillaCommandHandler : IRequestHandler<SavePlanillaCommand, R
         var conductor = await _conductorRepository.GetByIdAsync(request.ConductorId);
         if (conductor == null) return ResponseBase<PlanillaDto>.Fail("Conductor no encontrado");
 
+        // IMPORTANTE: este handler hace DOS SaveChanges (la Ruta primero, para obtener su Id,
+        // y luego las Recogidas) y no hay transacción. Si el segundo revienta, la Ruta ya
+        // quedó commiteada → ruta fantasma vacía + 500 → la tablet reintenta para siempre y
+        // la planilla nunca se recupera. Por eso TODO lo que pueda hacer fallar el segundo
+        // SaveChanges (FKs y límites de columna) se valida ANTES de tocar la base.
+
+        if (request.AsistenteId.HasValue &&
+            await _asistenteRepository.GetByIdAsync(request.AsistenteId.Value) == null)
+            return ResponseBase<PlanillaDto>.Fail($"Asistente {request.AsistenteId} no encontrado");
+
         foreach (var item in request.Items)
         {
             if (item.Cantinas < 0) return ResponseBase<PlanillaDto>.Fail("Las cantinas no pueden ser negativas");
             if (item.SaldoLitros < 0 || item.SaldoLitros >= 40)
                 return ResponseBase<PlanillaDto>.Fail("El saldo debe estar entre 0 y 39.99 litros (si es 40 o más es una cantina más)");
+            if (item.LitrosRegaladosChofer < 0 || item.LitrosRegaladosChofer > 9999)
+                return ResponseBase<PlanillaDto>.Fail("Los litros regalados al chofer están fuera de rango");
+
             var g = await _granjeroRepository.GetByIdAsync(item.GranjeroId);
             if (g == null) return ResponseBase<PlanillaDto>.Fail($"Granjero {item.GranjeroId} no encontrado");
+
+            // El chofer trabaja con una lista cacheada: un código borrado en el panel llegaría
+            // aquí y violaría la FK justo en el segundo SaveChanges.
+            if (item.GranjeroCodigoId.HasValue &&
+                await _codigoRepository.GetByIdAsync(item.GranjeroCodigoId.Value) == null)
+                return ResponseBase<PlanillaDto>.Fail(
+                    $"La finca/código {item.GranjeroCodigoId} ya no existe. Actualiza la lista de granjeros.");
         }
+
+        // Recortes defensivos: el texto libre no puede exceder el largo de la columna
+        // (Recogida.Observacion y Ruta.Observaciones son de 500).
+        const int MaxObs = 500;
+        static string? Recortar(string? s, int max) =>
+            string.IsNullOrWhiteSpace(s) ? null : s.Trim()[..Math.Min(s.Trim().Length, max)];
+
+        foreach (var item in request.Items)
+            item.Observacion = Recortar(item.Observacion, MaxObs);
 
         // ===== Upsert Ruta =====
         Ruta ruta;
@@ -75,7 +110,7 @@ public class SavePlanillaCommandHandler : IRequestHandler<SavePlanillaCommand, R
                 HoraSalida = request.HoraSalida,
                 HoraLlegadaPlanta = request.HoraLlegadaPlanta,
                 HoraDescargue = request.HoraDescargue,
-                Observaciones = request.Observaciones?.Trim(),
+                Observaciones = Recortar(request.Observaciones, MaxObs),
                 ChoferUuid = request.ChoferUuid,
                 Status = "EnProgreso"
             };
@@ -95,7 +130,7 @@ public class SavePlanillaCommandHandler : IRequestHandler<SavePlanillaCommand, R
             existing.HoraSalida = request.HoraSalida;
             existing.HoraLlegadaPlanta = request.HoraLlegadaPlanta;
             existing.HoraDescargue = request.HoraDescargue;
-            existing.Observaciones = request.Observaciones?.Trim();
+            existing.Observaciones = Recortar(request.Observaciones, MaxObs);
             if (!string.IsNullOrWhiteSpace(request.ChoferUuid)) existing.ChoferUuid = request.ChoferUuid;
             existing.UpdatedAt = DateTime.UtcNow;
             await _rutaRepository.UpdateAsync(existing);

@@ -30,6 +30,7 @@ public class ChoferController : ControllerBase
     private readonly IGenericRepository<GranjeroCodigo> _codigoRepo;
     private readonly IGenericRepository<RutaNovedad> _novedadRepo;
     private readonly IGenericRepository<Conductor> _conductorRepo;
+    private readonly IUnitOfWork _unitOfWork;
     private readonly IWhatsAppNotifier _whatsapp;
     private readonly ILogger<ChoferController> _logger;
 
@@ -41,9 +42,11 @@ public class ChoferController : ControllerBase
         IGenericRepository<GranjeroCodigo> codigoRepo,
         IGenericRepository<RutaNovedad> novedadRepo,
         IGenericRepository<Conductor> conductorRepo,
+        IUnitOfWork unitOfWork,
         IWhatsAppNotifier whatsapp,
         ILogger<ChoferController> logger)
     {
+        _unitOfWork = unitOfWork;
         _mediator = mediator;
         _rutaRepo = rutaRepo;
         _camionRepo = camionRepo;
@@ -227,7 +230,12 @@ public class ChoferController : ControllerBase
             GpsLng = req.GpsLng,
         };
         await _novedadRepo.AddAsync(novedad);
+        // AddAsync solo la mete al change tracker: sin esto NO se guarda nada (la tabla
+        // quedaba vacía, se devolvía 200 con Id=0 y, como la idempotencia busca una fila
+        // que no existía, cada reintento mandaba OTRO WhatsApp).
+        await _unitOfWork.SaveChangesAsync();
 
+        // Se avisa DESPUÉS de guardar: nunca alertar de algo que no quedó registrado.
         await AvisarNovedadAsync(novedad);
 
         return Ok(ResponseBase<object>.Ok(new { novedad.Id }, "Novedad registrada"));
@@ -241,11 +249,14 @@ public class ChoferController : ControllerBase
         if (ruta == null) return;
 
         var sueltas = (await _novedadRepo.FindAsync(n => n.PlanillaUuid == planillaUuid && n.RutaId == null)).ToList();
+        if (sueltas.Count == 0) return;
+
         foreach (var n in sueltas)
         {
             n.RutaId = ruta.Id;
             await _novedadRepo.UpdateAsync(n);
         }
+        await _unitOfWork.SaveChangesAsync(); // sin esto el vínculo no se persistía
     }
 
     /// <summary>Aviso por WhatsApp. Best-effort: si falla, la novedad YA quedó registrada.</summary>
