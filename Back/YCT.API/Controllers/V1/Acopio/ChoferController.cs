@@ -233,33 +233,11 @@ public class ChoferController : ControllerBase
             GpsLng = req.GpsLng,
         };
         await _novedadRepo.AddAsync(novedad);
-
-        // Aviso en la campana del panel de acopio. Es el canal que SIEMPRE funciona
-        // (WhatsApp depende de las credenciales de Meta), así que la oficina se entera
-        // del imprevisto en vivo aunque el bot esté apagado.
-        var conductorNombre = (await _conductorRepo.GetByIdAsync(conductorId))?.NombreCompleto ?? $"#{conductorId}";
-        var fincaNombre = req.GranjeroCodigoId.HasValue
-            ? (await _codigoRepo.GetByIdAsync(req.GranjeroCodigoId.Value))?.Finca
-            : null;
-        var detalle = new List<string>();
-        if (!string.IsNullOrWhiteSpace(fincaNombre)) detalle.Add($"Finca: {fincaNombre}");
-        if (!string.IsNullOrWhiteSpace(req.Descripcion)) detalle.Add(req.Descripcion!.Trim());
-
-        var mensaje = $"{conductorNombre} reportó: {req.Tipo}."
-                      + (detalle.Count > 0 ? " " + string.Join(" · ", detalle) : string.Empty);
-        await _notificationRepo.AddAsync(new Notification
-        {
-            Type = "NovedadRuta",
-            Title = $"❗ Novedad en ruta · {req.Tipo}",
-            Message = mensaje[..Math.Min(mensaje.Length, 500)],
-            UserId = null,          // broadcast a los admins
-            PlanillaId = ruta?.Id,  // null si la planilla aún no llegó
-            IsRead = false
-        });
-
         // AddAsync solo mete al change tracker: sin esto NO se guarda nada (la tabla
         // quedaba vacía, se devolvía 200 con Id=0 y, como la idempotencia busca una fila
         // que no existía, cada reintento mandaba OTRO WhatsApp).
+        // No se crea Notification: las novedades tienen su propia sección en el panel,
+        // para no saturar la campana (que es para los faltantes).
         await _unitOfWork.SaveChangesAsync();
 
         // Se avisa DESPUÉS de guardar: nunca alertar de algo que no quedó registrado.

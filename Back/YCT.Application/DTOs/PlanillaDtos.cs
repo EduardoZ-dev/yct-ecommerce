@@ -121,3 +121,29 @@ public class NotificationDto
     public bool IsRead { get; set; }
     public DateTime CreatedAt { get; set; }
 }
+
+/// <summary>
+/// Novedad de ruta para el panel. Llega ANTES que el descargue: explica por qué un
+/// camión viene retrasado o por qué va a faltar leche, sin esperar a que termine la ruta.
+/// </summary>
+public class NovedadDto
+{
+    public int Id { get; set; }
+    public string Categoria { get; set; } = string.Empty;   // Camion | Via | Finca | Otro
+    public string Tipo { get; set; } = string.Empty;
+    public string? Descripcion { get; set; }
+    public string? Finca { get; set; }
+    public string? CodigoFinca { get; set; }
+    public string ConductorNombre { get; set; } = string.Empty;
+    public string CamionNombre { get; set; } = string.Empty;
+    public DateTime ReportadoAt { get; set; }
+    public decimal? GpsLat { get; set; }
+    public decimal? GpsLng { get; set; }
+    /// <summary>Ruta ligada. Null si el chofer aún no ha enviado la planilla (lo normal al reportar).</summary>
+    public int? RutaId { get; set; }
+    public string? RutaCodigo { get; set; }
+    public string? RutaStatus { get; set; }
+    public bool Revisada { get; set; }
+    public DateTime? RevisadaAt { get; set; }
+    public string? RevisadaPor { get; set; }
+}

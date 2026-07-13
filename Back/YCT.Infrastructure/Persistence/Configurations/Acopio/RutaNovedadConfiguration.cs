@@ -16,6 +16,7 @@ public class RutaNovedadConfiguration : IEntityTypeConfiguration<RutaNovedad>
         builder.Property(n => n.Categoria).HasMaxLength(30).IsRequired();
         builder.Property(n => n.Tipo).HasMaxLength(60).IsRequired();
         builder.Property(n => n.Descripcion).HasMaxLength(500);
+        builder.Property(n => n.RevisadaPor).HasMaxLength(150);
         builder.Property(n => n.GpsLat).HasColumnType("decimal(10,6)");
         builder.Property(n => n.GpsLng).HasColumnType("decimal(10,6)");
 

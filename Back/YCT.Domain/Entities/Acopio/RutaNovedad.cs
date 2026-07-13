@@ -47,4 +47,10 @@ public class RutaNovedad : BaseEntity
 
     public decimal? GpsLat { get; set; }
     public decimal? GpsLng { get; set; }
+
+    /// <summary>La oficina ya la vio y la atendió. Las no revisadas salen destacadas en el panel.</summary>
+    public bool Revisada { get; set; }
+    public DateTime? RevisadaAt { get; set; }
+    /// <summary>Quién la marcó como revisada (nombre legible del usuario del panel).</summary>
+    public string? RevisadaPor { get; set; }
 }
