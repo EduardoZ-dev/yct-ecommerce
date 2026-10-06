@@ -47,5 +47,14 @@ public class Ruta : BaseEntity
     /// </summary>
     public string? ChoferUuid { get; set; }
 
+    /// <summary>
+    /// Fecha real en que se realizó la ruta, deducida de cuándo se capturaron las recogidas
+    /// (`CapturadoAt`), cuando NO coincide con <see cref="Fecha"/>. Null = la fecha declarada
+    /// concuerda con el trabajo. Se llena solo para AVISAR en el panel: no cambia `Fecha` sola;
+    /// la oficina decide si corrige. Nace del caso en que un borrador creado de noche arrastraba
+    /// la fecha de la noche anterior y la ruta del día siguiente quedaba con el día equivocado.
+    /// </summary>
+    public DateTime? FechaCapturaReal { get; set; }
+
     public ICollection<Recogida> Recogidas { get; set; } = new List<Recogida>();
 }

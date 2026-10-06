@@ -9,6 +9,7 @@ using YCT.Application.UseCases.Acopio.Planillas.Save;
 using YCT.Application.UseCases.Acopio.Planillas.SendEmail;
 using YCT.Application.UseCases.Acopio.Planillas.ValidatePlanta;
 using YCT.Application.UseCases.Acopio.Planillas.AuthorizeShortage;
+using YCT.Application.UseCases.Acopio.Planillas.CorregirFecha;
 using YCT.Domain.Common;
 
 namespace YCT.API.Controllers.V1.Acopio;
@@ -77,6 +78,15 @@ public class PlanillasController : ControllerBase
     {
         command.Id = id;
         var result = await _mediator.Send(command);
+        return result.Success ? Ok(result) : BadRequest(result);
+    }
+
+    /// <summary>Corrige la fecha de una planilla que llegó con el día equivocado (solo la fecha).</summary>
+    [HttpPost("{id}/corregir-fecha")]
+    [Authorize(Roles = Roles.CanManageUsers)]
+    public async Task<IActionResult> CorregirFecha(int id)
+    {
+        var result = await _mediator.Send(new CorregirFechaPlanillaCommand { Id = id });
         return result.Success ? Ok(result) : BadRequest(result);
     }
 

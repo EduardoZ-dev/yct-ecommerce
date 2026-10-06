@@ -26,6 +26,13 @@ public class PlanillaHeaderDto
     public string Status { get; set; } = "EnProgreso";
     public string? Observaciones { get; set; }
     public DateTime CreatedAt { get; set; }
+
+    /// <summary>
+    /// Fecha real deducida de las recogidas cuando NO coincide con <see cref="Fecha"/>. Null = todo
+    /// concuerda. Si viene con valor, el panel muestra el aviso "se realizó el X pero llegó como Y"
+    /// y ofrece corregir. Solo avisa; no cambia nada solo.
+    /// </summary>
+    public DateTime? FechaCapturaReal { get; set; }
 }
 
 public class PlanillaDto : PlanillaHeaderDto

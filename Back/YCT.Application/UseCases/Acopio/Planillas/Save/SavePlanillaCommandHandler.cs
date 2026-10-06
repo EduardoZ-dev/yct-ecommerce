@@ -174,6 +174,37 @@ public class SavePlanillaCommandHandler : IRequestHandler<SavePlanillaCommand, R
         ruta.TotalLitrosChofer = totalLitros;
         ruta.UpdatedAt = DateTime.UtcNow;
 
+        // Red de seguridad de FECHA: la cabecera trae la fecha del momento en que la app creó el
+        // borrador; si el borrador nació de noche, la ruta del día siguiente llegaba con el día
+        // anterior. Deducimos la fecha REAL de cuándo se capturaron las recogidas (`CapturadoAt`,
+        // en UTC → hora Colombia, sin horario de verano) y, si difiere, la marcamos para AVISAR en
+        // el panel. NO tocamos `Fecha`: la oficina decide si corrige (falso positivo = aviso que se
+        // ignora, nunca daña la planilla).
+        var fechasCaptura = request.Items
+            .Where(i => i.CapturadoAt.HasValue)
+            .Select(i =>
+            {
+                var c = i.CapturadoAt!.Value;
+                var utc = c.Kind == DateTimeKind.Local ? c.ToUniversalTime() : DateTime.SpecifyKind(c, DateTimeKind.Utc);
+                return utc.AddHours(-5).Date; // Colombia = UTC-5
+            })
+            .ToList();
+        if (fechasCaptura.Count > 0)
+        {
+            // Fecha REAL = la MÁS REPETIDA entre las recogidas (una sola captura con timestamp raro
+            // no alcanza para disparar el aviso). Empate → la más antigua.
+            var fechaReal = fechasCaptura
+                .GroupBy(d => d)
+                .OrderByDescending(g => g.Count())
+                .ThenBy(g => g.Key)
+                .First().Key;
+            ruta.FechaCapturaReal = fechaReal != ruta.Fecha.Date ? fechaReal : null;
+        }
+        else
+        {
+            ruta.FechaCapturaReal = null; // sin CapturadoAt no se puede verificar
+        }
+
         // Auto-transición: si hay items y no está conciliada/anulada, pasa a EsperandoDescargue
         if (request.Items.Count > 0 && ruta.Status != "Conciliada" && ruta.Status != "Anulada"
             && ruta.Status != "PendienteAutorizacion")

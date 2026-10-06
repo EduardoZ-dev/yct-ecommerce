@@ -95,6 +95,7 @@ public class GetPlanillaByIdQueryHandler : IRequestHandler<GetPlanillaByIdQuery,
             Status = ruta.Status,
             Observaciones = ruta.Observaciones,
             CreatedAt = ruta.CreatedAt,
+            FechaCapturaReal = ruta.FechaCapturaReal,
             Items = items,
             Novedades = novedades
         };
