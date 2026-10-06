@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using YCT.Application.Common;
 using YCT.Application.DTOs;
+using YCT.Application.UseCases.Acopio.ClientesTerceros.ConfirmarEntrega;
 using YCT.Application.UseCases.Acopio.Planillas.ValidatePlanta;
 using YCT.Application.UseCases.Acopio.Recepcion.Login;
 using YCT.Domain.Common;
@@ -30,6 +31,7 @@ public class RecepcionController : ControllerBase
     private readonly IGenericRepository<Recogida> _recogidaRepo;
     private readonly IGenericRepository<Granjero> _granjeroRepo;
     private readonly IGenericRepository<GranjeroCodigo> _codigoRepo;
+    private readonly IGenericRepository<EntregaTercero> _entregaTerceroRepo;
 
     public RecepcionController(
         IMediator mediator,
@@ -38,7 +40,8 @@ public class RecepcionController : ControllerBase
         IGenericRepository<Conductor> conductorRepo,
         IGenericRepository<Recogida> recogidaRepo,
         IGenericRepository<Granjero> granjeroRepo,
-        IGenericRepository<GranjeroCodigo> codigoRepo)
+        IGenericRepository<GranjeroCodigo> codigoRepo,
+        IGenericRepository<EntregaTercero> entregaTerceroRepo)
     {
         _mediator = mediator;
         _rutaRepo = rutaRepo;
@@ -47,6 +50,7 @@ public class RecepcionController : ControllerBase
         _recogidaRepo = recogidaRepo;
         _granjeroRepo = granjeroRepo;
         _codigoRepo = codigoRepo;
+        _entregaTerceroRepo = entregaTerceroRepo;
     }
 
     /// <summary>Login de la tablet de recepción: usuario + clave → token JWT (rol Recepcion).</summary>
@@ -153,5 +157,62 @@ public class RecepcionController : ControllerBase
         if (!result.Success)
             return BadRequest(ResponseBase<object>.Fail(result.Message));
         return Ok(ResponseBase<object>.Ok(new { ok = true }, "Descargue registrado"));
+    }
+
+    // ===== Clientes terceros =====
+    // El panel REGISTRA la entrega; la tablet solo REAFIRMA que esa leche llegó.
+
+    /// <summary>
+    /// Entregas de clientes terceros de HOY, para reafirmar su llegada.
+    /// A CIEGAS: sin precio ni valor, solo quién trajo la leche y cuánta.
+    /// </summary>
+    [HttpGet("terceros")]
+    public async Task<IActionResult> Terceros()
+    {
+        var hoy = ColombiaTime.Today;
+        // Se incluye el cliente en la misma consulta para no pedir su nombre entrega por entrega.
+        var entregas = await _entregaTerceroRepo.FindAsync(
+            e => e.Fecha >= hoy && e.Fecha < hoy.AddDays(1),
+            e => e.ClienteTercero);
+
+        var dtos = entregas
+            .OrderBy(e => e.CreatedAt)
+            .Select(e => new RecepcionTerceroDto
+            {
+                Id = e.Id,
+                ClienteNombre = e.ClienteTercero.NombreCompleto,
+                Municipio = e.ClienteTercero.Municipio,
+                Cantinas = e.Cantinas,
+                SaldoLitros = e.SaldoLitros,
+                Litros = e.Litros,
+                Observacion = e.Observacion,
+                Confirmada = e.ConfirmadaEnPlantaAt.HasValue,
+                ConfirmadaEnPlantaAt = e.ConfirmadaEnPlantaAt,
+                RegistradoPorNombre = e.RegistradoPorNombre,
+                CreatedAt = e.CreatedAt
+            })
+            .ToList();
+
+        return Ok(ResponseBase<List<RecepcionTerceroDto>>.Ok(dtos));
+    }
+
+    /// <summary>
+    /// Reafirma que la leche de esa entrega llegó. Idempotente (el command no reescribe
+    /// una confirmación previa) y limitado al día de hoy: la tablet no corrige el pasado.
+    /// </summary>
+    [HttpPost("terceros/{id}/confirmar")]
+    public async Task<IActionResult> ConfirmarTercero(int id)
+    {
+        var entrega = await _entregaTerceroRepo.GetByIdAsync(id);
+        if (entrega == null)
+            return BadRequest(ResponseBase<bool>.Fail("Entrega no encontrada"));
+        if (entrega.Fecha.Date != ColombiaTime.Today)
+            return BadRequest(ResponseBase<bool>.Fail("Esa entrega no es de hoy"));
+
+        // Se reusa el caso de uso del panel: una sola regla de confirmación y una sola auditoría.
+        var result = await _mediator.Send(new ConfirmarEntregaTerceroCommand(id));
+        if (!result.Success)
+            return BadRequest(ResponseBase<bool>.Fail(result.Message));
+        return Ok(ResponseBase<bool>.Ok(true, result.Message));
     }
 }

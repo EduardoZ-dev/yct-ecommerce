@@ -29,6 +29,8 @@ public class AppDbContext : DbContext
     public DbSet<TinaMovimiento> TinaMovimientos => Set<TinaMovimiento>();
     public DbSet<TinaPlanta> TinaPlanta => Set<TinaPlanta>();
     public DbSet<Notification> Notifications => Set<Notification>();
+    public DbSet<ClienteTercero> ClientesTerceros => Set<ClienteTercero>();
+    public DbSet<EntregaTercero> EntregasTerceros => Set<EntregaTercero>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

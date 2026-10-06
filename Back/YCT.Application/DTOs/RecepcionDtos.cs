@@ -52,3 +52,22 @@ public class RecepcionValidarRequest
     public decimal? LitrosSueltosPlanta { get; set; }
     public string? Observacion { get; set; }
 }
+
+/// <summary>
+/// Entrega de un cliente tercero vista por el receptor en planta: solo lo necesario para
+/// reafirmar que la leche llegó. VALIDACIÓN A CIEGAS: sin precio, sin valor, sin nada comercial.
+/// </summary>
+public class RecepcionTerceroDto
+{
+    public int Id { get; set; }
+    public string ClienteNombre { get; set; } = string.Empty;
+    public string? Municipio { get; set; }
+    public int Cantinas { get; set; }
+    public decimal SaldoLitros { get; set; }
+    public decimal Litros { get; set; }
+    public string? Observacion { get; set; }
+    public bool Confirmada { get; set; }
+    public DateTime? ConfirmadaEnPlantaAt { get; set; }
+    public string? RegistradoPorNombre { get; set; }
+    public DateTime CreatedAt { get; set; }
+}
