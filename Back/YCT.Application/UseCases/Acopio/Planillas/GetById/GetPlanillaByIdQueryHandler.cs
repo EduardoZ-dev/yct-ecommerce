@@ -31,7 +31,7 @@ public class GetPlanillaByIdQueryHandler : IRequestHandler<GetPlanillaByIdQuery,
         var ruta = rutas.FirstOrDefault();
         if (ruta == null) return ResponseBase<PlanillaDto>.Fail("Planilla no encontrada");
 
-        var recogidas = (await _recogidaRepository.FindAsync(r => r.RutaId == request.Id, r => r.Granjero)).ToList();
+        var recogidas = (await _recogidaRepository.FindAsync(r => r.RutaId == request.Id, r => r.Granjero, r => r.GranjeroCodigo!)).ToList();
         var totalLitros = recogidas.Sum(r => r.LitrosChofer);
         var totalCantinas = recogidas.Sum(r => r.CantinasChofer);
 
@@ -44,6 +44,7 @@ public class GetPlanillaByIdQueryHandler : IRequestHandler<GetPlanillaByIdQuery,
                 GranjeroId = r.GranjeroId,
                 GranjeroNumero = r.Granjero?.Numero ?? 0,
                 GranjeroNombre = r.Granjero?.NombreCompleto ?? string.Empty,
+                Finca = r.GranjeroCodigo?.Finca,
                 Fecha = r.Fecha,
                 Cantinas = r.CantinasChofer,
                 SaldoLitros = r.SaldoChofer,

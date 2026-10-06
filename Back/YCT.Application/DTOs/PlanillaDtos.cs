@@ -59,6 +59,8 @@ public class PlanillaItemDto
     public int GranjeroId { get; set; }
     public int GranjeroNumero { get; set; }
     public string GranjeroNombre { get; set; } = string.Empty;
+    /// <summary>Finca/predio del código recogido (GranjeroCodigo.Finca). Null si la recogida no llevaba código.</summary>
+    public string? Finca { get; set; }
     public DateTime Fecha { get; set; }
     public int Cantinas { get; set; }
     public decimal SaldoLitros { get; set; }

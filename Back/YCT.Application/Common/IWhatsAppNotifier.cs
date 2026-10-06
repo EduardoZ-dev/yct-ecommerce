@@ -33,4 +33,5 @@ public record WhatsAppDescargueModel(
     decimal LitrosPlanta,
     decimal Diferencia,
     string Estado,
+    string FincasDetalle,    // "La Esperanza: 320 L · El Roble: 210 L" (una sola línea, sin saltos)
     string HistorialUrl);

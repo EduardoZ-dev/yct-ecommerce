@@ -47,6 +47,7 @@ public class WhatsAppCloudNotifier : IWhatsAppNotifier
             C(m.LitrosPlanta),
             C(m.Diferencia),
             m.Estado,
+            m.FincasDetalle,
             m.HistorialUrl,
         };
 

@@ -1,3 +1,4 @@
+using System.Globalization;
 using MediatR;
 using Microsoft.Extensions.Configuration;
 using YCT.Application.Common;
@@ -139,14 +140,35 @@ public class ValidatePlantaCommandHandler : IRequestHandler<ValidatePlantaComman
         }
         catch { /* email error no debe romper validación */ }
 
+        var result = await _mediator.Send(new GetPlanillaByIdQuery(ruta.Id), cancellationToken);
+
         // WhatsApp a los contactos (best-effort, no bloquea)
         try
         {
             var conductor = await _conductorRepository.GetByIdAsync(ruta.ConductorId);
             var camion = await _camionRepository.GetByIdAsync(ruta.CamionId);
             var adminBase = _config["AppUrls:Admin"] ?? "http://localhost:4300";
+
+            // "Cuánto dio cada finca" en UNA sola línea: WhatsApp rechaza los saltos de
+            // línea dentro del valor de una variable. Se limita para no mandar un mensaje
+            // kilométrico en rutas con muchas fincas.
+            string L(decimal v) => v.ToString("0.##", CultureInfo.InvariantCulture);
+            // Etiqueta por FINCA (más claro que el nombre del granjero, que se repetía cuando un
+            // proveedor tiene varias fincas/códigos). Respaldo al nombre si la recogida no llevaba código.
+            var fincas = (result.Data?.Items ?? new List<PlanillaItemDto>())
+                .OrderBy(i => i.Orden)
+                .Select(i => $"{(string.IsNullOrWhiteSpace(i.Finca) ? i.GranjeroNombre : i.Finca)} {L(i.TotalLitros)} L")
+                .ToList();
+            const int MaxFincas = 20;
+            var fincasDetalle = fincas.Count == 0
+                ? "Sin recogidas registradas"
+                : string.Join("  ·  ", fincas.Take(MaxFincas))
+                  + (fincas.Count > MaxFincas ? $"  ·  (+{fincas.Count - MaxFincas} fincas más)" : "");
+
             await _whatsApp.SendDescargueAsync(new WhatsAppDescargueModel(
-                Resultado: shortage ? "CON FALTANTE" : "OK",
+                // Emoji en el resultado para que un faltante SALTE a la vista en el celular
+                // (en WhatsApp todo el texto es del mismo color; el 🚨 rojo lo distingue al instante).
+                Resultado: shortage ? "🚨 CON FALTANTE" : "✅ OK",
                 Codigo: ruta.Codigo,
                 Fecha: ruta.Fecha,
                 Conductor: conductor?.NombreCompleto ?? $"#{ruta.ConductorId}",
@@ -154,12 +176,13 @@ public class ValidatePlantaCommandHandler : IRequestHandler<ValidatePlantaComman
                 LitrosChofer: ruta.TotalLitrosChofer,
                 LitrosPlanta: request.TotalLitrosPlanta,
                 Diferencia: diferencia,
-                Estado: ruta.Status,
+                // Estado en bonito para el WhatsApp (el interno "PendienteAutorizacion" se leía pegado).
+                Estado: shortage ? "Pendiente de autorización" : "Conciliada",
+                FincasDetalle: fincasDetalle,
                 HistorialUrl: $"{adminBase}/descargues"), cancellationToken);
         }
         catch { /* whatsapp error no debe romper validación */ }
 
-        var result = await _mediator.Send(new GetPlanillaByIdQuery(ruta.Id), cancellationToken);
         return ResponseBase<PlanillaDto>.Ok(result.Data!,
             shortage ? "Planilla con faltante: requiere autorización" : "Planilla conciliada");
     }
