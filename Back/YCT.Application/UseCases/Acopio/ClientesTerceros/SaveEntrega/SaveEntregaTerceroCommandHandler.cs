@@ -1,6 +1,7 @@
 using MediatR;
 using YCT.Application.Common;
 using YCT.Application.DTOs;
+using YCT.Domain.Common;
 using YCT.Domain.Entities.Acopio;
 using YCT.Domain.Interfaces;
 
@@ -94,7 +95,8 @@ public class SaveEntregaTerceroCommandHandler : IRequestHandler<SaveEntregaTerce
             return "La entrega debe tener litros: indica cantinas o saldo";
         if (request.PrecioLitro.HasValue && request.PrecioLitro < 0)
             return "El precio por litro no puede ser negativo";
-        if (request.Fecha.Date > DateTime.UtcNow.Date)
+        // Hoy en Colombia: con UTC, de 7 p. m. a medianoche ya se aceptaba la fecha de mañana.
+        if (request.Fecha.Date > ColombiaTime.Today)
             return "La fecha de la entrega no puede ser futura";
         return null;
     }

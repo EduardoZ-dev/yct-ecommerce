@@ -60,6 +60,8 @@ public class RecepcionValidarRequest
 public class RecepcionTerceroDto
 {
     public int Id { get; set; }
+    /// <summary>Día de la entrega. La tablet lo muestra cuando no es hoy (pendientes de días anteriores).</summary>
+    public DateTime Fecha { get; set; }
     public string ClienteNombre { get; set; } = string.Empty;
     public string? Municipio { get; set; }
     public int Cantinas { get; set; }

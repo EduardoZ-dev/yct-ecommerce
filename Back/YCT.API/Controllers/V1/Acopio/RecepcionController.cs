@@ -163,23 +163,36 @@ public class RecepcionController : ControllerBase
     // El panel REGISTRA la entrega; la tablet solo REAFIRMA que esa leche llegó.
 
     /// <summary>
-    /// Entregas de clientes terceros de HOY, para reafirmar su llegada.
+    /// Cuántos días hacia atrás una entrega SIN confirmar sigue apareciendo en la tablet. El panel
+    /// puede fechar la entrega con el día de una planilla anterior (al validar un descargue atrasado);
+    /// si la tablet solo mirara "hoy", esa entrega nunca se vería ni se podría confirmar.
+    /// </summary>
+    private const int DiasPorConfirmar = 7;
+
+    /// <summary>
+    /// Entregas de clientes terceros para reafirmar su llegada: todas las de HOY y las de los
+    /// últimos <see cref="DiasPorConfirmar"/> días que siguen sin confirmar.
     /// A CIEGAS: sin precio ni valor, solo quién trajo la leche y cuánta.
     /// </summary>
     [HttpGet("terceros")]
     public async Task<IActionResult> Terceros()
     {
         var hoy = ColombiaTime.Today;
+        var manana = hoy.AddDays(1);
+        var desde = hoy.AddDays(-DiasPorConfirmar);
         // Se incluye el cliente en la misma consulta para no pedir su nombre entrega por entrega.
         var entregas = await _entregaTerceroRepo.FindAsync(
-            e => e.Fecha >= hoy && e.Fecha < hoy.AddDays(1),
+            e => e.Fecha < manana
+                 && (e.Fecha >= hoy || (e.Fecha >= desde && e.ConfirmadaEnPlantaAt == null)),
             e => e.ClienteTercero);
 
         var dtos = entregas
-            .OrderBy(e => e.CreatedAt)
+            .OrderBy(e => e.Fecha)
+            .ThenBy(e => e.CreatedAt)
             .Select(e => new RecepcionTerceroDto
             {
                 Id = e.Id,
+                Fecha = e.Fecha,
                 ClienteNombre = e.ClienteTercero.NombreCompleto,
                 Municipio = e.ClienteTercero.Municipio,
                 Cantinas = e.Cantinas,
@@ -197,8 +210,9 @@ public class RecepcionController : ControllerBase
     }
 
     /// <summary>
-    /// Reafirma que la leche de esa entrega llegó. Idempotente (el command no reescribe
-    /// una confirmación previa) y limitado al día de hoy: la tablet no corrige el pasado.
+    /// Reafirma que la leche de esa entrega llegó. Idempotente (el command no reescribe una
+    /// confirmación previa) y limitado a la misma ventana que muestra la tablet: lo más viejo se
+    /// confirma desde el panel.
     /// </summary>
     [HttpPost("terceros/{id}/confirmar")]
     public async Task<IActionResult> ConfirmarTercero(int id)
@@ -206,8 +220,10 @@ public class RecepcionController : ControllerBase
         var entrega = await _entregaTerceroRepo.GetByIdAsync(id);
         if (entrega == null)
             return BadRequest(ResponseBase<bool>.Fail("Entrega no encontrada"));
-        if (entrega.Fecha.Date != ColombiaTime.Today)
-            return BadRequest(ResponseBase<bool>.Fail("Esa entrega no es de hoy"));
+        var hoy = ColombiaTime.Today;
+        if (entrega.Fecha.Date > hoy || entrega.Fecha.Date < hoy.AddDays(-DiasPorConfirmar))
+            return BadRequest(ResponseBase<bool>.Fail(
+                $"Esa entrega es de hace más de {DiasPorConfirmar} días: se confirma desde el panel"));
 
         // Se reusa el caso de uso del panel: una sola regla de confirmación y una sola auditoría.
         var result = await _mediator.Send(new ConfirmarEntregaTerceroCommand(id));
