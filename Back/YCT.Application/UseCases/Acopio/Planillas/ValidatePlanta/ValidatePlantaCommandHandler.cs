@@ -153,11 +153,17 @@ public class ValidatePlantaCommandHandler : IRequestHandler<ValidatePlantaComman
             // línea dentro del valor de una variable. Se limita para no mandar un mensaje
             // kilométrico en rutas con muchas fincas.
             string L(decimal v) => v.ToString("0.##", CultureInfo.InvariantCulture);
-            // Etiqueta por FINCA (más claro que el nombre del granjero, que se repetía cuando un
-            // proveedor tiene varias fincas/códigos). Respaldo al nombre si la recogida no llevaba código.
-            var fincas = (result.Data?.Items ?? new List<PlanillaItemDto>())
-                .OrderBy(i => i.Orden)
-                .Select(i => $"{(string.IsNullOrWhiteSpace(i.Finca) ? i.GranjeroNombre : i.Finca)} {L(i.TotalLitros)} L")
+            // Etiqueta por PERSONA, como se leyó siempre en el WhatsApp. La finca va entre paréntesis
+            // solo cuando esa persona aparece más de una vez en la ruta (varios códigos), para que el
+            // nombre repetido no quede sin explicar.
+            var items = (result.Data?.Items ?? new List<PlanillaItemDto>()).OrderBy(i => i.Orden).ToList();
+            var conVariasFincas = items
+                .GroupBy(i => i.GranjeroId)
+                .Where(g => g.Count() > 1)
+                .Select(g => g.Key)
+                .ToHashSet();
+            var fincas = items
+                .Select(i => $"{EtiquetaAporte(i, conVariasFincas.Contains(i.GranjeroId))} {L(i.TotalLitros)} L")
                 .ToList();
             const int MaxFincas = 20;
             var fincasDetalle = fincas.Count == 0
@@ -301,4 +307,10 @@ public class ValidatePlantaCommandHandler : IRequestHandler<ValidatePlantaComman
             $"</td>"));
         return $"<table cellpadding='0' cellspacing='8' style='width:100%;border-collapse:separate;'><tr>{cells}</tr></table>";
     }
+
+    /// <summary>Quién aportó esa leche en el WhatsApp: la persona, y su finca solo si hay que distinguirla.</summary>
+    private static string EtiquetaAporte(PlanillaItemDto item, bool distinguirFinca) =>
+        distinguirFinca && !string.IsNullOrWhiteSpace(item.Finca)
+            ? $"{item.GranjeroNombre} ({item.Finca})"
+            : item.GranjeroNombre;
 }
