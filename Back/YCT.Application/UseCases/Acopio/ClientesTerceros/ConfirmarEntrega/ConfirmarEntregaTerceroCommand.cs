@@ -11,7 +11,11 @@ namespace YCT.Application.UseCases.Acopio.ClientesTerceros.ConfirmarEntrega;
 /// </summary>
 /// <param name="Id">Entrega a confirmar.</param>
 /// <param name="Medicion">Lo que llegó según el receptor. Null = se marca sin medir (panel).</param>
-public record ConfirmarEntregaTerceroCommand(int Id, MedicionTercero? Medicion = null)
+/// <param name="DesdePlanta">
+/// True desde la tablet: solo se confirma dentro de la ventana de
+/// <c>EntregaTercero.DiasParaConfirmarEnPlanta</c>. El panel no tiene ese límite.
+/// </param>
+public record ConfirmarEntregaTerceroCommand(int Id, MedicionTercero? Medicion = null, bool DesdePlanta = false)
     : IRequest<ResponseBase<EntregaTerceroDto>>;
 
 /// <summary>Medición en planta: cantinas × 40 + saldo (siempre &lt; 40), igual que en el registro.</summary>

@@ -30,6 +30,14 @@ public static class DependencyInjection
 
         services.AddHostedService<DailyReportService>();
 
+        // Reloj inyectable (los casos de uso no llaman DateTime.UtcNow: se pueden probar con hora fija).
+        services.AddSingleton(TimeProvider.System);
+
+        // Avisos (WhatsApp…) que salen después de responder, sin hacer esperar a quien opera.
+        services.AddSingleton<ColaAvisos>();
+        services.AddSingleton<IColaAvisos>(sp => sp.GetRequiredService<ColaAvisos>());
+        services.AddHostedService<AvisosEnSegundoPlanoService>();
+
         return services;
     }
 }

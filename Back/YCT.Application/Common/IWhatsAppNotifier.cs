@@ -16,7 +16,10 @@ public interface IWhatsAppNotifier
     Task SendTerceroAsync(WhatsAppTerceroModel model, CancellationToken cancellationToken = default);
 }
 
-/// <summary>Llegada de leche de un tercero. Plantilla de Meta: WhatsApp:TemplateTercero.</summary>
+/// <summary>
+/// Llegada de leche de un tercero. Plantilla de Meta: WhatsApp:TemplateTercero. El enlace al panel
+/// lo arma el notificador con AppUrls:Admin (configuración de infraestructura, no del caso de uso).
+/// </summary>
 public record WhatsAppTerceroModel(
     string Resultado,          // "✅ Llegó completa" | "🚨 Llegó MENOS leche" | "⬆️ Llegó MÁS leche"
     string Cliente,
@@ -25,8 +28,7 @@ public record WhatsAppTerceroModel(
     decimal LitrosRecibidos,   // lo que midió el receptor, a ciegas
     decimal Diferencia,        // recibidos − registrados
     string Observacion,        // nota del receptor; vacía si no escribió nada
-    string RecibidoPor,
-    string PanelUrl);
+    string RecibidoPor);
 
 /// <summary>Aviso de novedad en ruta. Plantilla de Meta: WhatsApp:TemplateNovedad.</summary>
 public record WhatsAppNovedadModel(

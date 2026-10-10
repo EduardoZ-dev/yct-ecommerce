@@ -6,6 +6,7 @@ using YCT.Application.Common;
 using YCT.Application.DTOs;
 using YCT.Application.UseCases.Acopio.ClientesTerceros.ConfirmarEntrega;
 using YCT.Application.UseCases.Acopio.Planillas.ValidatePlanta;
+using YCT.Application.UseCases.Acopio.Recepcion.GetEntregasTerceros;
 using YCT.Application.UseCases.Acopio.Recepcion.Login;
 using YCT.Domain.Common;
 using YCT.Domain.Entities.Acopio;
@@ -31,7 +32,6 @@ public class RecepcionController : ControllerBase
     private readonly IGenericRepository<Recogida> _recogidaRepo;
     private readonly IGenericRepository<Granjero> _granjeroRepo;
     private readonly IGenericRepository<GranjeroCodigo> _codigoRepo;
-    private readonly IGenericRepository<EntregaTercero> _entregaTerceroRepo;
 
     public RecepcionController(
         IMediator mediator,
@@ -40,8 +40,7 @@ public class RecepcionController : ControllerBase
         IGenericRepository<Conductor> conductorRepo,
         IGenericRepository<Recogida> recogidaRepo,
         IGenericRepository<Granjero> granjeroRepo,
-        IGenericRepository<GranjeroCodigo> codigoRepo,
-        IGenericRepository<EntregaTercero> entregaTerceroRepo)
+        IGenericRepository<GranjeroCodigo> codigoRepo)
     {
         _mediator = mediator;
         _rutaRepo = rutaRepo;
@@ -50,7 +49,6 @@ public class RecepcionController : ControllerBase
         _recogidaRepo = recogidaRepo;
         _granjeroRepo = granjeroRepo;
         _codigoRepo = codigoRepo;
-        _entregaTerceroRepo = entregaTerceroRepo;
     }
 
     /// <summary>Login de la tablet de recepción: usuario + clave → token JWT (rol Recepcion).</summary>
@@ -160,80 +158,34 @@ public class RecepcionController : ControllerBase
     }
 
     // ===== Clientes terceros =====
-    // El panel REGISTRA la entrega; la tablet solo REAFIRMA que esa leche llegó.
+    // El panel REGISTRA la entrega; en planta se MIDE lo que llegó al confirmarla (a ciegas).
 
     /// <summary>
-    /// Cuántos días hacia atrás una entrega SIN confirmar sigue apareciendo en la tablet. El panel
-    /// puede fechar la entrega con el día de una planilla anterior (al validar un descargue atrasado);
-    /// si la tablet solo mirara "hoy", esa entrega nunca se vería ni se podría confirmar.
-    /// </summary>
-    private const int DiasPorConfirmar = 7;
-
-    /// <summary>
-    /// Entregas de clientes terceros para reafirmar su llegada: todas las de HOY y las de los
-    /// últimos <see cref="DiasPorConfirmar"/> días que siguen sin confirmar.
-    /// A CIEGAS: sin precio ni valor, solo quién trajo la leche y cuánta.
+    /// Entregas de terceros para la tablet: las de hoy y las de los últimos días sin confirmar.
+    /// A CIEGAS: sin lo registrado, sin precio ni valor.
     /// </summary>
     [HttpGet("terceros")]
     public async Task<IActionResult> Terceros()
-    {
-        var hoy = ColombiaTime.Today;
-        var manana = hoy.AddDays(1);
-        var desde = hoy.AddDays(-DiasPorConfirmar);
-        // Se incluye el cliente en la misma consulta para no pedir su nombre entrega por entrega.
-        var entregas = await _entregaTerceroRepo.FindAsync(
-            e => e.Fecha < manana
-                 && (e.Fecha >= hoy || (e.Fecha >= desde && e.ConfirmadaEnPlantaAt == null)),
-            e => e.ClienteTercero);
-
-        var dtos = entregas
-            .OrderBy(e => e.Fecha)
-            .ThenBy(e => e.CreatedAt)
-            .Select(e => new RecepcionTerceroDto
-            {
-                Id = e.Id,
-                Fecha = e.Fecha,
-                ClienteNombre = e.ClienteTercero.NombreCompleto,
-                Municipio = e.ClienteTercero.Municipio,
-                Confirmada = e.ConfirmadaEnPlantaAt.HasValue,
-                ConfirmadaEnPlantaAt = e.ConfirmadaEnPlantaAt,
-                CantinasPlanta = e.CantinasPlanta,
-                SaldoPlanta = e.SaldoPlanta,
-                LitrosPlanta = e.LitrosPlanta,
-                RegistradoPorNombre = e.RegistradoPorNombre,
-                CreatedAt = e.CreatedAt
-            })
-            .ToList();
-
-        return Ok(ResponseBase<List<RecepcionTerceroDto>>.Ok(dtos));
-    }
+        => Ok(await _mediator.Send(new GetEntregasTercerosRecepcionQuery()));
 
     /// <summary>
-    /// Reafirma que la leche de esa entrega llegó. Idempotente (el command no reescribe una
-    /// confirmación previa) y limitado a la misma ventana que muestra la tablet: lo más viejo se
-    /// confirma desde el panel.
+    /// Confirma que la leche de esa entrega llegó, con lo que se midió. Idempotente y limitado a la
+    /// ventana de planta (lo más viejo se confirma desde el panel). Responde solo ok/error: la tablet
+    /// NO se entera de la variación.
     /// </summary>
     [HttpPost("terceros/{id}/confirmar")]
     public async Task<IActionResult> ConfirmarTercero(int id, [FromBody] RecepcionConfirmarTerceroRequest? body)
     {
         // En planta la llegada se confirma MIDIENDO: sin cantidades no se acepta (una app vieja
-        // que no las manda recibe el aviso de actualizarse en vez de confirmar a ciegas de verdad).
+        // que no las manda recibe el aviso de actualizarse en vez de confirmar sin medir).
         if (body?.Cantinas is null || body.SaldoLitros is null)
             return BadRequest(ResponseBase<bool>.Fail(
                 "Indica cuánta leche llegó (cantinas y saldo). Si la app no lo pide, actualízala."));
 
-        var entrega = await _entregaTerceroRepo.GetByIdAsync(id);
-        if (entrega == null)
-            return BadRequest(ResponseBase<bool>.Fail("Entrega no encontrada"));
-        var hoy = ColombiaTime.Today;
-        if (entrega.Fecha.Date > hoy || entrega.Fecha.Date < hoy.AddDays(-DiasPorConfirmar))
-            return BadRequest(ResponseBase<bool>.Fail(
-                $"Esa entrega es de hace más de {DiasPorConfirmar} días: se confirma desde el panel"));
-
-        // Se reusa el caso de uso del panel: una sola regla de confirmación y una sola auditoría.
-        // La respuesta es solo ok/error: la tablet NO se entera de la variación (sigue a ciegas).
         var medicion = new MedicionTercero(body.Cantinas.Value, body.SaldoLitros.Value, body.Observacion);
-        var result = await _mediator.Send(new ConfirmarEntregaTerceroCommand(id, medicion));
+        var result = await _mediator.Send(new ConfirmarEntregaTerceroCommand(id, medicion, DesdePlanta: true));
+        if (result.NoEncontrado)
+            return NotFound(ResponseBase<bool>.Fail(result.Message));
         if (!result.Success)
             return BadRequest(ResponseBase<bool>.Fail(result.Message));
         return Ok(ResponseBase<bool>.Ok(true, result.Message));

@@ -85,14 +85,10 @@ public class SaveEntregaTerceroCommandHandler : IRequestHandler<SaveEntregaTerce
     /// <summary>Devuelve el mensaje de error o null si el comando es válido.</summary>
     private static string? Validar(SaveEntregaTerceroCommand request)
     {
-        if (request.Cantinas < 0)
-            return "Las cantinas no pueden ser negativas";
-        if (request.SaldoLitros < 0)
-            return "El saldo de litros no puede ser negativo";
-        if (request.SaldoLitros >= EntregaTercero.LitrosPorCantina)
-            return $"El saldo debe ser menor a {EntregaTercero.LitrosPorCantina:0} L: si es una cantina completa, súmala a las cantinas";
-        if (CalcularLitros(request) <= 0)
-            return "La entrega debe tener litros: indica cantinas o saldo";
+        // Misma regla que al medir en planta (vive en el dominio para no duplicarla).
+        var errorMedida = EntregaTercero.ValidarMedida(request.Cantinas, request.SaldoLitros);
+        if (errorMedida != null)
+            return errorMedida;
         if (request.PrecioLitro.HasValue && request.PrecioLitro < 0)
             return "El precio por litro no puede ser negativo";
         // Hoy en Colombia: con UTC, de 7 p. m. a medianoche ya se aceptaba la fecha de mañana.
@@ -100,9 +96,6 @@ public class SaveEntregaTerceroCommandHandler : IRequestHandler<SaveEntregaTerce
             return "La fecha de la entrega no puede ser futura";
         return null;
     }
-
-    private static decimal CalcularLitros(SaveEntregaTerceroCommand request)
-        => request.Cantinas * EntregaTercero.LitrosPorCantina + request.SaldoLitros;
 
     private async Task<EntregaTercero?> BuscarPorUuidAsync(Guid? clientUuid)
     {
@@ -117,7 +110,7 @@ public class SaveEntregaTerceroCommandHandler : IRequestHandler<SaveEntregaTerce
         entrega.Fecha = request.Fecha.Date;
         entrega.Cantinas = request.Cantinas;
         entrega.SaldoLitros = request.SaldoLitros;
-        entrega.Litros = CalcularLitros(request);
+        entrega.Litros = EntregaTercero.CalcularLitros(request.Cantinas, request.SaldoLitros);
         entrega.PrecioLitro = request.PrecioLitro ?? cliente.PrecioLitro;
         entrega.Observacion = string.IsNullOrWhiteSpace(request.Observacion) ? null : request.Observacion.Trim();
     }

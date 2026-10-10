@@ -111,6 +111,8 @@ public class ClientesTercerosController : ControllerBase
     public async Task<IActionResult> ConfirmarEntrega(int entregaId)
     {
         var result = await _mediator.Send(new ConfirmarEntregaTerceroCommand(entregaId));
+        if (result.NoEncontrado)
+            return NotFound(result);
         return result.Success ? Ok(result) : BadRequest(result);
     }
 

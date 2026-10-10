@@ -12,8 +12,43 @@ public class EntregaTercero : BaseEntity
     /// <summary>Litros que caben en una cantina estándar. Mismo factor que usan las recogidas de ruta.</summary>
     public const decimal LitrosPorCantina = 40m;
 
+    /// <summary>Tope de cordura para las cantinas de una sola entrega (atrapa un dedo de más).</summary>
+    public const int MaxCantinas = 999;
+
+    /// <summary>
+    /// Días hacia atrás en que una entrega SIN confirmar todavía se confirma desde la tablet. El panel
+    /// puede fecharla con el día de una planilla atrasada; lo más viejo se confirma desde el panel.
+    /// </summary>
+    public const int DiasParaConfirmarEnPlanta = 7;
+
     public const string OrigenPanel = "Panel";
     public const string OrigenTablet = "Tablet";
+
+    /// <summary>Litros de una medida: cantinas × 40 + saldo. La misma cuenta al registrar y al medir en planta.</summary>
+    public static decimal CalcularLitros(int cantinas, decimal saldo) => cantinas * LitrosPorCantina + saldo;
+
+    /// <summary>
+    /// Error de una medida cantinas + saldo, o null si es válida. Regla ÚNICA para registrar la
+    /// entrega y para medirla en planta: el saldo siempre es menor a una cantina.
+    /// </summary>
+    public static string? ValidarMedida(int cantinas, decimal saldo)
+    {
+        if (cantinas < 0)
+            return "Las cantinas no pueden ser negativas";
+        if (cantinas > MaxCantinas)
+            return $"Revisa las cantinas: máximo {MaxCantinas}";
+        if (saldo < 0)
+            return "El saldo no puede ser negativo";
+        if (saldo >= LitrosPorCantina)
+            return $"El saldo debe ser menor a {LitrosPorCantina:0} L: si es una cantina completa, súmala a las cantinas";
+        if (CalcularLitros(cantinas, saldo) <= 0)
+            return "Indica los litros: cantinas o saldo";
+        return null;
+    }
+
+    /// <summary>Si una entrega del día <paramref name="fecha"/> todavía se puede confirmar desde la tablet.</summary>
+    public static bool SePuedeConfirmarEnPlanta(DateTime fecha, DateTime hoy) =>
+        fecha.Date <= hoy.Date && fecha.Date >= hoy.Date.AddDays(-DiasParaConfirmarEnPlanta);
 
     public int ClienteTerceroId { get; set; }
     public ClienteTercero ClienteTercero { get; set; } = null!;
@@ -24,7 +59,7 @@ public class EntregaTercero : BaseEntity
     public int Cantinas { get; set; }
     /// <summary>Litros sueltos que no completan una cantina.</summary>
     public decimal SaldoLitros { get; set; }
-    /// <summary>Calculado por el handler: Cantinas * <see cref="LitrosPorCantina"/> + SaldoLitros.</summary>
+    /// <summary>Lo registrado, calculado con <see cref="CalcularLitros"/>.</summary>
     public decimal Litros { get; set; }
 
     /// <summary>Precio por litro al momento de la entrega (copiado del cliente, editable por entrega).</summary>

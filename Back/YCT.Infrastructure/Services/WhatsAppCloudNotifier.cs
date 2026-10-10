@@ -1,5 +1,6 @@
-using System.Net.Http.Json;
 using System.Globalization;
+using System.Net.Http.Json;
+using System.Text.RegularExpressions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using YCT.Application.Common;
@@ -20,8 +21,12 @@ namespace YCT.Infrastructure.Services;
 ///   WhatsApp:GraphVersion   = versión del Graph API (ej. v21.0)
 ///   WhatsApp:Recipients:0   = +57300...  (uno por destinatario, hasta los 6)
 /// </summary>
-public class WhatsAppCloudNotifier : IWhatsAppNotifier
+public partial class WhatsAppCloudNotifier : IWhatsAppNotifier
 {
+    private const int MaxNombre = 120;
+    private const int MaxObservacion = 300;
+    private const string RutaClientesTerceros = "clientes-terceros";
+
     private readonly HttpClient _http;
     private readonly IConfiguration _config;
     private readonly ILogger<WhatsAppCloudNotifier> _logger;
@@ -36,17 +41,16 @@ public class WhatsAppCloudNotifier : IWhatsAppNotifier
     public Task SendDescargueAsync(WhatsAppDescargueModel m, CancellationToken cancellationToken = default)
     {
         // Parámetros de la plantilla (deben coincidir con el orden {{1}}..{{10}} aprobado en Meta).
-        string C(decimal v) => v.ToString("0.##", CultureInfo.InvariantCulture);
         var parametros = new[]
         {
             m.Resultado,
             m.Codigo,
-            m.Fecha.ToString("dd/MM/yyyy"),
+            Dia(m.Fecha),
             m.Conductor,
             m.Camion,
-            C(m.LitrosChofer),
-            C(m.LitrosPlanta),
-            C(m.Diferencia),
+            Litros(m.LitrosChofer),
+            Litros(m.LitrosPlanta),
+            Litros(m.Diferencia),
             m.Estado,
             m.FincasDetalle,
             m.HistorialUrl,
@@ -76,34 +80,51 @@ public class WhatsAppCloudNotifier : IWhatsAppNotifier
 
     public Task SendTerceroAsync(WhatsAppTerceroModel m, CancellationToken cancellationToken = default)
     {
+        // Sin la URL del panel no se manda: un enlace a ningún lado (o a localhost) confunde más que ayuda.
+        var panel = _config["AppUrls:Admin"];
+        if (string.IsNullOrWhiteSpace(panel))
+        {
+            _logger.LogWarning("Falta AppUrls:Admin: no se envía el WhatsApp de la entrada de tercero de {Cliente}.", m.Cliente);
+            return Task.CompletedTask;
+        }
+
         // Orden {{1}}..{{9}} de la plantilla reporte_tercero aprobada en Meta.
-        string C(decimal v) => v.ToString("0.##", CultureInfo.InvariantCulture);
         var parametros = new[]
         {
             m.Resultado,
-            TextoDeVariable(m.Cliente, 120),
-            m.Fecha.ToString("dd/MM/yyyy"),
-            C(m.LitrosRegistrados),
-            C(m.LitrosRecibidos),
-            m.Diferencia > 0 ? $"+{C(m.Diferencia)}" : C(m.Diferencia),
-            string.IsNullOrWhiteSpace(m.Observacion) ? "Sin observaciones" : TextoDeVariable(m.Observacion, 300),
-            TextoDeVariable(m.RecibidoPor, 120),
-            m.PanelUrl,
+            TextoDeVariable(m.Cliente, MaxNombre),
+            Dia(m.Fecha),
+            Litros(m.LitrosRegistrados),
+            Litros(m.LitrosRecibidos),
+            m.Diferencia > 0 ? $"+{Litros(m.Diferencia)}" : Litros(m.Diferencia),
+            string.IsNullOrWhiteSpace(m.Observacion) ? "Sin observaciones" : TextoDeVariable(m.Observacion, MaxObservacion),
+            TextoDeVariable(m.RecibidoPor, MaxNombre),
+            $"{panel.TrimEnd('/')}/{RutaClientesTerceros}",
         };
 
         var template = _config["WhatsApp:TemplateTercero"] ?? "reporte_tercero";
         return EnviarPlantillaAsync(template, parametros, cancellationToken);
     }
 
+    private static string Litros(decimal valor) => valor.ToString("0.##", CultureInfo.InvariantCulture);
+
+    /// <summary>Con cultura fija: en un formato .NET la "/" es el separador de fecha de la cultura actual.</summary>
+    private static string Dia(DateTime fecha) => fecha.ToString("dd/MM/yyyy", CultureInfo.InvariantCulture);
+
     /// <summary>
     /// Meta rechaza el mensaje entero si una variable trae saltos de línea, tabulaciones o más de
-    /// cuatro espacios seguidos. El texto libre (observación del receptor) se deja en una línea y se recorta.
+    /// cuatro espacios seguidos. El texto libre se deja en una línea y se recorta por caracteres
+    /// visibles, para no partir un emoji (par sustituto) por la mitad.
     /// </summary>
     private static string TextoDeVariable(string texto, int max)
     {
-        var limpio = System.Text.RegularExpressions.Regex.Replace(texto, @"\s+", " ").Trim();
-        return limpio.Length <= max ? limpio : limpio[..(max - 1)] + "…";
+        var limpio = EspaciosSeguidos().Replace(texto, " ").Trim();
+        var info = new StringInfo(limpio);
+        return info.LengthInTextElements <= max ? limpio : info.SubstringByTextElements(0, max - 1) + "…";
     }
+
+    [GeneratedRegex(@"\s+")]
+    private static partial Regex EspaciosSeguidos();
 
     /// <summary>
     /// Envío común a todos los destinatarios. Best-effort: si no está configurado o falla,
