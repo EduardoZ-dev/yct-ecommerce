@@ -54,8 +54,9 @@ public class RecepcionValidarRequest
 }
 
 /// <summary>
-/// Entrega de un cliente tercero vista por el receptor en planta: solo lo necesario para
-/// reafirmar que la leche llegó. VALIDACIÓN A CIEGAS: sin precio, sin valor, sin nada comercial.
+/// Entrega de un cliente tercero vista por el receptor en planta. VALIDACIÓN A CIEGAS, igual que
+/// con los camiones: NO lleva lo registrado (cantinas, saldo, litros), ni su nota (podría traer
+/// cifras), ni precio ni valor. El receptor mide lo que llegó; la variación la ve acopio.
 /// </summary>
 public class RecepcionTerceroDto
 {
@@ -64,12 +65,23 @@ public class RecepcionTerceroDto
     public DateTime Fecha { get; set; }
     public string ClienteNombre { get; set; } = string.Empty;
     public string? Municipio { get; set; }
-    public int Cantinas { get; set; }
-    public decimal SaldoLitros { get; set; }
-    public decimal Litros { get; set; }
-    public string? Observacion { get; set; }
     public bool Confirmada { get; set; }
     public DateTime? ConfirmadaEnPlantaAt { get; set; }
+    /// <summary>Lo que ESTE receptor midió al confirmar (su propio dato). Null hasta confirmar.</summary>
+    public int? CantinasPlanta { get; set; }
+    public decimal? SaldoPlanta { get; set; }
+    public decimal? LitrosPlanta { get; set; }
     public string? RegistradoPorNombre { get; set; }
     public DateTime CreatedAt { get; set; }
+}
+
+/// <summary>
+/// Lo que el receptor midió al recibir la leche de un tercero. Los números son nullable para
+/// distinguir "no los mandó" (app vieja) de un cero.
+/// </summary>
+public class RecepcionConfirmarTerceroRequest
+{
+    public int? Cantinas { get; set; }
+    public decimal? SaldoLitros { get; set; }
+    public string? Observacion { get; set; }
 }

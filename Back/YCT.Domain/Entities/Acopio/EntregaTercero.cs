@@ -47,4 +47,15 @@ public class EntregaTercero : BaseEntity
     public DateTime? ConfirmadaEnPlantaAt { get; set; }
     public int? ConfirmadaPorUserId { get; set; }
     public string? ConfirmadaPorNombre { get; set; }
+
+    // ===== Medición en planta (la hace el receptor al confirmar, A CIEGAS) =====
+    // La leche viaja y puede pasar algo en el camino (derrame, cantina rota…): el receptor mide lo
+    // que de verdad llegó sin ver lo registrado. Null = la llegada se marcó sin medir (desde el
+    // panel, o antes de existir la medición). Lo registrado (Cantinas/SaldoLitros/Litros) NO se
+    // toca: el pago lo maneja planta; esto es el control de la variación.
+    public int? CantinasPlanta { get; set; }
+    public decimal? SaldoPlanta { get; set; }
+    public decimal? LitrosPlanta { get; set; }
+    /// <summary>Lo que el receptor anotó al recibir (opcional).</summary>
+    public string? ObservacionPlanta { get; set; }
 }

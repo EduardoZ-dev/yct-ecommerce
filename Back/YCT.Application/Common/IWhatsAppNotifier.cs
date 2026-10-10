@@ -11,7 +11,22 @@ public interface IWhatsAppNotifier
 
     /// <summary>Novedad reportada por un chofer en plena ruta (llanta, trancón, finca sin ordeño…).</summary>
     Task SendNovedadAsync(WhatsAppNovedadModel model, CancellationToken cancellationToken = default);
+
+    /// <summary>Entrada de cliente tercero confirmada en planta, con lo registrado vs lo recibido.</summary>
+    Task SendTerceroAsync(WhatsAppTerceroModel model, CancellationToken cancellationToken = default);
 }
+
+/// <summary>Llegada de leche de un tercero. Plantilla de Meta: WhatsApp:TemplateTercero.</summary>
+public record WhatsAppTerceroModel(
+    string Resultado,          // "✅ Llegó completa" | "🚨 Llegó MENOS leche" | "⬆️ Llegó MÁS leche"
+    string Cliente,
+    DateTime Fecha,            // día de la entrega
+    decimal LitrosRegistrados, // lo que registró acopio en el panel
+    decimal LitrosRecibidos,   // lo que midió el receptor, a ciegas
+    decimal Diferencia,        // recibidos − registrados
+    string Observacion,        // nota del receptor; vacía si no escribió nada
+    string RecibidoPor,
+    string PanelUrl);
 
 /// <summary>Aviso de novedad en ruta. Plantilla de Meta: WhatsApp:TemplateNovedad.</summary>
 public record WhatsAppNovedadModel(

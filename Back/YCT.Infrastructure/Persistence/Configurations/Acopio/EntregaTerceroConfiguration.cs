@@ -19,6 +19,9 @@ public class EntregaTerceroConfiguration : IEntityTypeConfiguration<EntregaTerce
         builder.Property(e => e.Origen).IsRequired().HasMaxLength(20);
         builder.Property(e => e.RegistradoPorNombre).HasMaxLength(150);
         builder.Property(e => e.ConfirmadaPorNombre).HasMaxLength(150);
+        builder.Property(e => e.SaldoPlanta).HasColumnType("decimal(10,2)");
+        builder.Property(e => e.LitrosPlanta).HasColumnType("decimal(10,2)");
+        builder.Property(e => e.ObservacionPlanta).HasMaxLength(500);
 
         builder.HasOne(e => e.ClienteTercero)
             .WithMany(c => c.Entregas)

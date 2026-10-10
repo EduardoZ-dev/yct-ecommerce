@@ -195,12 +195,11 @@ public class RecepcionController : ControllerBase
                 Fecha = e.Fecha,
                 ClienteNombre = e.ClienteTercero.NombreCompleto,
                 Municipio = e.ClienteTercero.Municipio,
-                Cantinas = e.Cantinas,
-                SaldoLitros = e.SaldoLitros,
-                Litros = e.Litros,
-                Observacion = e.Observacion,
                 Confirmada = e.ConfirmadaEnPlantaAt.HasValue,
                 ConfirmadaEnPlantaAt = e.ConfirmadaEnPlantaAt,
+                CantinasPlanta = e.CantinasPlanta,
+                SaldoPlanta = e.SaldoPlanta,
+                LitrosPlanta = e.LitrosPlanta,
                 RegistradoPorNombre = e.RegistradoPorNombre,
                 CreatedAt = e.CreatedAt
             })
@@ -215,8 +214,14 @@ public class RecepcionController : ControllerBase
     /// confirma desde el panel.
     /// </summary>
     [HttpPost("terceros/{id}/confirmar")]
-    public async Task<IActionResult> ConfirmarTercero(int id)
+    public async Task<IActionResult> ConfirmarTercero(int id, [FromBody] RecepcionConfirmarTerceroRequest? body)
     {
+        // En planta la llegada se confirma MIDIENDO: sin cantidades no se acepta (una app vieja
+        // que no las manda recibe el aviso de actualizarse en vez de confirmar a ciegas de verdad).
+        if (body?.Cantinas is null || body.SaldoLitros is null)
+            return BadRequest(ResponseBase<bool>.Fail(
+                "Indica cuánta leche llegó (cantinas y saldo). Si la app no lo pide, actualízala."));
+
         var entrega = await _entregaTerceroRepo.GetByIdAsync(id);
         if (entrega == null)
             return BadRequest(ResponseBase<bool>.Fail("Entrega no encontrada"));
@@ -226,7 +231,9 @@ public class RecepcionController : ControllerBase
                 $"Esa entrega es de hace más de {DiasPorConfirmar} días: se confirma desde el panel"));
 
         // Se reusa el caso de uso del panel: una sola regla de confirmación y una sola auditoría.
-        var result = await _mediator.Send(new ConfirmarEntregaTerceroCommand(id));
+        // La respuesta es solo ok/error: la tablet NO se entera de la variación (sigue a ciegas).
+        var medicion = new MedicionTercero(body.Cantinas.Value, body.SaldoLitros.Value, body.Observacion);
+        var result = await _mediator.Send(new ConfirmarEntregaTerceroCommand(id, medicion));
         if (!result.Success)
             return BadRequest(ResponseBase<bool>.Fail(result.Message));
         return Ok(ResponseBase<bool>.Ok(true, result.Message));

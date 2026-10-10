@@ -15,6 +15,7 @@ namespace YCT.Infrastructure.Services;
 ///   WhatsApp:Token          = token permanente de la app de Meta
 ///   WhatsApp:PhoneNumberId  = id del número remitente (WhatsApp Business)
 ///   WhatsApp:Template       = nombre de la plantilla aprobada (ej. reporte_descargue)
+///   WhatsApp:TemplateNovedad / WhatsApp:TemplateTercero = plantillas de novedades y de terceros
 ///   WhatsApp:Lang           = idioma de la plantilla (ej. es)
 ///   WhatsApp:GraphVersion   = versión del Graph API (ej. v21.0)
 ///   WhatsApp:Recipients:0   = +57300...  (uno por destinatario, hasta los 6)
@@ -71,6 +72,37 @@ public class WhatsAppCloudNotifier : IWhatsAppNotifier
 
         var template = _config["WhatsApp:TemplateNovedad"] ?? "novedad_ruta";
         return EnviarPlantillaAsync(template, parametros, cancellationToken);
+    }
+
+    public Task SendTerceroAsync(WhatsAppTerceroModel m, CancellationToken cancellationToken = default)
+    {
+        // Orden {{1}}..{{9}} de la plantilla reporte_tercero aprobada en Meta.
+        string C(decimal v) => v.ToString("0.##", CultureInfo.InvariantCulture);
+        var parametros = new[]
+        {
+            m.Resultado,
+            TextoDeVariable(m.Cliente, 120),
+            m.Fecha.ToString("dd/MM/yyyy"),
+            C(m.LitrosRegistrados),
+            C(m.LitrosRecibidos),
+            m.Diferencia > 0 ? $"+{C(m.Diferencia)}" : C(m.Diferencia),
+            string.IsNullOrWhiteSpace(m.Observacion) ? "Sin observaciones" : TextoDeVariable(m.Observacion, 300),
+            TextoDeVariable(m.RecibidoPor, 120),
+            m.PanelUrl,
+        };
+
+        var template = _config["WhatsApp:TemplateTercero"] ?? "reporte_tercero";
+        return EnviarPlantillaAsync(template, parametros, cancellationToken);
+    }
+
+    /// <summary>
+    /// Meta rechaza el mensaje entero si una variable trae saltos de línea, tabulaciones o más de
+    /// cuatro espacios seguidos. El texto libre (observación del receptor) se deja en una línea y se recorta.
+    /// </summary>
+    private static string TextoDeVariable(string texto, int max)
+    {
+        var limpio = System.Text.RegularExpressions.Regex.Replace(texto, @"\s+", " ").Trim();
+        return limpio.Length <= max ? limpio : limpio[..(max - 1)] + "…";
     }
 
     /// <summary>

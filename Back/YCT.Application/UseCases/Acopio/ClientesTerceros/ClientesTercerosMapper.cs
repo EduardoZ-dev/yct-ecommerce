@@ -53,7 +53,12 @@ public static class ClientesTercerosMapper
             CreatedAt = entrega.CreatedAt,
             Confirmada = entrega.ConfirmadaEnPlantaAt.HasValue,
             ConfirmadaEnPlantaAt = entrega.ConfirmadaEnPlantaAt,
-            ConfirmadaPorNombre = entrega.ConfirmadaPorNombre
+            ConfirmadaPorNombre = entrega.ConfirmadaPorNombre,
+            CantinasPlanta = entrega.CantinasPlanta,
+            SaldoPlanta = entrega.SaldoPlanta,
+            LitrosPlanta = entrega.LitrosPlanta,
+            DiferenciaLitros = entrega.LitrosPlanta.HasValue ? entrega.LitrosPlanta.Value - entrega.Litros : null,
+            ObservacionPlanta = entrega.ObservacionPlanta
         };
     }
 }

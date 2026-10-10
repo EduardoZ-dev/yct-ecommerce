@@ -46,6 +46,14 @@ public class EntregaTerceroDto
     public bool Confirmada { get; set; }
     public DateTime? ConfirmadaEnPlantaAt { get; set; }
     public string? ConfirmadaPorNombre { get; set; }
+
+    /// <summary>Lo que midió el receptor en planta. Null si la llegada se marcó sin medir.</summary>
+    public int? CantinasPlanta { get; set; }
+    public decimal? SaldoPlanta { get; set; }
+    public decimal? LitrosPlanta { get; set; }
+    /// <summary>Recibido − registrado: negativo = llegó menos leche. Null si no se midió.</summary>
+    public decimal? DiferenciaLitros { get; set; }
+    public string? ObservacionPlanta { get; set; }
 }
 
 /// <summary>
