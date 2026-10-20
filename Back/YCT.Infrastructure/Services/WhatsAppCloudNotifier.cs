@@ -65,10 +65,11 @@ public partial class WhatsAppCloudNotifier : IWhatsAppNotifier
             m.HistorialUrl,
         });
 
-        // Con tarjeta: {{1}} resultado · {{2}} planilla · {{3}} planta · {{4}} chofer · {{5}} diferencia.
+        // Con tarjeta: {{1}} resultado · {{2}} planilla · {{3}} planta · {{4}} chofer · {{5}} diferencia ·
+        // {{6}} enlace al panel (al final, como siempre).
         var conTarjeta = new PlantillaConTarjeta(_config["WhatsApp:TemplateDescargueImagen"],
             () => m.Aportes is null ? null : _tarjetas.Descargue(m),
-            new[] { m.Resultado, m.Codigo, Litros(m.LitrosPlanta), Litros(m.LitrosChofer), Litros(m.Diferencia) });
+            new[] { m.Resultado, m.Codigo, Litros(m.LitrosPlanta), Litros(m.LitrosChofer), Litros(m.Diferencia), m.HistorialUrl });
 
         return EnviarAsync(texto, conTarjeta, cancellationToken);
     }
@@ -101,6 +102,7 @@ public partial class WhatsAppCloudNotifier : IWhatsAppNotifier
 
         // Orden {{1}}..{{9}} de la plantilla reporte_tercero aprobada en Meta.
         var cliente = TextoDeVariable(m.Cliente, MaxNombre);
+        var enlace = $"{panel.TrimEnd('/')}/{RutaClientesTerceros}";
         var texto = new Plantilla(_config["WhatsApp:TemplateTercero"] ?? "reporte_tercero", new[]
         {
             m.Resultado,
@@ -111,13 +113,13 @@ public partial class WhatsAppCloudNotifier : IWhatsAppNotifier
             m.Diferencia > 0 ? $"+{Litros(m.Diferencia)}" : Litros(m.Diferencia),
             string.IsNullOrWhiteSpace(m.Observacion) ? "Sin observaciones" : TextoDeVariable(m.Observacion, MaxObservacion),
             TextoDeVariable(m.RecibidoPor, MaxNombre),
-            $"{panel.TrimEnd('/')}/{RutaClientesTerceros}",
+            enlace,
         });
 
-        // Con tarjeta: {{1}} resultado · {{2}} cliente · {{3}} recibido · {{4}} registrado.
+        // Con tarjeta: {{1}} resultado · {{2}} cliente · {{3}} recibido · {{4}} registrado · {{5}} enlace.
         var conTarjeta = new PlantillaConTarjeta(_config["WhatsApp:TemplateTerceroImagen"],
             () => _tarjetas.Tercero(m),
-            new[] { m.Resultado, cliente, Litros(m.LitrosRecibidos), Litros(m.LitrosRegistrados) });
+            new[] { m.Resultado, cliente, Litros(m.LitrosRecibidos), Litros(m.LitrosRegistrados), enlace });
 
         return EnviarAsync(texto, conTarjeta, cancellationToken);
     }

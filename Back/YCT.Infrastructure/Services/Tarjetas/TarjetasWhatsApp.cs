@@ -173,9 +173,12 @@ public sealed class TarjetasWhatsApp : ITarjetasWhatsApp
         var x = desde + 118;
         var anchoMax = hasta - x - 24;
         using var fuenteEtiqueta = LienzoTarjeta.FuenteRegular(27);
-        using var fuenteValor = LienzoTarjeta.FuenteNegrita(35);
         l.Texto(dato.Etiqueta, x, y + 54, fuenteEtiqueta, Colores.Etiqueta);
-        var valor = LienzoTarjeta.SoloDibujable(dato.Valor, fuenteValor);
+        // Primero se achica la letra (hasta 27 px) para que el nombre quepa entero; solo si aun así no
+        // cabe, se recorta con "…".
+        using var medida = LienzoTarjeta.FuenteNegrita(35);
+        var valor = LienzoTarjeta.SoloDibujable(dato.Valor, medida);
+        using var fuenteValor = LienzoTarjeta.AjustarAncho(valor, LienzoTarjeta.FuenteNegrita, 35, anchoMax, minimo: 27);
         l.Texto(LienzoTarjeta.Recortar(valor, fuenteValor, anchoMax), x, y + 100, fuenteValor, Colores.Texto);
     }
 

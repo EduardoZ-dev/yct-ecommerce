@@ -114,10 +114,10 @@ internal sealed partial class LienzoTarjeta
     }
 
     /// <summary>Achica la fuente hasta que el texto quepa (para el titular).</summary>
-    public static SKFont AjustarAncho(string texto, Func<float, SKFont> crear, float tamano, float anchoMax)
+    public static SKFont AjustarAncho(string texto, Func<float, SKFont> crear, float tamano, float anchoMax, float minimo = 20)
     {
         var fuente = crear(tamano);
-        while (tamano > 20 && fuente.MeasureText(texto) > anchoMax)
+        while (tamano > minimo && fuente.MeasureText(texto) > anchoMax)
         {
             fuente.Dispose();
             tamano -= 2;
