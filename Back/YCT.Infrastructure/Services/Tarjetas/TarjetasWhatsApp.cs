@@ -29,19 +29,22 @@ public sealed class TarjetasWhatsApp : ITarjetasWhatsApp
     private const float AltoCabeceraSeccion = 92;
     private const float AltoFilaResumen = 74;
     private const float AltoFilaFinca = 62;
+    private const float AltoFilaFincaCompacta = 54;
     private const float AltoPie = 64;
-    private const int MaxFincas = 20;
+    // Hasta 13 fincas: una columna. Más: dos columnas compactas, máximo 30 a la vista. Así la tarjeta
+    // nunca pasa de la proporción de una pantalla de celular (9:16) y WhatsApp no la corta en el chat.
+    private const int MaxFincasUnaColumna = 13;
+    private const int MaxFincasVisibles = 30;
     private const int MaxRenglonesObservacion = 5;
 
     private static readonly CultureInfo Cultura = CultureInfo.InvariantCulture;
 
     public byte[] Descargue(WhatsAppDescargueModel m)
     {
-        var aportes = m.Aportes ?? Array.Empty<AporteFinca>();
-        var filasFincas = Math.Max(1, Math.Min(aportes.Count, MaxFincas) + (aportes.Count > MaxFincas ? 1 : 0));
+        var fincas = Distribuir(m.Aportes ?? Array.Empty<AporteFinca>());
         var alto = Margen + AltoCabecera + Espacio + AltoInfo + Espacio
                    + AltoSeccion(4) + Espacio
-                   + AltoCabeceraSeccion + filasFincas * AltoFilaFinca + 16 + Espacio
+                   + fincas.AltoSeccion + Espacio
                    + AltoPie + Margen;
 
         return Dibujar(alto, lienzo =>
@@ -58,7 +61,7 @@ public sealed class TarjetasWhatsApp : ITarjetasWhatsApp
                 new FilaResumen("Planta midió:", $"{Litros(m.LitrosPlanta)} L"),
                 new FilaResumen("Diferencia:", $"{Litros(m.Diferencia)} L", conFaltante ? Colores.Rojo : null),
             }, m.Estado, conFaltante);
-            y = Fincas(lienzo, y, aportes);
+            y = Fincas(lienzo, y, fincas);
             Pie(lienzo, y);
         });
     }
@@ -225,37 +228,77 @@ public sealed class TarjetasWhatsApp : ITarjetasWhatsApp
             conFaltante ? Colores.RojoOscuro : Colores.VerdeOscuro);
     }
 
-    private static float Fincas(LienzoTarjeta l, float y, IReadOnlyList<AporteFinca> aportes)
+    /// <summary>Cómo se reparten las fincas: cuáles se ven, en cuántas columnas y cuántas quedan fuera.</summary>
+    private sealed record DistribucionFincas(IReadOnlyList<AporteFinca> Visibles, int Columnas, int FilasPorColumna, int Restantes)
     {
-        var visibles = aportes.Take(MaxFincas).ToList();
-        var filas = Math.Max(1, visibles.Count + (aportes.Count > MaxFincas ? 1 : 0));
-        var alto = AltoCabeceraSeccion + filas * AltoFilaFinca + 16;
-        var fila = CabeceraSeccion(l, y, alto, "Aporte por finca", (cx, cy) => l.IconoCasa(cx, cy, 30, Colores.Verde));
-        using var fuenteNombre = LienzoTarjeta.FuenteRegular(31);
-        using var fuenteLitros = LienzoTarjeta.FuenteNegrita(32);
-        if (visibles.Count == 0)
+        public float AltoFila => Columnas == 1 ? AltoFilaFinca : AltoFilaFincaCompacta;
+        public int Filas => Math.Max(1, FilasPorColumna + (Restantes > 0 ? 1 : 0));
+        public float AltoSeccion => AltoCabeceraSeccion + Filas * AltoFila + 16;
+    }
+
+    private static DistribucionFincas Distribuir(IReadOnlyList<AporteFinca> aportes)
+    {
+        var columnas = aportes.Count > MaxFincasUnaColumna ? 2 : 1;
+        // Si no caben todas, se ceden dos huecos al renglón "+N fincas más" para no pasar de 9:16.
+        var cuantas = aportes.Count > MaxFincasVisibles ? MaxFincasVisibles - 2 : aportes.Count;
+        var visibles = aportes.Take(cuantas).ToList();
+        var filasPorColumna = (visibles.Count + columnas - 1) / columnas;
+        return new DistribucionFincas(visibles, columnas, filasPorColumna, aportes.Count - visibles.Count);
+    }
+
+    private static float Fincas(LienzoTarjeta l, float y, DistribucionFincas d)
+    {
+        var inicio = CabeceraSeccion(l, y, d.AltoSeccion, "Aporte por finca", (cx, cy) => l.IconoCasa(cx, cy, 30, Colores.Verde));
+        using var fuenteNombre = LienzoTarjeta.FuenteRegular(d.Columnas == 1 ? 31 : 27);
+        using var fuenteLitros = LienzoTarjeta.FuenteNegrita(d.Columnas == 1 ? 32 : 28);
+        var izquierda = Margen + 32;
+        var derecha = Ancho - Margen - 32;
+        if (d.Visibles.Count == 0)
         {
-            l.Texto("Sin recogidas registradas", Margen + 32, LienzoTarjeta.BaselineCentrada(fuenteNombre, fila + AltoFilaFinca / 2),
+            l.Texto("Sin recogidas registradas", izquierda, LienzoTarjeta.BaselineCentrada(fuenteNombre, inicio + d.AltoFila / 2),
                 fuenteNombre, Colores.Etiqueta);
-            return y + alto + Espacio;
+            return y + d.AltoSeccion + Espacio;
         }
-        for (var i = 0; i < visibles.Count; i++)
+
+        const float hueco = 36;
+        var anchoColumna = (derecha - izquierda - (d.Columnas - 1) * hueco) / d.Columnas;
+        for (var fila = 0; fila < d.FilasPorColumna; fila++)
         {
-            var centro = fila + AltoFilaFinca / 2;
-            l.IconoHoja(Margen + 44, centro, 14, Colores.VerdeHoja);
-            var litros = $"{Litros(visibles[i].Litros)} L";
-            var anchoNombre = Ancho - 2 * Margen - 100 - fuenteLitros.MeasureText(litros) - 40;
-            var nombre = LienzoTarjeta.Recortar(LienzoTarjeta.SoloDibujable(visibles[i].Etiqueta, fuenteNombre), fuenteNombre, anchoNombre);
-            l.Texto(nombre, Margen + 78, LienzoTarjeta.BaselineCentrada(fuenteNombre, centro), fuenteNombre, Colores.Texto);
-            l.Texto(litros, Ancho - Margen - 32, LienzoTarjeta.BaselineCentrada(fuenteLitros, centro), fuenteLitros, Colores.Texto, SKTextAlign.Right);
-            fila += AltoFilaFinca;
-            if (i < filas - 1)
-                l.Linea(Margen + 32, fila, Ancho - Margen - 32, Colores.Separador);
+            var centro = inicio + fila * d.AltoFila + d.AltoFila / 2;
+            // Orden de lectura: primero baja por la columna izquierda y luego por la derecha.
+            for (var col = 0; col < d.Columnas; col++)
+            {
+                var indice = col * d.FilasPorColumna + fila;
+                if (indice < d.Visibles.Count)
+                    Finca(l, d.Visibles[indice], izquierda + col * (anchoColumna + hueco), anchoColumna, centro, fuenteNombre, fuenteLitros);
+            }
+            if (fila < d.Filas - 1)
+                l.Linea(izquierda, inicio + (fila + 1) * d.AltoFila, derecha, Colores.Separador);
         }
-        if (aportes.Count > MaxFincas)
-            l.Texto($"+{aportes.Count - MaxFincas} fincas más en el panel", Margen + 78,
-                LienzoTarjeta.BaselineCentrada(fuenteNombre, fila + AltoFilaFinca / 2), fuenteNombre, Colores.Etiqueta);
-        return y + alto + Espacio;
+        if (d.Columnas == 2)
+            DivisorVertical(l, (izquierda + derecha) / 2, inicio + 10, inicio + d.FilasPorColumna * d.AltoFila - 10);
+        if (d.Restantes > 0)
+            l.Texto($"+{d.Restantes} fincas más en el panel", izquierda + 34,
+                LienzoTarjeta.BaselineCentrada(fuenteNombre, inicio + d.FilasPorColumna * d.AltoFila + d.AltoFila / 2), fuenteNombre, Colores.Etiqueta);
+        return y + d.AltoSeccion + Espacio;
+    }
+
+    private static void Finca(LienzoTarjeta l, AporteFinca finca, float x, float ancho, float centro, SKFont fuenteNombre, SKFont fuenteLitros)
+    {
+        var radioHoja = fuenteNombre.Size * 0.45f;
+        l.IconoHoja(x + radioHoja, centro, radioHoja, Colores.VerdeHoja);
+        var litros = $"{Litros(finca.Litros)} L";
+        var xNombre = x + radioHoja * 2 + 16;
+        var anchoNombre = x + ancho - fuenteLitros.MeasureText(litros) - 14 - xNombre;
+        var nombre = LienzoTarjeta.Recortar(LienzoTarjeta.SoloDibujable(finca.Etiqueta, fuenteNombre), fuenteNombre, anchoNombre);
+        l.Texto(nombre, xNombre, LienzoTarjeta.BaselineCentrada(fuenteNombre, centro), fuenteNombre, Colores.Texto);
+        l.Texto(litros, x + ancho, LienzoTarjeta.BaselineCentrada(fuenteLitros, centro), fuenteLitros, Colores.Texto, SKTextAlign.Right);
+    }
+
+    private static void DivisorVertical(LienzoTarjeta l, float x, float desde, float hasta)
+    {
+        using var pintura = new SKPaint { Color = Colores.Separador, StrokeWidth = 2, IsAntialias = true };
+        l.Canvas.DrawLine(x, desde, x, hasta, pintura);
     }
 
     private static float Observacion(LienzoTarjeta l, float y, IReadOnlyList<string> renglones)
