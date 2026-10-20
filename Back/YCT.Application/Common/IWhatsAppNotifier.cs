@@ -51,4 +51,10 @@ public record WhatsAppDescargueModel(
     decimal Diferencia,
     string Estado,
     string FincasDetalle,    // "La Esperanza: 320 L · El Roble: 210 L" (una sola línea, sin saltos)
-    string HistorialUrl);
+    string HistorialUrl,
+    // Lo mismo que FincasDetalle pero separado, para dibujar la tarjeta con una finca por renglón.
+    // Opcional: sin él la tarjeta no se dibuja y sale el mensaje de texto de siempre.
+    IReadOnlyList<AporteFinca>? Aportes = null);
+
+/// <summary>Cuánto aportó una finca (o persona) en un descargue, para la tarjeta del WhatsApp.</summary>
+public record AporteFinca(string Etiqueta, decimal Litros);

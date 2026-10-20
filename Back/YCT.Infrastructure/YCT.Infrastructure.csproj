@@ -11,6 +11,14 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    <PackageReference Include="SkiaSharp" Version="3.116.1" />
+    <PackageReference Include="SkiaSharp.NativeAssets.Linux.NoDependencies" Version="3.116.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Tipografía de las tarjetas de WhatsApp (Roboto, Apache 2.0). Embebida: el contenedor Linux
+         no trae fuentes instaladas. -->
+    <EmbeddedResource Include="Resources\Fuentes\*.ttf" LogicalName="Fuentes.%(Filename)%(Extension)" />
   </ItemGroup>
 
   <PropertyGroup>

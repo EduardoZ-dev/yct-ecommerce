@@ -162,9 +162,11 @@ public class ValidatePlantaCommandHandler : IRequestHandler<ValidatePlantaComman
                 .Where(g => g.Count() > 1)
                 .Select(g => g.Key)
                 .ToHashSet();
-            var fincas = items
-                .Select(i => $"{EtiquetaAporte(i, conVariasFincas.Contains(i.GranjeroId))} {L(i.TotalLitros)} L")
+            // La misma lista sirve para la línea de texto y para la tarjeta (una finca por renglón).
+            var aportes = items
+                .Select(i => new AporteFinca(EtiquetaAporte(i, conVariasFincas.Contains(i.GranjeroId)), i.TotalLitros))
                 .ToList();
+            var fincas = aportes.Select(a => $"{a.Etiqueta} {L(a.Litros)} L").ToList();
             const int MaxFincas = 20;
             var fincasDetalle = fincas.Count == 0
                 ? "Sin recogidas registradas"
@@ -185,7 +187,8 @@ public class ValidatePlantaCommandHandler : IRequestHandler<ValidatePlantaComman
                 // Estado en bonito para el WhatsApp (el interno "PendienteAutorizacion" se leía pegado).
                 Estado: shortage ? "Pendiente de autorización" : "Conciliada",
                 FincasDetalle: fincasDetalle,
-                HistorialUrl: $"{adminBase}/descargues"), cancellationToken);
+                HistorialUrl: $"{adminBase}/descargues",
+                Aportes: aportes), cancellationToken);
         }
         catch { /* whatsapp error no debe romper validación */ }
 

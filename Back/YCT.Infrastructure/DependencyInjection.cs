@@ -7,6 +7,7 @@ using YCT.Domain.Interfaces;
 using YCT.Infrastructure.Persistence;
 using YCT.Infrastructure.Repositories;
 using YCT.Infrastructure.Services;
+using YCT.Infrastructure.Services.Tarjetas;
 
 namespace YCT.Infrastructure;
 
@@ -24,6 +25,9 @@ public static class DependencyInjection
         services.AddScoped<ICurrentUser, CurrentUserService>();
         services.AddScoped<IAuditLogger, AuditLogger>();
         services.AddScoped<IEmailSender, SmtpEmailSender>();
+        // Tarjetas (imagen) de los avisos de WhatsApp: se dibujan aquí y se prueban al arrancar.
+        services.AddSingleton<ITarjetasWhatsApp, TarjetasWhatsApp>();
+        services.AddHostedService<VerificacionTarjetasWhatsApp>();
         services.AddHttpClient<IWhatsAppNotifier, WhatsAppCloudNotifier>();
         services.AddDataProtection();
         services.AddSingleton<IEmailActionTokenService, EmailActionTokenService>();
